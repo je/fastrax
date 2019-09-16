@@ -1,0 +1,306 @@
+{% extends "fastrax/plusfour.html" %}
+
+{% block content %}
+{% load humanize %}
+{% load guardian_tags %}
+
+{% if plusfour %}
+{% get_obj_perms request.user for plusfour as "p_perms" %}
+{% endif %}
+{% if not plusfour or perms.fastrax.delete_plusfour or "change_plusfour" in p_perms %}
+<div>
+<form class="form-horizontal" method="POST" enctype="multipart/form-data" action=".">
+
+<div class='row'>
+<div class='col-md-12'>
+<h3>
+        {% if permform %}Get permission on <span class='quiet'>PL4+ Burn Request</span> <a href=".">{{ plusfour.name }}</a>{% else %}{% if plusfour %}Editing{% if userform %} permissions on{% endif %} <span class='quiet'>PL4+ Burn Request</span>{% else %}New PL4+ Burn Request{% endif %}{% endif %}
+        <span class='pull-right'>
+        <button type="submit" class="btn btn-sm btn-primary"><i class="glyphicon glyphicon-ok glyphicon-white"></i> {% if permform %}Get permission{% elif plusfour %}Save{% else %}Create{% endif %}</button>
+        <a class="btn btn-sm btn-default" href="{% if plusfour %}{% url 'print_plusfour' plusfour.id %}{% else %}{% url 'list_plusfour' %}{% endif %}">Cancel</a>
+        {% if userform or permform %}{% elif plusfour %}<a class="btn btn-sm btn-danger" href="{% url 'delete_plusfour' plusfour.pk %}"><i class="glyphicon glyphicon-remove glyphicon-white"></i> Delete</a>{% endif %}
+        </span>
+</h3>
+</div>
+</div>
+
+<div class='row'>
+<div class='col-md-12'>
+{% with form as object %}
+{% if form.non_field_errors %}{% for error in form.non_field_errors %}
+<div class="alert alert-danger">
+{{ error|escape }}
+</div>
+{% endfor %}{% endif %}
+<div class='panel panel-{% if plusfour.finapp %}success{% elif plusfour.lo and plusfour.dfmo %}danger{% else %}{% ifequal plusfour.finapp False %}danger{% else %}warning{% endifequal %}{% endif %}'>
+ <table class="table table-bordered table-condensed">
+    <tbody>
+    <tr class="{% if plusfour.finapp %}hdsuccess{% elif plusfour.lo and plusfour.dfmo %}hddanger{% else %}{% ifequal plusfour.finapp False %}hddanger{% else %}hdwarning{% endifequal %}{% endif %}">
+        <th class='col-xs-3 col-sm-3 col-md-2 col-lg-2'><span class='text-{% if plusfour.finapp %}success{% elif plusfour.lo and plusfour.dfmo %}danger{% else %}{% ifequal plusfour.finapp False %}danger{% else %}warning{% endifequal %}{% endif %}'>Project</span></th><td colspan='5' class="form-group{% if object.name.errors %} has-error{% endif %}"><strong>{% if object.name.field %}{{ object.name }}{% else %}{{ plusfour.name }}{% endif %}</strong> {% if object.name.errors %}{% for error in object.name.errors %}<strong class="help-inline help-block">{{ error|escape }}</strong>{% endfor %}{% endif %}</td>
+    </tr>
+    <tr>
+        <th class='col-xs-3 col-sm-3 col-md-2 col-lg-2'>Distirct or Forest</th><td colspan='5' class="form-group{% if object.district.errors %} has-error{% endif %}">{% if object.district.field %}{{ object.district }}{% else %}{{ plusfour.district }}{% endif %} {% if object.district.errors %}{% for error in object.district.errors %}<strong class="help-inline help-block">{{ error|escape }}</strong>{% endfor %}{% endif %}</td>
+    </tr>
+    <tr>
+        <th>Location</th><td colspan='1' class="form-group{% if object.township.errors %} has-error{% endif %}">{% if object.township.field %}{{ object.township }}{% else %}{{ plusfour.township }}{% endif %} {% if object.township.errors %}{% for error in object.township.errors %}<strong class="help-inline help-block">{{ error|escape }}</strong>{% endfor %}{% endif %}</td><td colspan='1' class="form-group{% if object.range.errors %} has-error{% endif %}">{% if object.range.field %}{{ object.range }}{% else %}{{ plusfour.range }}{% endif %} {% if object.range.errors %}{% for error in object.range.errors %}<strong class="help-inline help-block">{{ error|escape }}</strong>{% endfor %}{% endif %}</td><td colspan='1' class="form-group{% if object.section.errors %} has-error{% endif %}">{% if object.section.field %}{{ object.section }}{% else %}{{ plusfour.section }}{% endif %} {% if object.section.errors %}{% for error in object.section.errors %}<strong class="help-inline help-block">{{ error|escape }}</strong>{% endfor %}{% endif %}</td>
+        <th>Acres</th><td colspan='1' class='form-group{% if object.acres.errors %} has-error{% endif %} col-xs-3 col-sm-3 col-md-2 col-lg-1'>{% if object.acres.field %}{{ object.acres }}{% else %}{{ plusfour.acres }}{% endif %} {% if object.acres.errors %}{% for error in object.acres.errors %}<strong class="help-inline help-block">{{ error|escape }}</strong>{% endfor %}{% endif %}</td>
+    </tr>
+    <tr>
+        <th>Request File:</th><td colspan='5' class="form-group{% if object.reqfile.errors %} has-error{% endif %}">{% if object.reqfile.field %}{{ object.reqfile }}{% else %}{{ plusfour.reqfile }}{% endif %} {% if object.reqfile.errors %}{% for error in object.reqfile.errors %}<strong class="help-inline help-block">{{ error|escape }}</strong>{% endfor %}{% endif %}</td>
+    </tr>
+    <tr>
+        <th>Objectives and Project Summary</th><td colspan='5' class='form-group{% if object.objective.errors %} has-error{% endif %}'>{% if object.objective.field %}{{ object.objective }}{% else %}{{ plusfour.objective }}{% endif %} {% if object.objective.errors %}{% for error in object.objective.errors %}<strong class="help-inline help-block">{{ error|escape }}</strong>{% endfor %}{% endif %}</td>
+    </tr>
+    <tr>
+        <th>Planned Ignition Start Date</th><td colspan='2' class='form-group{% if object.ignitionstart.errors %} has-error{% endif %} col-xs-3 col-sm-2 col-md-2 col-lg-2'>{% if object.ignitionstart.field %}{{ object.ignitionstart }}{% else %}{{ plusfour.ignitionstart }}{% endif %} {% if object.ignitionstart.errors %}{% for error in object.ignitionstart.errors %}<strong class="help-inline help-block">{{ error|escape }}</strong>{% endfor %}{% endif %}</td>
+        <th colspan='2'>Planned Ignition Completion Date</th><td colspan='2' class='form-group{% if object.ignitionend.errors %} has-error{% endif %} col-xs-3 col-sm-2 col-md-2 col-lg-2'>{% if object.ignitionend.field %}{{ object.ignitionend }}{% else %}{{ plusfour.ignitionend }}{% endif %} {% if object.ignitionend.errors %}{% for error in object.ignitionend.errors %}<strong class="help-inline help-block">{{ error|escape }}</strong>{% endfor %}{% endif %}</td>
+    </tr>
+    <tr>
+        <th colspan='2'>Days Expected for Mop-up and Patrol</th><td class='form-group{% if object.mopdays.errors %} has-error{% endif %} col-xs-3 col-sm-2 col-md-1 col-lg-1'>{% if object.mopdays.field %}{{ object.mopdays }}{% else %}{{ plusfour.mopdays }}{% endif %} {% if object.mopdays.errors %}{% for error in object.mopdays.errors %}<strong class="help-inline help-block">{{ error|escape }}</strong>{% endfor %}{% endif %}</td>
+        <th colspan='2'>Expected Mop-up Completion Date</th><td class='form-group{% if object.mopend.errors %} has-error{% endif %} col-xs-3 col-sm-2 col-md-2 col-lg-2'>{% if object.mopend.field %}{{ object.mopend }}{% else %}{{ plusfour.mopend }}{% endif %} {% if object.mopend.errors %}{% for error in object.mopend.errors %}<strong class="help-inline help-block">{{ error|escape }}</strong>{% endfor %}{% endif %}</td>
+    </tr>
+    </tbody>
+</table>
+</div>
+
+<div class='panel panel-{% if plusfour.finapp %}success{% elif plusfour.lo and plusfour.dfmo %}danger{% else %}{% ifequal plusfour.finapp False %}danger{% else %}warning{% endifequal %}{% endif %}'>
+<table class="table table-bordered table-condensed">
+    <tbody>
+    <tr class="{% if plusfour.finapp %}hdsuccess{% elif plusfour.lo and plusfour.dfmo %}hddanger{% else %}{% ifequal plusfour.finapp False %}hddanger{% else %}hdwarning{% endifequal %}{% endif %}">
+        <th colspan='4' class=''><span class='text-{% if plusfour.finapp %}success{% elif plusfour.lo and plusfour.dfmo %}danger{% else %}{% ifequal plusfour.finapp False %}danger{% else %}warning{% endifequal %}{% endif %}'>Complexity Analysis</span><span class='pull-right'>Rating:</span></th><td colspan='1' class='col-xs-2 col-sm-2 col-md-2 col-lg-1'>{% if object.complexity.field %}{{ object.complexity }}{% else %}{{ plusfour.complexity }}{% endif %}</td>
+    </tr>
+    <tr>
+        <th>Complexity Summary</th><td colspan='4'>{% if object.compsum.field %}{{ object.compsum }}{% else %}{{ plusfour.compsum }}{% endif %}</td>
+    </tr>
+    <tr>
+        <th colspan='4' class=''><span class='text-{% if plusfour.finapp %}success{% elif plusfour.lo and plusfour.dfmo %}danger{% else %}{% ifequal plusfour.finapp False %}danger{% else %}warning{% endifequal %}{% endif %}'>Risk</span><span class='pull-right'>Rating:</span></th><td colspan='1' class='col-xs-2 col-sm-2 col-md-2 col-lg-1'>{% if object.risk.field %}{{ object.risk }}{% else %}{{ plusfour.risk }}{% endif %}</td>
+    </tr>
+    <tr>
+        <th>Risk Summary</th><td colspan='4'>{% if object.risksum.field %}{{ object.risksum }}{% else %}{{ plusfour.risksum }}{% endif %}</td>
+    </tr>
+    <tr>
+        <th colspan='4' class=''><span class='text-{% if plusfour.finapp %}success{% elif plusfour.lo and plusfour.dfmo %}danger{% else %}{% ifequal plusfour.finapp False %}danger{% else %}warning{% endifequal %}{% endif %}'>Consequences</span><span class='pull-right'>Rating:</span></th><td colspan='1' class='col-xs-2 col-sm-2 col-md-2 col-lg-1'>{% if object.cons.field %}{{ object.cons }}{% else %}{{ plusfour.cons }}{% endif %}</td>
+    </tr>
+    <tr>
+        <th>Consequences Summary</th><td colspan='4'>{% if object.conssum.field %}{{ object.conssum }}{% else %}{{ plusfour.conssum }}{% endif %}</td>
+    </tr>
+    <tr>
+        <th colspan='4' class=''><span class='text-{% if plusfour.finapp %}success{% elif plusfour.lo and plusfour.dfmo %}danger{% else %}{% ifequal plusfour.finapp False %}danger{% else %}warning{% endifequal %}{% endif %}'>Technical Difficulty</span><span class='pull-right'>Rating:</span></th><td colspan='1' class='col-xs-2 col-sm-2 col-md-2 col-lg-1'>{% if object.technical.field %}{{ object.technical }}{% else %}{{ plusfour.technical }}{% endif %}</td>
+    </tr>
+    <tr>
+        <th colspan='1'>Technical Difficulties Summary</th><td colspan='4'>{% if object.technicalsum.field %}{{ object.technicalsum }}{% else %}{{ plusfour.technicalsum }}{% endif %}</td>
+    </tr>
+    </tbody>
+</table>
+</div>
+
+<div class='panel panel-{% if plusfour.finapp %}success{% elif plusfour.lo and plusfour.dfmo %}danger{% else %}{% ifequal plusfour.finapp False %}danger{% else %}warning{% endifequal %}{% endif %}'>
+<table class="table table-bordered table-condensed">
+    <tbody>
+    <tr class="{% if plusfour.finapp %}hdsuccess{% elif plusfour.lo and plusfour.dfmo %}hddanger{% else %}{% ifequal plusfour.finapp False %}hddanger{% else %}hdwarning{% endifequal %}{% endif %}">
+        <td colspan='5'><span class='text-{% if plusfour.finapp %}success{% elif plusfour.lo and plusfour.dfmo %}danger{% else %}{% ifequal plusfour.finapp False %}danger{% else %}warning{% endifequal %}{% endif %}'><strong>Resource Needs</strong></span></td>
+    </tr>
+    <tr>
+        <th colspan='4'>Will local fire resources be sufficient for the duration of the project?</th><td class='col-xs-2 col-sm-2 col-md-2 col-lg-1'>{% if object.rn1.field %}{{ object.rn1 }}{% else %}{{ plusfour.rn1 }}{% endif %}</td>
+    </tr>
+    <tr>
+        <th colspan='4'>Will the use of local resources affect IA response on the forest or districts?</th><td class='col-xs-2 col-sm-2 col-md-2 col-lg-1'>{% if object.rn2.field %}{{ object.rn2 }}{% else %}{{ plusfour.rn2 }}{% endif %}</td>
+    </tr>
+    <tr>
+        <th colspan='4'>Will the local unit need support from outside fire resources for ignition?</th><td class='col-xs-2 col-sm-2 col-md-2 col-lg-1'>{% if object.rn3.field %}{{ object.rn3 }}{% else %}{{ plusfour.rn3 }}{% endif %}</td>
+    </tr>
+    <tr>
+        <th colspan='4'>Will the local unit need support from outside fire resources for mop-up?</th><td class='col-xs-2 col-sm-2 col-md-2 col-lg-1'>{% if object.rn4.field %}{{ object.rn4 }}{% else %}{{ plusfour.rn4 }}{% endif %}</td>
+    </tr>
+    <tr>
+        <th colspan='4'>Will the local unit need support from outside fire resources for patrol?</th><td class='col-xs-2 col-sm-2 col-md-2 col-lg-1'>{% if object.rn5.field %}{{ object.rn5 }}{% else %}{{ plusfour.rn5 }}{% endif %}</td>
+    </tr>
+    <tr>
+        <th colspan='1' class='col-xs-2 col-sm-2 col-md-2 col-lg-2'>Resource Details</th><td colspan='4'>{% if object.rdetail.field %}{{ object.rdetail }}{% else %}{{ plusfour.rdetail }}{% endif %}</td>
+    </tr>
+
+    <tr>
+        <th colspan='4'>Will local fire resources be sufficient for the duration of the project?</th><td class='col-xs-2 col-sm-2 col-md-2 col-lg-1'>{% if object.cn1.field %}{{ object.cn1 }}{% else %}{{ plusfour.cn1 }}{% endif %}</td>
+    </tr>
+    <tr>
+        <th colspan='4'>Are contingency resources available from your local unit or area?</th><td  class='col-xs-2 col-sm-2 col-md-2 col-lg-1'>{% if object.cn2.field %}{{ object.cn2 }}{% else %}{{ plusfour.cn2 }}{% endif %}</td>
+    </tr>
+    <tr>
+        <th colspan='4'>If contingency resources are from another geographic area have they been notified and are they available to respond if needed?</th><td class='col-xs-2 col-sm-2 col-md-2 col-lg-1'>{% if object.cn3.field %}{{ object.cn3 }}{% else %}{{ plusfour.cn3 }}{% endif %}</td>
+    </tr>
+    <tr>
+        <th colspan='1' class='col-xs-2 col-sm-2 col-md-2 col-lg-2'>Contingency Details</th><td colspan='4'>{% if object.cdetail.field %}{{ object.cdetail }}{% else %}{{ plusfour.cdetail }}{% endif %}</td>
+    </tr>
+    </tbody>
+</table>
+</div>
+
+<div class='panel panel-{% if plusfour.finapp %}success{% elif plusfour.lo and plusfour.dfmo %}danger{% else %}{% ifequal plusfour.finapp False %}danger{% else %}warning{% endifequal %}{% endif %}'>
+<table class="table table-bordered table-condensed">
+    <tbody>
+    <tr class="{% if plusfour.finapp %}hdsuccess{% elif plusfour.lo and plusfour.dfmo %}hddanger{% else %}{% ifequal plusfour.finapp False %}hddanger{% else %}hdwarning{% endifequal %}{% endif %}">
+        <td colspan='5'><span class='text-{% if plusfour.finapp %}success{% elif plusfour.lo and plusfour.dfmo %}danger{% else %}{% ifequal plusfour.finapp False %}danger{% else %}warning{% endifequal %}{% endif %}'><strong>Weather</strong></span></td>
+    </tr>
+    <tr>
+        <th colspan='4'>PNW Predictive Service Area Identifier</th><td class='col-xs-2 col-sm-2 col-md-2 col-lg-2'>{% if object.psa.field %}{{ object.psa }}{% else %}{{ plusfour.psa }}{% endif %}</td>
+    </tr>
+    <tr>
+        <th colspan='1' class='col-xs-2 col-sm-2 col-md-2 col-lg-2'>Weather Forecast Summary for Ignition Period</th><td colspan='4'>{% if object.forecast.field %}{{ object.forecast }}{% else %}{{ plusfour.forecast }}{% endif %}</td>
+    </tr>
+    <tr>
+        <th colspan='4'>Are the burn plan environmental parameters within prescription?</th><td class='col-xs-2 col-sm-2 col-md-2 col-lg-2'>{% if object.plan.field %}{{ object.plan }}{% else %}{{ plusfour.plan }}{% endif %}</td>
+    </tr>
+
+    <tr>
+        <th colspan='1' class='col-xs-2 col-sm-2 col-md-2 col-lg-2'>Long Range Forecast</th><td colspan='4'>{% if object.longrange.field %}{{ object.longrange }}{% else %}{{ plusfour.longrange }}{% endif %}</td>
+    </tr>
+
+    <tr>
+        <th colspan='4'>Are there any indicators in the forecast that could affect the ability to mop-up and control prescribed fire within the timeframes identified above?</th><td class='col-xs-2 col-sm-2 col-md-2 col-lg-2'>{% if object.are.field %}{{ object.are }}{% else %}{{ plusfour.are }}{% endif %}</td>
+    </tr>
+    <tr>
+        <th colspan='1' class='col-xs-2 col-sm-2 col-md-2 col-lg-2'>If yes, please describe any mitigation measures that would be put into place</th><td colspan='4'>{% if object.measures.field %}{{ object.measures }}{% else %}{{ plusfour.measures }}{% endif %}</td>
+    </tr>
+    </tbody>
+</table>
+</div>
+
+<div class='panel panel-{% if plusfour.finapp %}success{% elif plusfour.lo and plusfour.dfmo %}danger{% else %}{% ifequal plusfour.finapp False %}danger{% else %}warning{% endifequal %}{% endif %}'>
+<table class="table table-bordered table-condensed">
+    <tbody>
+    <tr class="{% if plusfour.finapp %}hdsuccess{% elif plusfour.lo and plusfour.dfmo %}hddanger{% else %}{% ifequal plusfour.finapp False %}hddanger{% else %}hdwarning{% endifequal %}{% endif %}">
+        <td colspan='4'><span class='text-{% if plusfour.finapp %}success{% elif plusfour.lo and plusfour.dfmo %}danger{% else %}{% ifequal plusfour.finapp False %}danger{% else %}warning{% endifequal %}{% endif %}'><strong>Review</strong></span></td>
+    </tr>
+    <tr>
+        <th>Line Officer</th><td class="form-group{% if object.lo.errors %} has-error{% endif %}">{% if object.lo.field %}{{ object.lo }}{% else %}{{ plusfour.lo }}{% endif %} {% if object.lo.errors %}{% for error in object.lo.errors %}<strong class="help-inline help-block">{{ error|escape }}</strong>{% endfor %}{% endif %}</td>
+        <th>Date:</th><td class="form-group{% if object.lodate.errors %} has-error{% endif %}">{% if object.lodate.field %}{{ object.lodate }}{% else %}{{ plusfour.lodate }}{% endif %} {% if object.lodate.errors %}{% for error in object.lodate.errors %}<strong class="help-inline help-block">{{ error|escape }}</strong>{% endfor %}{% endif %}</td>
+    </tr>
+    <tr>
+        <th>District Fire Management Officer</th><td class="form-group{% if object.dfmo.errors %} has-error{% endif %}">{% if object.dfmo.field %}{{ object.dfmo }}{% else %}{{ plusfour.dfmo }}{% endif %} {% if object.dfmo.errors %}{% for error in object.dfmo.errors %}<strong class="help-inline help-block">{{ error|escape }}</strong>{% endfor %}{% endif %}</td>
+        <th>Date:</th><td class="form-group{% if object.dfmodate.errors %} has-error{% endif %}">{% if object.dfmodate.field %}{{ object.dfmodate }}{% else %}{{ plusfour.dfmodate }}{% endif %} {% if object.dfmodate.errors %}{% for error in object.dfmodate.errors %}<strong class="help-inline help-block">{{ error|escape }}</strong>{% endfor %}{% endif %}</td>
+    </tr>
+    </tbody>
+</table>
+</div>
+
+<div class='panel panel-{% if plusfour.finapp %}success{% elif plusfour.lo and plusfour.dfmo %}danger{% else %}{% ifequal plusfour.finapp False %}danger{% else %}warning{% endifequal %}{% endif %}'>
+<table class="table table-bordered table-condensed">
+    <tbody>
+    <tr class="{% if plusfour.finapp %}hdsuccess{% elif plusfour.lo and plusfour.dfmo %}hddanger{% else %}{% ifequal plusfour.finapp False %}hddanger{% else %}hdwarning{% endifequal %}{% endif %}">
+        <th colspan='3' class=''><span class='text-{% if plusfour.finapp %}success{% elif plusfour.lo and plusfour.dfmo %}danger{% else %}{% ifequal plusfour.finapp False %}danger{% else %}warning{% endifequal %}{% endif %}'>Approvals</span><span class='pull-right'>Approved?:</span></th><td colspan='1' class=''>{{ object.finapp }}</td>
+    </tr>
+    <tr>
+        <th colspan='3'>GMAC Review Date:</th><td class="form-group{% if object.gmacdate.errors %} has-error{% endif %}">{{ object.gmacdate }} {% if object.gmacdate.errors %}{% for error in object.gmacdate.errors %}<strong class="help-inline help-block">{{ error|escape }}</strong>{% endfor %}{% endif %}</td>
+    </tr>
+    <tr>
+        <th>GMAC Comments</th><td colspan='3' class="form-group{% if object.gmaccom.errors %} has-error{% endif %}">{{ object.gmaccom }} {% if object.gmaccom.errors %}{% for error in object.gmaccom.errors %}<strong class="help-inline help-block">{{ error|escape }}</strong>{% endfor %}{% endif %}</td>
+    </tr>
+    <tr>
+        <th colspan='3'>NMAC Review Date:</th><td class="form-group{% if object.nmacdate.errors %} has-error{% endif %}">{{ object.nmacdate }} {% if object.nmacdate.errors %}{% for error in object.nmacdate.errors %}<strong class="help-inline help-block">{{ error|escape }}</strong>{% endfor %}{% endif %}</td>
+    </tr>
+    <tr>
+        <th>NMAC Comments</th><td colspan='3' class="form-group{% if object.nmaccom.errors %} has-error{% endif %}">{{ object.nmaccom }} {% if object.nmaccom.errors %}{% for error in object.nmaccom.errors %}<strong class="help-inline help-block">{{ error|escape }}</strong>{% endfor %}{% endif %}</td>
+    </tr>
+    <tr>
+        <th>{% if object.preoff %}{{ object.preoff }}{% elif plusfour.preoff and plusfour.predate %}{{ plusfour.get_preoff_display }}{% else %}Preapproval{% endif %}</th><td {% if object.pre %}class="form-group{% if object.pre.errors %} has-error{% endif %}">{{ object.pre }} {% if object.pre.errors %}{% for error in object.pre.errors %}<strong class="help-inline help-block">{{ error|escape }}</strong>{% endfor %}{% endif %}{% elif plusfour.pre %}class="form-group{% if plusfour.pre.errors %} has-error{% endif %}">{{ plusfour.pre }} {% if plusfour.pre.errors %}{% for error in plusfour.pre.errors %}<strong class="help-inline help-block">{{ error|escape }}</strong>{% endfor %}{% endif %}{% else %}{% endif %}</td>
+        <th>Date:</th><td {% if object.predate %}class="form-group{% if object.predate.errors %} has-error{% endif %}">{{ object.predate }} {% if object.predate.errors %}{% for error in object.predate.errors %}<strong class="help-inline help-block">{{ error|escape }}</strong>{% endfor %}{% endif %}{% else %}class="form-group{% if plusfour.predate.errors %} has-error{% endif %}">{{ plusfour.predate }} {% if plusfour.predate.errors %}{% for error in plusfour.predate.errors %}<strong class="help-inline help-block">{{ error|escape }}</strong>{% endfor %}{% endif %}{% endif %}</td>
+    </tr>
+    <tr>
+        <th>{% if object.finoff %}{{ object.finoff }}{% elif plusfour.finoff and plusfour.findate %}{{ plusfour.get_finoff_display }}{% else %}Final Approval{% endif %}</th><td>{% if object.fin %}{{ object.fin }}{% elif plusfour.fin %}{{ plusfour.fin }}{% else %}{% endif %}</td>
+        <th>Date:</th><td {% if object.findate %}class="form-group{% if object.findate.errors %} has-error{% endif %}">{{ object.findate }} {% if object.findate.errors %}{% for error in object.findate.errors %}<strong class="help-inline help-block">{{ error|escape }}</strong>{% endfor %}{% endif %}{% else %}class="form-group{% if plusfour.findate.errors %} has-error{% endif %}">{{ plusfour.findate }} {% if plusfour.findate.errors %}{% for error in plusfour.findate.errors %}<strong class="help-inline help-block">{{ error|escape }}</strong>{% endfor %}{% endif %}{% endif %}</td>
+    </tr>
+    <tr>
+        <th>Approval File:</th><td colspan='3'>{% if object.appfile %}{{ object.appfile }}{% else %}{{ plusfour.appfile }}{% endif %}</td>
+    </tr>
+    </tbody>
+</table>
+</div>
+{% endwith %}
+</div>
+</div>
+
+<div class='row'>
+<div class='col-md-12'>                
+        <span class='pull-right'>
+        {% csrf_token %}
+        <button type="submit" class="btn btn-sm btn-primary"><i class="glyphicon glyphicon-ok glyphicon-white"></i> {% if permform %}Get permission{% elif plusfour %}Save{% else %}Create{% endif %}</button>
+        <a class="btn btn-sm btn-default" href="{% if plusfour %}{% url 'print_plusfour' plusfour.id %}{% else %}{% url 'list_plusfour' %}{% endif %}">Cancel</a>
+        {% if userform or permform %}{% elif plusfour %}<a class="btn btn-sm btn-danger" href="{% url 'delete_plusfour' plusfour.pk %}"><i class="glyphicon glyphicon-remove glyphicon-white"></i> Delete</a>{% endif %}
+        </span>
+        </form>
+<br />
+<br />
+</div>
+</div>
+        </div>
+{% endif %}
+{% endblock %}
+
+{% block endscripts %}
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+<script src="/static/b-3.0.3/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="https://login.persona.org/include.js"></script>
+<script type="text/javascript" src="/static/browserid/browserid.js"></script>
+<script type="text/javascript" src="/static/tablesorter/jquery.tablesorter.js"></script>
+<script type="text/javascript">
+$(function() {
+    $("#s1").tablesorter({
+      headers: {
+        3: { sorter: "uslongDate" }
+      }
+  });
+});
+</script>
+<link href='/static/datepicker/datepicker.css' rel='stylesheet' type='text/css'>
+<script src="/static/bootstrap3-typeahead.js"></script>
+<script src="/static/datepicker/bootstrap-datepicker.js"></script>
+<script>
+$(function(){
+        $('#id_ignitionstart').datepicker({
+                format: 'yyyy-mm-dd',
+                orientation: 'left',
+                autoclose: 'True'
+        });
+        $('#id_ignitionend').datepicker({
+                format: 'yyyy-mm-dd',
+                orientation: 'left',
+                autoclose: 'True'
+        });
+        $('#id_mopend').datepicker({
+                format: 'yyyy-mm-dd',
+                orientation: 'left',
+                autoclose: 'True'
+        });
+        $('#id_lodate').datepicker({
+                format: 'yyyy-mm-dd',
+                orientation: 'left',
+                autoclose: 'True'
+        });
+        $('#id_dfmodate').datepicker({
+                format: 'yyyy-mm-dd',
+                orientation: 'left',
+                autoclose: 'True'
+        });
+        $('#id_gmacdate').datepicker({
+                format: 'yyyy-mm-dd',
+                orientation: 'left',
+                autoclose: 'True'
+        });
+        $('#id_nmacdate').datepicker({
+                format: 'yyyy-mm-dd',
+                orientation: 'left',
+                autoclose: 'True'
+        });
+        $('#id_predate').datepicker({
+                format: 'yyyy-mm-dd',
+                orientation: 'left',
+                autoclose: 'True'
+        });
+        $('#id_findate').datepicker({
+                format: 'yyyy-mm-dd',
+                orientation: 'left',
+                autoclose: 'True'
+        });
+});
+</script>
+{% endblock %}

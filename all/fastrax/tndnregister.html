@@ -1,0 +1,58 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>fastrax</title>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+
+	<link rel="stylesheet" href="/static/blueprint/screen.css" type="text/css" media="screen, projection">
+	<link rel="stylesheet" href="/static/blueprint/print.css" type="text/css" media="print">
+  <!--[if IE]><link rel="stylesheet" href="/static/blueprint/ie.css" type="text/css" media="screen, projection"><![endif]-->
+	<link rel="stylesheet" href="/static/blueprint/plugins/fancy-type/screen.css" type="text/css" media="screen, projection">
+<style type="text/css">
+.notice a:focus {color:#000;}
+.notice a:hover {color:#000;}
+.notice a {color:#2D7BB2;text-decoration:none;}
+code .uh {margin:1.5em 0;white-space:normal;}
+</style>
+</head>
+<body>
+	<div class="container" style="margin-left:0">
+		<div class="prepend-1">  
+			<h3></h3>
+			<h2 class="altb"></h2>
+			<h3><a href="/">FASTRAX</a></h3>
+			<div class="altb">
+				<div>
+
+				{% for district in ddistrict %}
+				<div class="span-16">
+					<h3><a href="/district/{{ district.tla|lower }}/">{{ district.tla }}</a> <a href="/district/{{ district.tla|lower }}/{{ district.slug }}/">{{ district.name }}</a></h3>
+				</div>
+				<div class="span-24">
+				<form method="POST" action="/district/{{ district.tla|lower }}/{{ district.slug|lower }}/register/">
+					<fieldset>
+						<legend>Register</legend>
+						{% for field in form %}
+						<div>
+						{{ field.errors }}<span>{{ field.label_tag }} {{ field }}</span> <span class="small quiet last">{{ field.help_text }}</span>
+						</div>
+						{% endfor %}
+					<div class="span-15">
+					<input type="submit" value="Register" name="save"/>
+					</div>
+					</fieldset>
+					{% csrf_token %}
+					</form>
+				</div>
+			{% endfor %}
+			</div>
+	</div>
+	</div>
+	    <div class="prepend-1 small altb quiet">
+			<br />
+			<hr>
+			 &copy 1981-{% now "Y" %}   &para   Feared by some.  &para  Adored by billions.   &para   Served by <a href="//{{ request.site.domain }}/">{{ request.site.name }}</a>.   &para   Weaponized text.
+        </div>
+	</div>
+</body>
+</html>

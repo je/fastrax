@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block login %}
+<button href="#" type="button" class="btn btn-xs dropdown-toggle disabled" data-toggle="dropdown">{% if user.is_authenticated %}{{ user }}{% else %}Log In{% endif %}</button>
+{% endblock %}
+
+{% block pagetitle %}
+<div class="page-header">
+</div>
+{% endblock %}
+
+{% block content %}
+<div>
+{{ flatpage.content }}
+</div>
+{% endblock %}
+
+{% block js %}
+<script type="text/javascript" >
+$(function(){
+	 $('.dropdown-menu').show();
+	});
+</script>
+{% endblock %}

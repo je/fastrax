@@ -1,0 +1,230 @@
+{% extends "fastrax/plusfour.html" %}
+
+{% block title %}
+<title>PL4+ Burn Request {{ object.name }}</title>
+{% endblock %}
+
+{% block content %}
+
+{% block mtitle %}
+{% endblock %}
+
+{% block mhead %}
+{% load humanize %}
+{% load guardian_tags %}
+{% get_obj_perms request.user for object as "p_perms" %}
+
+<div class='row'>
+<div class='col-md-12'>
+<h3><span class="text-{% if object.finapp %}success{% elif object.lo and object.dfmo %}danger{% else %}{% ifequal object.finapp False %}danger{% else %}warning{% endifequal %}{% endif %}">{% if object.finapp %}{{ object.finapp|yesno:"Approved,Denied,Pending" }}{% elif object.lo and object.dfmo %}{{ object.finapp|yesno:"Approved,Denied,Pending" }}{% else %}{% ifequal object.finapp False %}{{ object.finapp|yesno:"Approved,Denied,Pending" }}{% else %}Unfiled{% endifequal %}{% endif %} <a style='text-decoration:none' href="{% url 'list_plusfour' %}"><span class='quiet'>PL4+ Burn Request</span></a></span><span class= 'pull-right'>{% if "change_plusfour" in p_perms %}<a class='btn btn-sm btn-default {% if object.lo and object.dfmo %}disabled{% endif %}' href="{% url 'update_plusfour' object.pk %}">{% if object.lo and object.dfmo %}<i class="fa fa fa-lock"></i>{% else %}<i class="fa fa fa-unlock-alt"></i>{% endif %} edit</a> {% endif %}{% if perms.fastrax.delete_plusfour %}<a class='btn btn-sm btn-default' href="{% url 'status_plusfour' object.pk %}"><span class='text-success'>approve</span>/<span class='text-danger'>deny</span></a> {% endif %}{% if object.finapp %}<a class="text-success" href="{% url 'print_plusfour' object.pk %}"><i class="fa fa fa-file-text"></i></a>{% else %}<a class="text-{% if object.lo and object.dfmo %}danger{% else %}{% ifequal object.finapp False %}danger{% else %}warning{% endifequal %}{% endif %}" href="{% url 'print_plusfour' object.pk %}"><i class="fa fa fa-file{% if object.lo and object.dfmo %}-text{% else %}{% ifequal object.finapp False %}{% else %}-o{% endifequal %}{% endif %}"></i></a>{% endif %}</span></h3>
+</div>
+</div>
+{% endblock %}
+
+{% block thead %}
+<div class='row'>
+<div class="col-md-6">
+</div>
+<div class="col-md-6">
+</div>
+</div>
+
+<div class='row'>
+<div class='col-md-12'>
+<div class='panel panel-{% if object.finapp %}success{% elif object.lo and object.dfmo %}danger{% else %}{% ifequal object.finapp False %}danger{% else %}warning{% endifequal %}{% endif %}'>
+ <table class="table table-bordered table-condensed">
+    <tbody class="">
+    <tr class="{% if object.finapp %}hdsuccess{% elif object.lo and object.dfmo %}hddanger{% else %}{% ifequal object.finapp False %}hddanger{% else %}hdwarning{% endifequal %}{% endif %}">
+        <th class='col-xs-3 col-sm-3 col-md-2 col-lg-2'><span class='text-{% if object.finapp %}success{% elif object.lo and object.dfmo %}danger{% else %}{% ifequal object.finapp False %}danger{% else %}warning{% endifequal %}{% endif %}'>Project</span></th><td colspan='4'><strong>{{ object.name }}</strong></td>
+    </tr>
+    <tr>
+        <th class='col-xs-3 col-sm-3 col-md-2 col-lg-2'>Distirct or Forest</th><td colspan='4'>{{ object.district.name }}</td>
+    </tr>
+    <tr>
+        <th>Location</th><td colspan='2'>{{ object.township }} {{ object.range }} {{ object.section }}</td>
+        <th>Acres</th><td colspan='1' class='col-xs-3 col-sm-3 col-md-1 col-lg-1'>{{ object.acres }}</td>
+    </tr>
+    <tr>
+        <th colspan='1' class='col-xs-2 col-sm-2 col-md-2 col-lg-2'>Request File</th><td colspan='4'>{% if object.reqfile %}<a class="" href="/ufs/{{ object.reqfile }}">{{ object.reqfile }}</a> {% else %}{% endif %}</td>
+    </tr>
+    <tr>
+        <th>Objectives and Project Summary</th><td colspan='4'>{{ object.objective }}</td>
+    </tr>
+    <tr>
+        <th>Planned Ignition Start Date:</th><td class='col-xs-3 col-sm-2 col-md-2 col-lg-2'>{{ object.ignitionstart|date:"Y M d" }}</td>
+        <th colspan='2'>Planned Ignition Completion Date:</th><td class='col-xs-3 col-sm-2 col-md-2 col-lg-2'>{{ object.ignitionend|date:"Y M d" }}</td>
+    </tr>
+    <tr>
+        <th>Days Expected for Mop-up and Patrol</th><td class='col-xs-3 col-sm-2 col-md-1 col-lg-1'>{{ object.mopdays }}</td>
+        <th colspan='2'>Expected Mop-up Completion Date:</th><td class='col-xs-3 col-sm-2 col-md-2 col-lg-2'>{{ object.mopend|date:"Y M d" }}</td>
+    </tr>
+    </tbody>
+</table>
+</div>
+
+<div class='panel panel-{% if object.finapp %}success{% elif object.lo and object.dfmo %}danger{% else %}{% ifequal object.finapp False %}danger{% else %}warning{% endifequal %}{% endif %}'>
+ <table class="table table-bordered table-condensed">
+    <tbody>
+    <tr class="{% if object.finapp %}hdsuccess{% elif object.lo and object.dfmo %}hddanger{% else %}{% ifequal object.finapp False %}hddanger{% else %}hdwarning{% endifequal %}{% endif %}">
+        <th colspan='4' class=''><span class='text-{% if object.finapp %}success{% elif object.lo and object.dfmo %}danger{% else %}{% ifequal object.finapp False %}danger{% else %}warning{% endifequal %}{% endif %}'>Complexity Analysis</span><span class='pull-right'>Rating:</span></th><td colspan='1' class='col-xs-2 col-sm-2 col-md-1 col-lg-1'>{{ object.get_complexity_display }}</td>
+    </tr>
+    <tr>
+        <th>Complexity Summary</th><td colspan='4'>{{ object.compsum }}</td>
+    </tr>
+    <tr>
+        <th colspan='4' class=''><span class='text-{% if object.finapp %}success{% elif object.lo and object.dfmo %}danger{% else %}{% ifequal object.finapp False %}danger{% else %}warning{% endifequal %}{% endif %}'>Risk</span><span class='pull-right'>Rating:</span></th><td colspan='1' class='col-xs-2 col-sm-2 col-md-1 col-lg-1'>{{ object.get_risk_display }}</td>
+    </tr>
+    <tr>
+        <th>Risk Summary</th><td colspan='4'>{{ object.risksum }}</td>
+    </tr>
+    <tr>
+        <th colspan='4' class=''><span class='text-{% if object.finapp %}success{% elif object.lo and object.dfmo %}danger{% else %}{% ifequal object.finapp False %}danger{% else %}warning{% endifequal %}{% endif %}'>Consequences</span><span class='pull-right'>Rating:</span></th><td colspan='1' class='col-xs-2 col-sm-2 col-md-1 col-lg-1'>{{ object.get_cons_display }}</td>
+    </tr>
+    <tr>
+        <th>Consequences Summary</th><td colspan='4'>{{ object.conssum }}</td>
+    </tr>
+    <tr>
+        <th colspan='4' class=''><span class='text-{% if object.finapp %}success{% elif object.lo and object.dfmo %}danger{% else %}{% ifequal object.finapp False %}danger{% else %}warning{% endifequal %}{% endif %}'>Technical Difficulty</span><span class='pull-right'>Rating:</span></th><td colspan='1' class='col-xs-2 col-sm-2 col-md-1 col-lg-1'>{{ object.get_technical_display }}</td>
+    </tr>
+    <tr>
+        <th colspan='1'>Technical Difficulties Summary</th><td colspan='4'>{{ object.technicalsum }}</td>
+    </tr>
+    </tbody>
+</table>
+</div>
+
+<div class='panel panel-{% if object.finapp %}success{% elif object.lo and object.dfmo %}danger{% else %}{% ifequal object.finapp False %}danger{% else %}warning{% endifequal %}{% endif %}'>
+<table class="table table-bordered table-condensed">
+    <tbody>
+    <tr class="{% if object.finapp %}hdsuccess{% elif object.lo and object.dfmo %}hddanger{% else %}{% ifequal object.finapp False %}hddanger{% else %}hdwarning{% endifequal %}{% endif %}">
+        <td colspan='5'><span class='text-{% if object.finapp %}success{% elif object.lo and object.dfmo %}danger{% else %}{% ifequal object.finapp False %}danger{% else %}warning{% endifequal %}{% endif %}'><strong>Resource Needs</strong></span></td>
+    </tr>
+    <tr>
+        <th colspan='4'>Will local fire resources be sufficient for the duration of the project?</th><td class='col-xs-2 col-sm-2 col-md-1 col-lg-1'>{{ object.rn1|yesno:'Yes,No,Maybe' }}</td>
+    </tr>
+    <tr>
+        <th colspan='4'>Will the use of local resources affect IA response on the forest or districts?</th><td class='col-xs-2 col-sm-2 col-md-1 col-lg-1'>{{ object.rn2|yesno:'Yes,No,Maybe' }}</td>
+    </tr>
+    <tr>
+        <th colspan='4'>Will the local unit need support from outside fire resources for ignition?</th><td class='col-xs-2 col-sm-2 col-md-1 col-lg-1'>{{ object.rn3|yesno:'Yes,No,Maybe' }}</td>
+    </tr>
+    <tr>
+        <th colspan='4'>Will the local unit need support from outside fire resources for mop-up?</th><td class='col-xs-2 col-sm-2 col-md-1 col-lg-1'>{{ object.rn4|yesno:'Yes,No,Maybe' }}</td>
+    </tr>
+    <tr>
+        <th colspan='4'>Will the local unit need support from outside fire resources for patrol?</th><td class='col-xs-2 col-sm-2 col-md-1 col-lg-1'>{{ object.rn5|yesno:'Yes,No,Maybe' }}</td>
+    </tr>
+    <tr>
+        <th colspan='1' class='col-xs-2 col-sm-2 col-md-2 col-lg-2'>Resource Details</th><td colspan='4'>{{ object.rdetail }}</td>
+    </tr>
+
+    <tr>
+        <th colspan='4'>Will local fire resources be sufficient for the duration of the project?</th><td class='col-xs-2 col-sm-2 col-md-1 col-lg-1'>{{ object.cn1|yesno:'Yes,No,Maybe' }}</td>
+    </tr>
+    <tr>
+        <th colspan='4'>Are contingency resources available from your local unit or area?</th><td  class='col-xs-2 col-sm-2 col-md-1 col-lg-1'>{{ object.cn2|yesno:'Yes,No,Maybe' }}</td>
+    </tr>
+    <tr>
+        <th colspan='4'>If contingency resources are from another geographic area have they been notified and are they available to respond if needed?</th><td class='col-xs-2 col-sm-2 col-md-1 col-lg-1'>{{ object.cn3|yesno:'Yes,No,Maybe' }}</td>
+    </tr>
+    <tr>
+        <th colspan='1' class='col-xs-2 col-sm-2 col-md-2 col-lg-2'>Contingency Details</th><td colspan='4'>{{ object.cdetail }}</td>
+    </tr>
+    </tbody>
+</table>
+</div>
+
+<div class='panel panel-{% if object.finapp %}success{% elif object.lo and object.dfmo %}danger{% else %}{% ifequal object.finapp False %}danger{% else %}warning{% endifequal %}{% endif %}'>
+<table class="table table-bordered table-condensed">
+    <tbody>
+    <tr class="{% if object.finapp %}hdsuccess{% elif object.lo and object.dfmo %}hddanger{% else %}{% ifequal object.finapp False %}hddanger{% else %}hdwarning{% endifequal %}{% endif %}">
+        <td colspan='5'><span class='text-{% if object.finapp %}success{% elif object.lo and object.dfmo %}danger{% else %}{% ifequal object.finapp False %}danger{% else %}warning{% endifequal %}{% endif %}'><strong>Weather</strong></span></td>
+    </tr>
+    <tr>
+        <th colspan='4'>PNW Predictive Service Area Identifier</th><td class='col-xs-2 col-sm-2 col-md-2 col-lg-2'>{{ object.get_psa_display }}</td>
+    </tr>
+    <tr>
+        <th colspan='1' class='col-xs-2 col-sm-2 col-md-2 col-lg-2'>Weather Forecast Summary for Ignition Period</th><td colspan='4'>{{ object.forecast }}</td>
+    </tr>
+    <tr>
+        <th colspan='4'>Are the burn plan environmental parameters within prescription?</th><td class='col-xs-2 col-sm-2 col-md-2 col-lg-2'>{{ object.plan|yesno:'Yes,No,Maybe' }}</td>
+    </tr>
+
+    <tr>
+        <th colspan='1' class='col-xs-2 col-sm-2 col-md-2 col-lg-2'>Long Range Forecast</th><td colspan='4'>{{ object.longrange }}</td>
+    </tr>
+
+    <tr>
+        <th colspan='4'>Are there any indicators in the forecast that could affect the ability to mop-up and control prescribed fire within the timeframes identified above?</th><td class='col-xs-2 col-sm-2 col-md-2 col-lg-2'>{{ object.are|yesno:'Yes,No,Maybe' }}</td>
+    </tr>
+    <tr>
+        <th colspan='1' class='col-xs-2 col-sm-2 col-md-2 col-lg-2'>If yes, please describe any mitigation measures that would be put into place</th><td colspan='4'>{{ object.measures }}</td>
+    </tr>
+     </tbody>
+</table>
+</div>
+
+<div class='panel panel-{% if object.finapp %}success{% elif object.lo and object.dfmo %}danger{% else %}{% ifequal object.finapp False %}danger{% else %}warning{% endifequal %}{% endif %}'>
+<table class="table table-bordered table-condensed">
+    <tbody>
+    <tr class="{% if object.finapp %}hdsuccess{% elif object.lo and object.dfmo %}hddanger{% else %}{% ifequal object.finapp False %}hddanger{% else %}hdwarning{% endifequal %}{% endif %}">
+        <td colspan='4'><span class='text-{% if object.finapp %}success{% elif object.lo and object.dfmo %}danger{% else %}{% ifequal object.finapp False %}danger{% else %}warning{% endifequal %}{% endif %}'><strong>Review</strong></span></td>
+    </tr>
+    <tr>
+        <th>Added by</th><td><a href="/user/{{ object.author }}/">{% if object.author.last_name and object.author.first_name %}{{ object.author.first_name }} {{ object.author.last_name }}{% else %}{{ object.author }}{% endif %}</a></td>
+        <th>Date:</th><td>{{ object.created|date:"Y M d" }}</td>
+    </tr>
+    <tr>
+        <th>Line Officer</th><td>{{ object.lo }}</td>
+        <th>Date:</th><td>{{ object.lodate|date:"Y M d" }}</td>
+    </tr>
+    <tr>
+        <th>District Fire Management Officer</th><td>{{ object.dfmo }}</td>
+        <th>Date:</th><td>{{ object.dfmodate|date:"Y M d" }}</td>
+    </tr>
+     </tbody>
+</table>
+</div>
+
+<div class='panel panel-{% if object.finapp %}success{% elif object.lo and object.dfmo %}danger{% else %}{% ifequal object.finapp False %}danger{% else %}warning{% endifequal %}{% endif %}'>
+<table class="table table-bordered table-condensed">
+    <tbody>
+    <tr class="{% if object.finapp %}hdsuccess{% elif object.lo and object.dfmo %}hddanger{% else %}{% ifequal object.finapp False %}hddanger{% else %}hdwarning{% endifequal %}{% endif %}">
+        <th colspan='3' class=''><span class='text-{% if object.finapp %}success{% elif object.lo and object.dfmo %}danger{% else %}{% ifequal object.finapp False %}danger{% else %}warning{% endifequal %}{% endif %}'>Approvals</span><span class='pull-right'>Status:</span></th><td colspan='1' class='col-xs-2 col-sm-2 col-md-2 col-lg-1 text-{% if object.finapp %}success{% elif object.lo and object.dfmo %}danger{% else %}{% ifequal object.finapp False %}danger{% else %}warning{% endifequal %}{% endif %}'><strong>{% if object.finapp %}{{ object.finapp|yesno:"Approved,Denied,Pending" }}{% elif object.lo and object.dfmo %}{{ object.finapp|yesno:"Approved,Denied,Pending" }}{% else %}{% ifequal object.finapp False %}{{ object.finapp|yesno:"Approved,Denied,Pending" }}{% else %}Unfiled{% endifequal %}{% endif %}</strong></td>
+    </tr>
+    <tr>
+        <th colspan='3'>GMAC Review Date:</th><td>{{ object.gmacdate|date:"Y M d" }}</td>
+    </tr>
+    <tr>
+        <th>GMAC Comments</th><td colspan='3'>{{ object.gmaccom }}</td>
+    </tr>
+    <tr>
+        <th colspan='3'>NMAC Review Date:</th><td>{{ object.nmacdate|date:"Y M d" }}</td>
+    </tr>
+    <tr>
+        <th>NMAC Comments</th><td colspan='3'>{{ object.nmaccom }}</td>
+    </tr>
+    <tr>
+        <th>{% if object.preoff %}{{ object.get_preoff_display }}{% elif object.preoff and object.predate %}{{ object.get_preoff_display }}{% else %}Preapproval{% endif %}</th><td>{{ object.pre }}</td>
+        <th>Date:</th><td>{{ object.predate|date:"Y M d" }}</td>
+    </tr>
+    <tr>
+        <th>{% if object.finoff %}{{ object.get_finoff_display }}{% elif object.finoff and object.findate %}{{ object.get_finoff_display }}{% else %}Final Approval{% endif %}</th><td>{{ object.fin }}</td>
+        <th>Date:</th><td>{{ object.findate|date:"Y M d" }}</td>
+    </tr>
+    <tr>
+        <th colspan='1' class='col-xs-2 col-sm-2 col-md-2 col-lg-2'>Approval File</th><td colspan='3'>{% if object.appfile %}<a class="" href="/ufs/{{ object.appfile }}">{{ object.appfile }}</a> {% else %}{% endif %}</td>
+    </tr>
+    </tbody>
+</table>
+</div>
+
+</div>
+</div>
+
+
+{% endblock %}
+
+{% block missionhelp %}
+{% endblock %}
+{% endblock %}

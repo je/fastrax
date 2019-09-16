@@ -1,0 +1,105 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>{{ dateyear }} Overages</title>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+
+	<link rel="stylesheet" href="/static/blueprint/screen.css" type="text/css" media="screen, projection">
+	<link rel="stylesheet" href="/static/blueprint/print.css" type="text/css" media="print">
+  <!--[if IE]><link rel="stylesheet" href="/static/blueprint/ie.css" type="text/css" media="screen, projection"><![endif]-->
+	<link rel="stylesheet" href="/static/blueprint/plugins/fancy-type/screen.css" type="text/css" media="screen, projection">
+	<script src="/static/sorttable/sorttable.js"></script>
+</head>
+<body>
+	<div class="container" style="margin-left:0">
+		<div class="prepend-1">  
+			<h3></h3>
+			<h2 class="altb"></h2>
+			<h3><a href="/">FASTRAX</a></h3>
+			
+			<div class="altb">
+				<div class="span-17">
+					<h3>{% if dateda %}
+						<a href="/{{ dateyear }}/{{ datemo }}/{{ dateda }}/map/">Overage</a> for <a href="/{{ dateyear }}/">{{ dateyear }}</a>-<a href="/{{ dateyear }}/{{ datemo }}/">{{ datemo }}</a>-{{ dateda }}.
+						{% else %}
+						{% if datemo %}
+						<a href="/{{ dateyear }}/{{ datemo }}/map/">Overage</a> for <a href="/{{ dateyear }}/">{{ dateyear }}</a>-{{ datemo }}.
+						{% else %}
+						Overage for {{ dateyear }}.
+						{% endif %}
+						{% endif %}</h3>
+				</div>
+				<div class="span-24">
+					{% if dates_reg_list %}
+
+					<h3>{% if dates_reg_list %}<span class="quiet">{{ noplans }}</span> Without Plans, <span class="quiet">{{ noig }}</span> Without Ignitions, & <span class="quiet">{{ under }}</span> Underaccomplished in <span class="quiet">{{ dates_reg_list|length }}</span> {% endif %}Smoke Registration{{ dates_reg_list|length|pluralize }}</h3>
+
+					<table class="sortable">
+					<thead>
+						<th><code><a href="JavaScript:void(0);" style="text-decoration:none;color:black">SN</a></code></th>
+						<th><code> <a href="JavaScript:void(0);" style="text-decoration:none;color:black">Name</a></code></th>
+						<th><code> <a href="JavaScript:void(0);" style="text-decoration:none;color:black">District</a></code></th>
+						<th><code> <a href="JavaScript:void(0);" style="text-decoration:none;color:black">RC Type</a></code></th>
+						<th><code> <a href="JavaScript:void(0);" style="text-decoration:none;color:black">Acres</a></code></th>
+						<th><code> <a href="JavaScript:void(0);" style="text-decoration:none;color:black">Burned</a></code></th>
+						<th><code> <a href="JavaScript:void(0);" style="text-decoration:none;color:black">Species</a></code></th>
+						<th><code> <a href="JavaScript:void(0);" style="text-decoration:none;color:black">ERROR</a></code></th>
+						<th style="text-align:right"><code><a href="JavaScript:void(0);" style="text-decoration:none;color:black">REG$</a></code></th>
+						<th style="text-align:right"><code><a href="JavaScript:void(0);" style="text-decoration:none;color:black">PLAN$</a></code></th>
+						<th style="text-align:right"><code><a href="JavaScript:void(0);" style="text-decoration:none;color:black">TOTAL$</a></code></th>
+						<th style="text-align:right"><code><a href="JavaScript:void(0);" style="text-decoration:none;color:black">OVER$</a></code></th>
+						<th><code> <a href="JavaScript:void(0);" style="text-decoration:none;color:black">User</a></code></th>
+					</thead>
+					<tbodY>
+						{% for smokeregister in dates_reg_list %}
+						{% if smokeregister.error != '' and smokeregister.error != 'BAD SN' %}
+						<tr class="{% if smokeregister.error == 'OFF PD' %} notice{% else %}{% cycle '' 'even' %}{% endif %}">
+						<td><code><a href="/{{ smokeregister.sn }}/">{{ smokeregister.sn }}</a></code></td>
+						<td><code> {% if smokeregister.regname|length > 20 %}{{ smokeregister.regname|upper|slice:"20"|ljust:"20" }}{% else %}{{ smokeregister.regname|upper|ljust:"20" }}{% endif %}</code></td>
+						<td><code> {{ smokeregister.district }}</code></td>
+						<td><code> {{ smokeregister.reason }}  {{ smokeregister.typeburn }}</code></td>
+						<td><code> <span style="color:{{ smokeregister.color }}">{{ smokeregister.regacres|stringformat:"04d" }}ac</span></code></td>
+						<td><code> {% if smokeregister.black %}<span style="color:{{ smokeregister.color }}">{{ smokeregister.black|stringformat:"04d" }}ac</span>{% else %}{% endif %}</code></td>
+						<td><code> {{ smokeregister.get_fuelspecies_display }}</code></td>
+						<td><code> {{ smokeregister.error }}</code></td>
+						<td style="text-align:right"><code> ${{ smokeregister.regcost|floatformat:"-2" }}</code></td>
+						<td style="text-align:right"><code> ${{ smokeregister.plancost|floatformat:"-2" }}</code></td>
+						<td style="text-align:right"><code> ${{ smokeregister.totalcost|floatformat:"2" }}</code></td>
+						<td style="text-align:right"><code> ${{ smokeregister.over|floatformat:"2" }}</code></td>
+						<td style="text-align:right"><code>{{ smokeregister.author }}</code></td>
+						</tr>
+						{% endif %}
+						{% endfor %}
+					</tbodY>
+					<tfoot>
+						<tr>
+						<td colspan=4></td>
+						<td style="text-align:right;border-top:1px solid green;"><code> {{ trac }}ac</code></td>
+						<td style="text-align:right;border-top:1px solid green;"><code> {{ tblack }}ac</code></td>
+						<td colspan=2></td>
+						<td style="text-align:right;border-top:1px solid green;"><code> ${{ tregcost|floatformat:"2" }}</code></td>
+						<td style="text-align:right;border-top:1px solid green;"><code> ${{ tplancost|floatformat:"2" }}</code></td>
+						<td style="text-align:right;border-top:1px solid green;"><code> ${{ ttotalcost|floatformat:"2" }}</code></td>
+						<td style="text-align:right;border-top:1px solid green;"><code> ${{ tover|floatformat:"2" }}</code></td>
+						<td colspan=1></td>
+						</tr>
+					</tfoot>
+					</table>
+						{% else %}
+						<ul>
+						<li>No smoke registrations.</li>
+						</ul>
+					{% endif %}
+				</div>		
+			</div>
+		</div>
+	</div>
+		<div class="prepend-1 span-23">
+			<br />
+			<hr>
+			<span class=" small altb quiet">
+			 &copy 1981-{% now "Y" %}   &para   Feared by some.  &para  Adored by billions.   &para   Served by <a href="//{{ request.site.domain }}/">{{ request.site.name }}</a>.   &para   Weaponized text.
+			 </span>
+    	</div>
+</body>
+</html>

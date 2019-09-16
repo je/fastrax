@@ -1,0 +1,112 @@
+{% extends "base2.html" %}
+ 
+{% block title %}
+<title>fastrax</title>
+{% endblock %} 
+
+  {% block maincss %}
+    <![if !IE]>
+    <link href="/static/b-3.0.3/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/fa-4.0.0/css/font-awesome.min.css">
+    <![endif]>
+    <!--[if gte IE 9 ]>
+    <link href="/static/b-3.0.3/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/fa-4.0.0/css/font-awesome.min.css">
+    <![endif]-->
+    <!--[if lt IE 9 ]>
+    <link href="/static/b-3.0.3/css/bootstrap.ie.css" rel="stylesheet">
+    <link href="/static/b-3.0.3/glyphicon.css" rel="stylesheet">
+    <![endif]-->
+
+    <link href="/static/b-3.0.3/sticky-footer-navbar.css" rel="stylesheet">
+
+    <!--[if lt IE 9]>
+      <script src="/static/b-3.0.3/html5shiv.js"></script>
+      <script src="/static/b-3.0.3/respond.min.js"></script>
+    <![endif]-->
+  {% endblock %}
+
+{% block favico %} 
+{% endblock %}
+
+{% block brand %}
+<a class="navbar-brand" style="height:30px;padding:5px 5px 5px 15px;" href="{% url 'index' %}"><strong>FASTRAX</strong></a>
+{% endblock %}
+
+{% block nav %} 
+  <li class="dropdown hidden-print"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Smoke Registrations<b class="caret"></b></a>
+    <ul class="dropdown-menu nav-stacked">
+    <li><a href="{% url 'list_smokeregister' %}">All smoke registrations</a></li>
+    <li><a href="{% url 'create_smokeregister' %}">New smoke registration</a></li>
+    </ul>
+  </li>
+{% endblock %}
+
+{% block navuser %}
+<span class="navbar-text pull-right hidden-print">
+{% if user.is_authenticated %}
+<div>
+  <a href="/user/" style="text-decoration:none;color:rgb(102, 102, 102);">User</a> <a href="/user/{{ user.username }}/">{% if user.last_name %}{{ user.first_name }} {{ user.last_name }}{% else %}{{ user.username }}{% endif %}</a> is logged in. <a href="/logout/?next={% firstof request.path '/' %}">Logout</a>.
+</div>
+{% else %}
+<div>
+  You are not logged in. <a href="/login/?next={% firstof request.path '/' %}">Login</a> or <a href="/signup/">Register</a>.
+</div>
+{% endif %}
+</span>
+{% endblock %}
+
+{% block pagetitle %}
+{% endblock %}
+
+{% block content %}
+{% load humanize %}
+{% if not u %}
+
+<style>
+body {
+  background:url('') no-repeat;
+  background-attachment: fixed;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  background-size: cover;
+}
+</style>
+<br />
+
+<!-- START THE FEATURETTES -->
+<div class="">
+
+<div class="featurette well" id="one" style="max-width:600px;">
+<h3 class="featurette-heading"></h3>
+<h3 class=""><quiet><styled></styled></quiet></h3>
+<p class="lead"></p>
+</div>
+
+</div>
+<!-- /END THE FEATURETTES -->
+
+</div>
+
+</div>
+{% else%}
+
+{% endif %}
+{% endblock %}
+
+{% block endscripts %}
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+<script src="/static/b-3.0.3/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="https://login.persona.org/include.js"></script>
+<script type="text/javascript" src="/static/browserid/browserid.js"></script>
+<script type="text/javascript" src="/static/tablesorter/jquery.tablesorter.js"></script>
+<script type="text/javascript">
+$(function() {
+    $("#s1").tablesorter({
+      headers: {
+        2: { sorter: "uslongDate" }
+      }
+  });
+});
+</script>
+{% endblock %}

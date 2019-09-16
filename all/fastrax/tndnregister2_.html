@@ -1,0 +1,150 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>fastrax</title>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+
+	<link rel="stylesheet" href="/static/blueprint/screen.css" type="text/css" media="screen, projection">
+	<link rel="stylesheet" href="/static/blueprint/print.css" type="text/css" media="print">
+	<script type="text/javascript" src="/admin/jsi18n/"></script>
+	<script type="text/javascript" src="/static/admin/js/core.js"></script>
+{{ form.media }}
+  <!--[if IE]><link rel="stylesheet" href="/static/blueprint/ie.css" type="text/css" media="screen, projection"><![endif]-->
+	<link rel="stylesheet" href="/static/blueprint/plugins/fancy-type/screen.css" type="text/css" media="screen, projection">
+</head>
+<body>
+	<div class="container" style="margin-left:0">
+		<div class="prepend-1">  
+			<h3></h3>
+			<h2 class="altb"></h2>
+			<h3><a href="/">FASTRAX</a></h3>
+			<div class="altb">
+				<div>
+
+				{% for district in ddistrict %}
+				<div class="span-16">
+					<h3><a href="/district/{{ district.tla|lower }}/">{{ district.tla }}</a> <a href="/district/{{ district.tla|lower }}/{{ district.slug }}/">{{ district.name }}</a></h3>
+				</div>
+				<div class="last">
+					<form method="get" action="/search/">
+					<p><label for="id_q"></label>
+					<input type="text" name="q" id="id_q" />
+					<input type="submit" value="Search" /></p>
+				{% csrf_token %}
+				</form>
+			</div>
+				<div>
+					{% if dreg_list %}
+						{% else %}
+						<ul>
+						<li class="span-14 prepend-1 box">No smoke registrations. The initial registration for this district can be made<br />
+						through the <a href="/register/">generic registration form</a>.<br />
+						<br />
+						{{ district.name }}'s ODF code (for revenue smoke) is <strong>{{ district.nnn }}</strong>. If this ends in 'XX', {{ district.name }} spans multiple ODF protection districts -- be sure to use the correct 3-digit PDNo for the <a href="/odf/district/">ODF protection district</a> where you are burning.</li>
+						</ul>
+					{% endif %}
+					{% if reg_list %}
+						<div class="span-20 prepend-1 box">
+						{{ district.name }}'s ODF code (for revenue smoke) is <strong>{{ district.nnn }}</strong>. If this ends in 'XX', {{ district.name }} spans multiple ODF protection districts -- be sure to use the correct 3-digit PDNo for the <a href="/odf/district/">ODF protection district</a> where you are burning.
+ 						</div>
+						<div class="span-24">
+						{% for smokeregister in reg_list %}{% if forloop.first %}<form method="POST" action="/district/{{ district.tla|lower }}/{{ district.slug|lower }}/register2/">{% endif %}{% endfor %}
+							<fieldset>
+								<legend>Register</legend>
+								{% for field in form %}
+								{% ifequal field.name "sn" %}
+									<code>{{ field.errors }}<span class="span-2">{{ field.label_tag }}: {{ field }}</span> <span class="span-2 small quiet last">Smoke number. Natural fuels is YY+406+ODFID+NN, where ODFID is the district's 5-digit ODF id, and NN is<br> a sequence. Revenue (timber sale) is YY+ODF+REVNO+NN, where ODF is the district's 3-digit ODF id, and REVNO is the revenue<br> number. YY is always the current calendar year, and NN is a number from 01 to 99.</span></code>
+								{% else %}
+								{% ifequal field.name "regname" %}
+									{{ field.errors }}<span><code>{{ field.label_tag }}: {{ field }}</code></span> <span class="small quiet last"><code>{{ field.help_text }}</code></span><br>
+								{% else %}
+								{% ifequal field.name "township" %}
+									{{ field.errors }}<span><code>{{ field.label_tag }}: {{ field }}</code></span> <span class="small quiet last"><code>{{ field.help_text }}</code></span><br>
+								{% else %}
+								{% ifequal field.name "range" %}
+									{{ field.errors }}<span><code>{{ field.label_tag }}: {{ field }}</code></span> <span class="small quiet last"><code>{{ field.help_text }}</code></span><br>
+								{% else %}
+								{% ifequal field.name "section" %}
+									{{ field.errors }}<span><code>{{ field.label_tag }}: {{ field }}</code></span> <span class="small quiet last"><code>If your weird township isn't in our data layer, you'll have to use the <a href="../register/">old form</a> until we add it.</code></span><br>
+								{% else %}
+								{% ifequal field.name "slope" %}
+									{{ field.errors }}<span><code>{{ field.label_tag }}: {{ field }}</code></span> <span class="small quiet last"><code>{{ field.help_text }}</code></span><br>
+								{% else %}
+								{% ifequal field.name "fpf" %}
+									{{ field.errors }}<span><code>{{ field.label_tag }}: {{ field }}</code></span> <span class="small quiet last"><code><a href="/odf/district/">ODF protection district</a> number. Required.</code></span><br>
+								{% else %}
+								{% ifequal field.name "reason" %}
+									{{ field.errors }}<span><code>{{ field.label_tag }}: {{ field }}</code></span> <span class="small quiet last"><code>{{ field.help_text }}</code></span><br>
+								{% else %}
+								{% ifequal field.name "regacres" %}
+									{{ field.errors }}<span><code>{{ field.label_tag }}: {{ field }}</code></span> <span class="small quiet last"><code>{{ field.help_text }}</code></span><br>
+								{% else %}
+								{% ifequal field.name "landingtons" %}
+									{{ field.errors }}<span><code>{{ field.label_tag }}: {{ field }}</code></span> <span class="small quiet last"><code>{{ field.help_text }}</code></span><br>
+								{% else %}
+								{% ifequal field.name "fuelspecies" %}
+									{{ field.errors }}<span><code>{{ field.label_tag }}: {{ field }}</code></span> <span class="small quiet last"><code>{{ field.help_text }}</code></span><br>
+								{% else %}
+								{% ifequal field.name "fuelclass1" %}
+									{{ field.errors }}<span><code>{{ field.label_tag }}: {{ field }}</code></span> <span class="small quiet last"><code>{{ field.help_text }}</code></span><br>
+								{% else %}
+								{% ifequal field.name "fuelclass2" %}
+									{{ field.errors }}<span><code>{{ field.label_tag }}: {{ field }}</code></span> <span class="small quiet last"><code>{{ field.help_text }}</code></span><br>
+								{% else %}
+								{% ifequal field.name "fuelclass3" %}
+									{{ field.errors }}<span><code>{{ field.label_tag }}: {{ field }}</code></span> <span class="small quiet last"><code>{{ field.help_text }}</code></span><br>
+								{% else %}
+								{% ifequal field.name "fuelclass4" %}
+									{{ field.errors }}<span><code>{{ field.label_tag }}: {{ field }}</code></span> <span class="small quiet last"><code>{{ field.help_text }}</code></span><br>
+								{% else %}
+								{% ifequal field.name "fuelclass5" %}
+									{{ field.errors }}<span><code>{{ field.label_tag }}: {{ field }}</code></span> <span class="small quiet last"><code>{{ field.help_text }}</code></span><br>
+								{% else %}
+								{% ifequal field.name "fuelclass6" %}
+									{{ field.errors }}<span><code>{{ field.label_tag }}: {{ field }}</code></span> <span class="small quiet last"><code>{{ field.help_text }}</code></span><br>
+								{% else %}
+								{% ifequal field.name "harvestd" %}
+									{{ field.errors }}<span><code>{{ field.label_tag }}: {{ field }}</code></span> <span class="small quiet last"><code>{{ field.help_text }}</code></span><br>
+								{% else %}
+								{{ field.errors }}<span><code>{{ field.label_tag }}: {{ field }}</code></span> <span class="small quiet last"><code>{{ field.help_text }}</code></span>
+								{% endifequal %}
+								{% endifequal %}
+								{% endifequal %}
+								{% endifequal %}
+								{% endifequal %}
+								{% endifequal %}
+								{% endifequal %}
+								{% endifequal %}
+								{% endifequal %}
+								{% endifequal %}
+								{% endifequal %}
+								{% endifequal %}
+								{% endifequal %}
+								{% endifequal %}
+								{% endifequal %}
+								{% endifequal %}
+								{% endifequal %}
+								{% endifequal %}
+								{% endfor %}
+							<div class="span-15">
+							<input type="submit" value="Register" name="save"/>
+							</div>
+							</fieldset>
+							{% csrf_token %}
+							</form>
+						</div>
+						{% else %}
+						{% endif %}
+				</div>		
+			{% endfor %}
+			</div>
+	</div>
+	</div>
+	    <div class="prepend-1 small altb quiet">
+			<br />
+			<hr>
+			 &copy 1981-{% now "Y" %}   &para   Feared by some.  &para  Adored by billions.   &para   Served by <a href="//{{ request.site.domain }}/">{{ request.site.name }}</a>.   &para   Weaponized text.
+        </div>
+	</div>
+</body>
+</html>

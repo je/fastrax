@@ -1,0 +1,10 @@
+﻿{% load humanize %}
+FASTRAX
+
+{% if dateda %}Accomplishment Summary for {{ dateyear }}-{{ datemo }}-{{ dateda }}.{% else %}{% if datemo %}Accomplishment Summary for {{ dateyear }}-{{ datemo }}.{% else %}Accomplishment Summary for FY{{ dateyear }}.{% endif %}{% endif %}
+
+{% if dates_result_list %}
+"TLA","District","Burn Type","Name","Acres","Pile Tons","Landing Tons","BU Tons/Ac","acres planned","acres accomplished","planned burn date","actual burn date","no?","why?"
+{% for result in dates_result_list %}"{{ result.snid.sn.district.tla }}","{{ result.snid.sn.district.name }}","{{ result.snid.sn.typeburn }}","{{ result.snid.sn.regname }}","{{ result.snid.sn.regacres }}","{{ result.snid.sn.piletons }}","{{ result.snid.sn.landingtons }}","{{ result.snid.sn.fuelclass1|add:result.snid.sn.fuelclass2|add:result.snid.sn.fuelclass3|add:result.snid.sn.fuelclass4|add:result.snid.sn.fuelclass5|add:result.snid.sn.fuelclass6 }}","{{ result.snid.acrestoburn }}","{{ result.acresburned }}","{{ result.snid.ignitiondate|date:"m-d" }}","{{ result.ignitiondated|date:"m-d" }}","{% if result.snid.acrestoburn > result.acresburned and result.no %}{{ result.no }}{% else %}{% endif %}","{% if result.snid.acrestoburn > result.acresburned and result.why %}{{ result.why|escape }}{% else %}{% endif %}"
+{% endfor %}
+{% endif %}

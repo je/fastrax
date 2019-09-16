@@ -1,0 +1,101 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>fastrax</title>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+
+	<link rel="stylesheet" href="/static/blueprint/screen.css" type="text/css" media="screen, projection">
+	<link rel="stylesheet" href="/static/blueprint/print.css" type="text/css" media="print">
+  <!--[if IE]><link rel="stylesheet" href="/static/blueprint/ie.css" type="text/css" media="screen, projection"><![endif]-->
+	<link rel="stylesheet" href="/static/blueprint/plugins/fancy-type/screen.css" type="text/css" media="screen, projection">
+</head>
+<body>
+{% load humanize %}
+	<div class="container" style="margin-left:0">
+	<div class="prepend-1">  
+		<h3></h3>
+		<h2 class="altb"></h2>
+		<h3>FASTRAX</h3>
+		
+		<div class="altb">
+			<div class="span-7 last">
+			<p>
+			The rules in brief:<br />
+			<br />
+			1. <strong>Register</strong> smoke at least a week ahead of ignition. Registered fuels can be burned for two years following the year of registration. 2016 registrations can be burned until the end of 2018.<br/>
+			<br />
+			2. <strong>Plan</strong> daily burning at least one day ahead of ignition. Each plan is good for one day.<br />
+			<br />
+			3. <strong>Result</strong> accomplishments the day after each planned ignition. Every plan needs a result.<br />
+			<br />
+			Find registrations and plans by <a href="/user/">username</a>, or grouped with the appropriate <a href="/district/">district</a>.<br />
+<br />
+			If you're in a hurry, use the search box below to find a smoke registration by name.
+			</p>
+				<div>
+				<form method="get" action="/search/">
+				<p><label for="id_q"></label>
+				<input type="text" name="q" id="id_q" />
+				<input type="submit" value="Search" /></p>
+				{% csrf_token %}
+				</form>
+				</div>
+			<p>
+			 Go to <a href="/{% now "Y/m/d" %}/">today's entries</a>, <a href="/{% now "Y/m/d" %}/ignition/">today's ignitions</a>, or all <a href="/upcoming/">upcoming ignitions</a>.<br />
+			<br />
+			{% if user.is_authenticated %}
+			User <a href="/user/{{ user.username }}/">{{ user.username }}</a> is logged in. <a href="/logout/?next=/">Log out</a>.
+			{% else %}
+			You are not logged in. <a href="/login/?next=/">Log in</a> or contact {{ settings.ADMIN_EMAIL }} for an account.
+			{% endif %}<br />
+			<br />
+			</p>
+			</div>
+			<div>
+				<div class="span-7 prepend-1">
+					<h4>Recent Smoke Registrations</h4>
+					{% if latest_reg_list %}
+						{% for smokeregister in latest_reg_list %}
+						<ul>
+							<li>
+								<a href="/{{ smokeregister.sn }}/">{{ smokeregister.regname }}</a> or #<a href="/{{ smokeregister.sn }}/">{{ smokeregister.sn }}</a><br />
+								for <a href="/district/{{ smokeregister.district.tla|lower }}/{{ smokeregister.district.slug }}/">{{ smokeregister.district.name }}</a><br />
+								<span class="quiet">Registered {{ smokeregister.regdate|naturalday }} by {{ smokeregister.author }}.</span>
+							</li>
+						</ul>
+						{% endfor %}
+					{% else %}
+						<li>No smoke registrations.</li>
+					{% endif %}
+					<div>
+					</div>
+				</div>
+				<div class="span-8 last">
+					<h4>Recent Burn Plans</h4>
+					{% if latest_plan_list %}
+						{% for smokeplan in latest_plan_list %}
+						<ul>
+							<li>
+								{{ smokeplan.sn.regname }} #<a href="/{{ smokeplan.sn }}/{{ smokeplan.suffix }}/">{{ smokeplan.sn }}-{{ smokeplan.suffix }}</a><br />
+								Ignition at {{ smokeplan.ignitiontime|time:"H:i" }} {{ smokeplan.ignitiondate|naturalday }}.<br />
+								<span class="quiet">Planned {{ smokeplan.entered|timesince }} ago by {{ smokeplan.author }}.</span>
+							</li>
+						</ul>
+						{% endfor %}
+					{% else %}
+						<li>No plans.</li>
+ 					{% endif %}
+					<div>
+					</div>
+				</div>
+		</div>
+	</div>
+	</div>
+	    <div class="prepend-1 small altb quiet">
+		<br />
+		<hr>
+		 &copy 1981-{% now "Y" %}   &para   Feared by some.  &para  Adored by billions.   &para   Served by <a href="//{{ request.site.domain }}/">{{ request.site.name }}</a>.   &para   Weaponized text.
+        </div>
+	</div>
+</body>
+</html>

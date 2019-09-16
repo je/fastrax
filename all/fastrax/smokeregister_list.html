@@ -1,0 +1,56 @@
+{% extends "fastrax/smokeregister.html" %}
+
+{% block content %}
+{% load humanize %}
+        <h3 style="margin: 30px">{% if district %}<a href=''>{{ district.tla }}</a> {{ district.name }}<br>{% endif %}
+        {{ smokeregister_list|length }} Smoke Registrations <span class= 'pull-right'><a class='btn btn-default' href="{% url 'create_smokeregister' %}"><i class="fa fa fa-hand-o-right"></i> new registration</a></span></h3>
+          {% if user.is_authenticated %}
+          {% else %}
+          <div class="alert alert-warning alert-dismissable" style='margin: 30px;margin-top:10px;padding-top:5px;padding-bottom:5px;'>
+          <button type="button" class="close" data-dismiss="alert">&times;</button>
+          <strong>Check it out:</strong> If you need to file a smoke registration, <a class='alert-link' href="/login/?next=/">log in</a> or contact {{ settings.ADMIN_EMAIL }} for an account.
+          </div>
+          {% endif %}
+        <div style="margin: 30px">
+            {% if smokeregister_list %}
+            <table class="table table-striped table-bordered table-condensed s" id="s1">
+                <thead>
+                <th>SN</th>
+                <th>Name</th>
+                {% if district %}{% else %}<th>District</th>{% endif %}
+                <th>Type</th>
+                <th>Acres</th>
+                <th>Burned</th>
+                <th>Registered</th>
+                <th>Author</th>
+                </thead>
+                {% for plusfour in smokeregister_list %}
+                    <tr>
+                        <td><span class='text-{% if plusfour.toedit %}warning{% elif plusfour.toplan %}success{% else %}danger{% endif %}'><strong><a class="text-{% if plusfour.toedit %}warning{% elif plusfour.toplan %}success{% else %}danger{% endif %}" href="{% url 'detail_smokeregister' plusfour.sn %}">{{ plusfour.sn }}</a></strong></span></td>
+                        <td><span class='text-{% if plusfour.toedit %}warning{% elif plusfour.toplan %}success{% else %}danger{% endif %}'><strong><a class="text-{% if plusfour.toedit %}warning{% elif plusfour.toplan %}success{% else %}danger{% endif %}" href="{% url 'detail_smokeregister' plusfour.sn %}">{{ plusfour.regname }}</a></strong></span></td>
+                        {% if district %}{% else %}<td><a href='/smokeregister/district/{{ plusfour.district.tla }}/{{ plusfour.district.slug }}/'>{{ plusfour.district.name }}</a></td>{% endif %}
+                        <td>{{ plusfour.get_typeburn_display }}</td>
+                        <td>{{ plusfour.regacres }}</td>
+                        <td>{{ plusfour.blackacres }}</td>
+                        <td><a href="/smokeregister/{{ plusfour.regdate|date:'Y-m-d' }}/">{{ plusfour.regdate|date:'Y-m-d' }}</a></td>
+                        <td><a href="/smokeregister/user/{{ plusfour.autho }}/">{{ plusfour.author }}</a></td>
+                    </tr>
+                {% endfor %}
+            </table>
+            {% endif %}
+            <p><a href="{% url 'create_smokeregister' %}">New registration</a></p>
+        </div>
+{% endblock %}
+
+entered = models.DateTimeField('Created', auto_now_add=True)
+modified = models.DateTimeField('Modified', auto_now=True)
+author = models.ForeignKey(User, to_field="id", related_name="reg_user")
+revenue = models.CharField('RevNo', max_length=5, blank=True, help_text="Revenue number. Optional. Last 5 digits of notification number, used in smoke numbers for revenue smoke.")
+
+township = models.CharField('Township', max_length=4, default='000N', help_text="Third digit is partial section: 1/4=2 1/2=5 3/4=7 Full=0.")
+range = models.CharField('Range', max_length=4, default='000E', help_text="Third digit is partial section: 1/4=2 1/2=5 3/4=7 Full=0.")
+section = models.CharField('Section', max_length=2, default='00')
+
+ownership = models.CharField('Ownership', max_length=1, choices=OWNERSHIP_CHOICES)
+
+fpf = models.CharField('PDNo', max_length=3, blank=True, default='   ', help_text="ODF Protection Disrict number. Optional.")

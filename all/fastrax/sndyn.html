@@ -1,0 +1,231 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml">
+<head>
+<title>fastrax</title>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+
+	<link rel="stylesheet" href="/static/blueprint/screen.css" type="text/css" media="screen, projection">
+	<link rel="stylesheet" href="/static/blueprint/print.css" type="text/css" media="print">
+	<link rel="stylesheet" href="/static/blueprint/charts.css" type="text/css" media="screen, projection">
+  <!--[if IE]><link rel="stylesheet" href="/static/blueprint/ie.css" type="text/css" media="screen, projection"><![endif]-->
+	<link rel="stylesheet" href="/static/blueprint/plugins/fancy-type/screen.css" type="text/css" media="screen, projection">
+   <link rel="stylesheet" href="/static/leaflet-0.6.4/leaflet.css" />
+       <link rel="stylesheet" href="/static/leaflet-0.6.4/leaflet.ie.css" />
+</head>
+
+<body onload="" onunload="">
+<script src="/static/leaflet-0.6.4/leaflet.js"></script>
+  <script src="/static/leaflet-0.6.4/leaflet-providers.js"></script>
+	<script type="text/javascript" src="//{{ request.site.domain }}/static/odf-protection-district.json"></script>
+  <div class="container" style="margin-left:0">
+	<div class="prepend-1">  
+		<h3></h3>
+		<h2 class="altb"></h2>
+		<h3><a href="/">FASTRAX</a></h3>
+		
+		<div class="altb">
+			<div>
+
+				{% if reg_list %}
+					{% for smokeregister in reg_list %}
+						<h3><a href="/district/{{ smokeregister.district.tla|lower }}/">{{ smokeregister.district.tla }}</a> <a href="/district/{{ smokeregister.district.tla|lower }}/{{ smokeregister.district.slug }}/">{{ smokeregister.district.name }}</a><br />
+						Smoke Registration #<a href="/{{ smokeregister.sn }}/">{{ smokeregister.sn }}</a> or <a href="/{{ smokeregister.sn }}/">{{ smokeregister.regname }}</a>{% if smokeregister.author = request.user and smokeregister.deadline > smokeregister.now %} <a href="/{{ smokeregister.sn }}/edit/"><i class="icon-pencil"></i></a>{% endif %}<br />
+						Registered <a href="/{{ smokeregister.regdate|date:"Y/m/d" }}/">{{ smokeregister.regdate|date:"d M Y" }}</a> by <a href="/user/{{ smokeregister.author }}/">{{ smokeregister.author }}</a></h3>
+
+						<div class="span-7 colborder">
+						<table>
+						<tr><td>County:</td> <td>{{ regco }}</td></tr>
+						<tr class="even"><td>PLSS:</td> <td>{{ smokeregister.township }} {{ smokeregister.range }} {{ smokeregister.section|ljust:"2" }}</td></tr>
+						<tr><td>Elevation:</td> <td>{{ smokeregister.elevation|stringformat:"05d" }} ft</td></tr>
+						<tr class="even"><td>% Slope:</td> <td>{{ smokeregister.slope|stringformat:"02d" }}</td></tr>
+						<tr><td>dSSRA:</td> <td>{{ smokeregister.ssradistance|rjust:"2" }} mi</td></tr>
+						<tr class="even"><td>SPZ:</td> <td>{{ regspz }}</td></tr>
+						<tr><td>Reason:</td> <td>{{ regreason }}</td></tr>
+						<tr class="even"><td>Burn Type:</td> <td>{{ regtype }}</td></tr>
+						<tr><td>Acres:</td> <td>{{ smokeregister.regacres|stringformat:"04d" }} ac</td></tr>
+						<tr class="even"><td>Load Method:</td> <td>{{ reglm }}</td></tr>
+						<tr><td>Landings:</td> <td>{{ smokeregister.landingtons|stringformat:"05d" }} tons</td></tr>
+						<tr class="even"><td>Piles:</td> <td>{{ smokeregister.piletons|stringformat:"05d" }} tons</td></tr>
+						<tr><td>Broadcast/Underburn:</td> </tr>
+						<tr><td>0-1/4":</td> <td>{{ smokeregister.fuelclass1|stringformat:"02d" }} tons/ac</td></tr>
+						<tr><td>1/4"-1":</td> <td>{{ smokeregister.fuelclass2|stringformat:"02d" }} tons/ac</td></tr>
+						<tr><td>1"-3":</td> <td>{{ smokeregister.fuelclass3|stringformat:"02d" }} tons/ac</td></tr>
+						<tr><td>3"-9":</td> <td>{{ smokeregister.fuelclass4|stringformat:"02d" }} tons/ac</td></tr>
+						<tr><td>9"-20":</td> <td>{{ smokeregister.fuelclass5|stringformat:"03d" }} tons/ac</td></tr>
+						<tr><td>20+":</td> <td>{{ smokeregister.fuelclass6|stringformat:"03d" }} tons/ac</td></tr>
+						<tr class="even"><td>Duff:</td> <td>{{ smokeregister.duffdepth|stringformat:"02d" }} tenths inch</td></tr>
+						<tr><td>Species:</td> <td>{{ regspecies }}</td></tr>
+						<tr class="even"><td>Harvest spec:</td> <td>{{ reghd }}</td></tr>
+						<tr><td>Cutdate:</td> <td>{{ smokeregister.cutdate|date:"M Y" }}</td></tr>
+						</table></div>
+{% if reg_list %}
+  {% if trsr %}
+   {% for plss in trsr %}
+	<div class="span-15 last">
+    <div id="map" style="width: 540px; height: 380px"></div>
+	</div>
+   {% endfor %}
+   {% else %}
+	<div class="span-13 box last">
+    Township, range, section combination ({{ smokeregister.township }} {{ smokeregister.range }} {{ smokeregister.section }}) not in PLSS layer. No map for you.
+	</div>
+  {% endif %}
+{% endif %}
+<hr>
+				<div class="span-20">
+					<h3>Burn Plans for {{ smokeregister.regname }}:</h3>
+					<ul>
+						<p>
+						{% if plan_list %}
+						<table>
+						<th><code>## Ignition    Acres  Ltons Ptons BUt/a  Ignition    Ac   Ltons Ptons BUt/a Dur M Dh Kh DSR TF RH WS</code></th>
+							{% for smokeplan in plan_list %}
+							<tr{% cycle '' ' class="even"' %}>
+							{% if smokeplan.result_snid.notaccomplished %}
+							<td><code><a href="/{{ smokeplan.sn }}/{{ smokeplan.suffix }}/">{{ smokeplan.suffix|stringformat:"02s" }}</a> <a href="/{{ smokeplan.ignitiondate|date:"Y/m/d" }}/ignition/">{{ smokeplan.ignitiondate|date:"mdy" }}</a> {{ smokeplan.ignitiontime|time:"Hi" }} {{ smokeplan.acrestoburn|stringformat:"04d" }}ac {{ smokeplan.landingtons|stringformat:"05d" }} {{ smokeplan.piletons|stringformat:"05d" }} {{ smokeplan.b_u_tonsperacre|stringformat:"05d" }}  NO IGNITION...........................PLAN NOT ACCOMPLISHED</code></td>
+							{% else %}
+							<td><code><a href="/{{ smokeplan.sn }}/{{ smokeplan.suffix }}/">{{ smokeplan.suffix|stringformat:"02s" }}</a> <a href="/{{ smokeplan.ignitiondate|date:"Y/m/d" }}/ignition/">{{ smokeplan.ignitiondate|date:"mdy" }}</a> {{ smokeplan.ignitiontime|time:"Hi" }} {{ smokeplan.acrestoburn|stringformat:"04d" }}ac {{ smokeplan.landingtons|stringformat:"05d" }} {{ smokeplan.piletons|stringformat:"05d" }} {{ smokeplan.b_u_tonsperacre|stringformat:"05d" }}  <a href="/{{ smokeplan.result_snid.ignitiondated|date:"Y/m/d" }}/ignition/">{{ smokeplan.result_snid.ignitiondated|date:"mdy" }}</a> {{ smokeplan.result_snid.ignitiontimed|time:"Hi" }} {{ smokeplan.result_snid.acresburned|stringformat:"04d" }} {{ smokeplan.result_snid.landingtonned|stringformat:"05d" }} {{ smokeplan.result_snid.piletonned|stringformat:"05d" }} {{ smokeplan.result_snid.b_u_tonsperacred|stringformat:"05d" }} {{ smokeplan.result_snid.ignitionduration|stringformat:"03d" }} {{ smokeplan.result_snid.ignitionmethod }} {{ smokeplan.result_snid.tenhour|stringformat:"02d" }} {{ smokeplan.result_snid.thousandhour|stringformat:"02d" }} {{ smokeplan.result_snid.dayssincerain|stringformat:"03d" }} {{ smokeplan.result_snid.airtemperature|stringformat:"02d" }} {{ smokeplan.result_snid.relativehumidity|stringformat:"02d" }} {{ smokeplan.result_snid.windspeed|stringformat:"02d" }}</code></td>
+							{% endif %}
+							</tr>
+							{% endfor %}
+						</table>
+						<br />
+							  <div class="last">
+								<ul class="timeline">
+							  {% for smokeplan in plan_list %}
+								  <li>
+									<a href="/{{ smokeplan.sn }}/{{ smokeplan.suffix }}/" title="{{ smokeplan.ignitiondate }}: {{ smokeplan.acrestoburn }}">
+									  <span class="label">{{ smokeplan.suffix }}</span>
+									  <span class="count" style="height: {% widthratio smokeplan.acrestoburn smokeplan.sn.regacres 100 %}%">({{ smokeplan.acrestoburn }})</span>
+									</a>
+								  </li>
+							{% endfor %}
+								</ul>
+							  </div>
+						{% else %}
+							No plans.
+						{% endif %}	
+						</p>
+					</ul>
+						<div>
+						{% if smokeregister.regdate|date:"Y"|add:'2' < 2017 %}
+						<p>This registration is closed. <a href="/{{ smokeregister.sn }}/registerlike/">Create similar</a> registration.</p>
+						{% else %}
+						<p><a href="/{{ smokeregister.sn }}/plan/">Add a plan</a> to this registration. {% if smokeregister.author = request.user and smokeregister.deadline > smokeregister.now %} <a href="/{{ smokeregister.sn }}/edit/">Edit</a> this registration. {% endif %}<a href="/{{ smokeregister.sn }}/registerlike/">Create similar</a> registration.</p>
+						{% endif %}
+					</div>
+
+					{% endfor %}				
+					{% else %}
+ 				{% endif %}
+				</div>
+				</div>
+		</div>
+	</div>
+	    <div class="prepend-1 small altb quiet">
+		<br />
+		<hr>
+		 &copy 1981-{% now "Y" %}   &para   Feared by some.  &para  Adored by billions.   &para   Served by <a href="//{{ request.site.domain }}/">{{ request.site.name }}</a>.   &para   Weaponized text.
+        </div>
+	</div>
+  <script>
+
+    var regs = new L.LayerGroup();
+
+    {% for plss in trsr %}
+      L.polygon([[{{ plss.miy|floatformat:3 }},{{ plss.mix|floatformat:3 }}],[{{ plss.miy|floatformat:3 }},{{ plss.max|floatformat:3 }}],[{{ plss.may|floatformat:3 }},{{ plss.max|floatformat:3 }}],[{{ plss.may|floatformat:3 }},{{ plss.mix|floatformat:3 }}]], {
+            color: 'red',
+            fillColor: 'red',
+            fillOpacity: 0.0
+          }
+      ).addTo(regs),
+    {% endfor %}
+      L.marker([44, -128]);
+
+    var map = L.map('map', {
+      zoom: 11,
+	  center: {% for plss in trsr %}[{{ plss.y|floatformat:3 }},{{ plss.x|floatformat:3 }}]{% endfor %},
+      layers: [regs]
+    });
+
+    function zoomToFeature(e) {
+        var layer = e.target;
+        //map.fitBounds(e.target.getBounds());
+        info.update(layer.feature.properties);
+        //map.setView(e.latlng, 8);
+        map.panTo(e.latlng);
+    }
+
+    function onEachFeature(feature, layer) {
+        layer.on({
+            //mouseover: highlightFeature,
+            //mouseout: resetHighlight,
+            click: zoomToFeature
+        });
+    }
+    function style(feature) {
+        return {
+            weight: 1,
+            //opacity: 1,
+            color: 'blue',
+            dashArray: '3',
+            fillOpacity: 0.2,
+            //fillColor: getColor(feature.properties.density)
+        };
+    }
+
+    ments = L.geoJson(ments, {
+        style: style,
+        pointToLayer: function(feature, latlng) {
+            return new L.marker(latlng, {icon: okIcon});
+        },
+        onEachFeature: onEachFeature
+            });
+    ments.addTo(map);
+
+	var defaultLayer = L.tileLayer.provider('Stamen.TonerLite').addTo(map);
+	var baseLayers = {
+		//'OpenStreetMap Default': L.tileLayer.provider('OpenStreetMap.Mapnik'),
+		'OpenStreetMap German Style': L.tileLayer.provider('OpenStreetMap.DE'),
+		'OpenStreetMap Black and White': L.tileLayer.provider('OpenStreetMap.BlackAndWhite'),
+		//'OpenStreetMap H.O.T.': L.tileLayer.provider('OpenStreetMap.HOT'),
+		'Thunderforest OpenCycleMap': L.tileLayer.provider('Thunderforest.OpenCycleMap'),
+		'Thunderforest Transport': L.tileLayer.provider('Thunderforest.Transport'),
+		'Thunderforest Landscape': L.tileLayer.provider('Thunderforest.Landscape'),
+		//'MapQuest OSM': L.tileLayer.provider('MapQuestOpen.OSM'),
+		//'MapQuest Aerial': L.tileLayer.provider('MapQuestOpen.Aerial'),
+		//'MapBox Example': L.tileLayer.provider('MapBox.examples.map-zr0njcqy'),
+		//'Stamen Toner': L.tileLayer.provider('Stamen.TonerLite'),
+		'Stamen Toner': defaultLayer,
+		'Stamen Terrain': L.tileLayer.provider('Stamen.Terrain'),
+		//'Stamen Watercolor': L.tileLayer.provider('Stamen.Watercolor'),
+		//'Esri WorldStreetMap': L.tileLayer.provider('Esri.WorldStreetMap'),
+		//'Esri DeLorme': L.tileLayer.provider('Esri.DeLorme'),
+		'Esri WorldTopoMap': L.tileLayer.provider('Esri.WorldTopoMap'),
+		//'Esri WorldImagery': L.tileLayer.provider('Esri.WorldImagery'),
+		//'Esri WorldTerrain': L.tileLayer.provider('Esri.WorldTerrain'),
+		//'Esri WorldShadedRelief': L.tileLayer.provider('Esri.WorldShadedRelief'),
+		//'Esri WorldPhysical': L.tileLayer.provider('Esri.WorldPhysical'),
+		//'Esri OceanBasemap': L.tileLayer.provider('Esri.OceanBasemap'),
+		//'Esri NatGeoWorldMap': L.tileLayer.provider('Esri.NatGeoWorldMap'),
+		//'Esri WorldGrayCanvas': L.tileLayer.provider('Esri.WorldGrayCanvas'),
+		//'Nokia Normal Day': L.tileLayer.provider('Nokia.normalDay'),
+		//'Nokia Normal Day Grey': L.tileLayer.provider('Nokia.normalGreyDay'),
+		//'Nokia Satellite': L.tileLayer.provider('Nokia.satelliteNoLabelsDay'),
+		//'Nokia Satellite (Labeled)': L.tileLayer.provider('Nokia.satelliteYesLabelsDay'),
+		//'Nokia Terrain': L.tileLayer.provider('Nokia.terrainDay'),
+		'Acetate': L.tileLayer.provider('Acetate')
+	};
+
+    var overlays = {
+      {% if plss3_list %}"Results": results,{% endif %}
+      {% if plss2_list %}"Plans": plans,{% endif %}
+      {% if plss_list %}"Registriations": regs,{% endif %}
+      "ODF Protection Districts": ments
+    };
+
+    L.control.layers(baseLayers, overlays).addTo(map);
+  </script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>fastrax</title>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+
+	<link rel="stylesheet" href="/static/blueprint/screen.css" type="text/css" media="screen, projection">
+	<link rel="stylesheet" href="/static/blueprint/print.css" type="text/css" media="print">
+  <!--[if IE]><link rel="stylesheet" href="/static/blueprint/ie.css" type="text/css" media="screen, projection"><![endif]-->
+	<link rel="stylesheet" href="/static/blueprint/plugins/fancy-type/screen.css" type="text/css" media="screen, projection">
+</head>
+<body>
+	<div class="container" style="margin-left:0">
+	<div>  
+		<div class="prepend-12">
+
+		</div>
+	</div>
+	<div class="prepend-1">  
+		<h3></h3>
+		<h2 class="altb"></h2>
+		<h3><a href="/">FASTRAX</a></h3>
+		
+		<div>
+			<div class="altb">
+			<div class="span-16">
+
+			<p>Registrations matching "{{ query }}" are listed below.</p>
+				<br />
+			</div>
+			<div class="last">
+				<form method="get" action="/search/">
+				<p><label for="id_q"></label>
+				<input type="text" name="q" id="id_q" />
+				<input type="submit" value="Search" /></p>
+				{% csrf_token %}
+				</form>
+			</div>
+			</div>
+			<div class="span-24">
+					{% if reg_list %}
+						<table>
+						<th><code>SN           Name                 Co TownRangeSec Elev  %S SSRA SPZ RC Type Acres  Burned LM Ltons Ptons BUt/ac by Size DD Sp Hs Cut</code></th>
+						
+						{% for smokeregister in reg_list %}
+						<tr{% cycle '' ' class="even"' %}><td><code><a href="/{{ smokeregister.sn }}/">{{ smokeregister.sn }}</a> {% if smokeregister.regname|length > 20 %}{{ smokeregister.regname|upper|slice:"20"|ljust:"20" }}{% else %}{{ smokeregister.regname|upper|ljust:"20" }}{% endif %} {{ smokeregister.county }} {{ smokeregister.township }} {{ smokeregister.range }} {{ smokeregister.section|ljust:"2" }} {{ smokeregister.elevation|stringformat:"05d" }} {{ smokeregister.slope|stringformat:"02d" }} {{ smokeregister.ssradistance|rjust:"2" }}mi {{ smokeregister.spz }}   {{ smokeregister.reason }}  {{ smokeregister.typeburn }}    <span style="color:{{ smokeregister.color }}">{{ smokeregister.regacres|stringformat:"04d" }}ac</span> {% if smokeregister.black %}<span style="color:{{ smokeregister.color }}">{{ smokeregister.black|stringformat:"04d" }}ac</span>{% else %}      {% endif %} {{ smokeregister.loadmethod|ljust:"2" }} {{ smokeregister.landingtons|stringformat:"05d" }} {{ smokeregister.piletons|stringformat:"05d" }} {{ smokeregister.fuelclass1|stringformat:"02d" }}{{ smokeregister.fuelclass2|stringformat:"02d" }}{{ smokeregister.fuelclass3|stringformat:"02d" }}{{ smokeregister.fuelclass4|stringformat:"02d" }}{{ smokeregister.fuelclass5|stringformat:"03d" }}{{ smokeregister.fuelclass6|stringformat:"03d" }} {{ smokeregister.duffdepth|stringformat:"02d" }} {{ smokeregister.fuelspecies }}  {{ smokeregister.harvestd }}  {{ smokeregister.cutdate|date:"m" }}{{ smokeregister.cutdate|date:"y" }}</code></td></tr>
+						{% endfor %}
+						</table>
+				{% else %}
+					<ul>
+						<li>No registrations.</li>
+					</ul>
+				{% endif %}
+<br />
+					<div>
+					</div>
+			</div>
+		</div>
+	</div>
+	    <div class="prepend-1 small altb quiet">
+		<br />
+		<hr>
+		 &copy 1981-{% now "Y" %}   &para   Feared by some.  &para  Adored by billions.   &para   Served by <a href="//{{ request.site.domain }}/">{{ request.site.name }}</a>.   &para   Weaponized text.
+        </div>
+	</div>
+    
+</body>
+</html>

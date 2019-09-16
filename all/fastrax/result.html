@@ -1,0 +1,53 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>fastrax</title>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <link rel="shortcut icon" href="/static/glyphicons/glyphicons_022_fire.png">
+	<link rel="stylesheet" href="/static/blueprint/screen.css" type="text/css" media="screen, projection">
+	<link rel="stylesheet" href="/static/blueprint/print.css" type="text/css" media="print">
+  <!--[if IE]><link rel="stylesheet" href="/static/blueprint/ie.css" type="text/css" media="screen, projection"><![endif]-->
+	<link rel="stylesheet" href="/static/blueprint/plugins/fancy-type/screen.css" type="text/css" media="screen, projection">
+</head>
+<body>
+	<div class="container" style="margin-left:0">
+		<div class="prepend-1">  
+			<h3></h3>
+			<h2 class="altb"></h2>
+			<h3><a href="/">FASTRAX</a></h3>
+			
+			<div class="altb">
+				<div>
+					<div class="span-14 box">
+					Note: This is a rather generic version of the result form. A better option is to find your plan's page and use the 'Add results for this plan' link from there. This generic form will work to add a result for any plan, but that first dropdown is murder.
+					</div>
+					<div class="span-14">
+						<div>
+							<form method="POST" action="/result/">
+							<fieldset>
+								<legend>Result</legend>
+								{% for field in form %}
+									<div class="fieldWrapper">
+										<span class="span-20 last">
+											{{ field.errors }}
+											<span class="span-3">{{ field.label_tag }}:</span> <span class="span-7">{{ field }}</span><span class="span-6 small quiet last">{{ field.help_text }}</span>
+										</span>
+									</div>
+								{% endfor %}
+							<div class="span-15">
+							<input type="submit" value="Result" name="save"/>
+							</div>
+							</fieldset>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	    <div class="prepend-1 small altb quiet">
+			<br />
+			<hr>
+			 &copy 1981-{% now "Y" %}   &para   Feared by some.  &para  Adored by billions.   &para   Served by <a href="//{{ request.site.domain }}/">{{ request.site.name }}</a>.   &para   Weaponized text.
+        </div>
+    </div>
+</body>
+</html>

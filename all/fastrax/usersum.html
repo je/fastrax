@@ -1,0 +1,264 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>fastrax</title>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+
+	<link rel="stylesheet" href="/static/blueprint/screen.css" type="text/css" media="screen, projection">
+	<link rel="stylesheet" href="/static/blueprint/print.css" type="text/css" media="print">
+	<!--[if IE]><link rel="stylesheet" href="/static/blueprint/ie.css" type="text/css" media="screen, projection"><![endif]-->
+	<link rel="stylesheet" href="/static/blueprint/plugins/fancy-type/screen.css" type="text/css" media="screen, projection">
+</head>
+<body>
+{% load humanize %}
+	<div class="container" style="margin-left:0">
+		<div class="prepend-1">  
+			<h3></h3>
+			<h2 class="altb"></h2>
+			<h3><a href="/">FASTRAX</a></h3>
+			
+			<div class="altb">
+				<div>
+					<div>
+						<div class="span-22">
+						<h3>
+				{% for author in uuser %}
+						Statistics for '{{ author.username }}'. 
+				{% endfor %}
+
+						</h3>
+							<fieldset>
+
+
+{% if district_list %}
+  <div class="span-21">
+				{% for author in uuser %}
+    <h3>{{ regcount }} Registrations by '{{ author.username }}' in {{ distcount }} Districts</h3>
+				{% endfor %}
+		  <div class="span-7">
+	<h4>Total Registrations: {{ regcount }} </h4>
+		  <ul class="chartlist">
+{% for district in district_list %}
+      <li>
+        <a href="/district/{{ district.tla|lower }}/{{ district.slug }}/">{{ district.name }}</a> 
+        <span class="count">{{ district.regsmo }}</span>
+        <span class="index" style="width: {% widthratio district.regsmo 400 100 %}%">({{ district.regsmo }})</span>
+      </li>
+{% endfor %}
+    </ul>
+  </div>
+		  <div class="span-7">
+	<h4>Total Acres: {{ acscount|intcomma }}</h4>
+		  <ul class="chartlist">
+{% for district in district2_list %}
+      <li>
+        <a href="/district/{{ district.tla|lower }}/{{ district.slug }}/">{{ district.name }}</a> 
+        <span class="count">{{ district.acsmo|intcomma }}</span>
+        <span class="index" style="width: {% widthratio district.acsmo 25000 100 %}%">({{ district.acsmo|intcomma }})</span>
+      </li>
+{% endfor %}
+    </ul>
+  </div>
+  		  <div class="span-7 last">
+	<h4>Total Registrations: {{ regcount|intcomma }}</h4>
+		  <ul class="chartlist">
+{% for user in user_list %}
+      <li>
+        <a href="/user/{{ user.username }}/">{{ user.username }}</a> 
+        <span class="count">{{ user.regsmo }}</span>
+        <span class="index" style="width: {% widthratio user.regsmo 400 100 %}%">({{ user.regsmo }})</span>
+      </li>
+{% endfor %}
+    </ul>
+	</div>
+<br />
+	</div>
+{% else %}
+{% endif %}
+
+{% if pdistrict_list %}
+				{% for author in uuser %}
+    <h3>{{ plancount }} Plans by '{{ author.username }}' in {{ pdistcount }} Districts</h3>
+				{% endfor %}
+	<div class="span-7">
+	<h4>Total Plans: {{ plancount }} </h4>
+		  <ul class="chartlist">
+{% for district in pdistrict_list %}
+      <li>
+        <a href="/district/{{ district.tla|lower }}/{{ district.slug }}/">{{ district.name }}</a> 
+        <span class="count">{{ district.regsmo }}</span>
+        <span class="index" style="width: {% widthratio district.regsmo 400 100 %}%">({{ district.regsmo }})</span>
+      </li>
+{% endfor %}
+    </ul>
+  </div>
+		  <div class="span-7">
+	<h4>Total Acres: {{ pacscount|intcomma }}</h4>
+		  <ul class="chartlist">
+{% for district in pdistrict2_list %}
+      <li>
+        <a href="/district/{{ district.tla|lower }}/{{ district.slug }}/">{{ district.name }}</a> 
+        <span class="count">{{ district.acsmo|intcomma }}</span>
+        <span class="index" style="width: {% widthratio district.acsmo 25000 100 %}%">({{ district.acsmo|intcomma }})</span>
+      </li>
+{% endfor %}
+    </ul>
+  </div>
+  		  <div class="span-7 last">
+	<h4>Total Plans: {{ plancount|intcomma }}</h4>
+		  <ul class="chartlist">
+{% for user in puser_list %}
+      <li>
+        <a href="/user/{{ user.username }}/">{{ user.username }}</a> 
+        <span class="count">{{ user.regsmo }}</span>
+        <span class="index" style="width: {% widthratio user.regsmo 400 100 %}%">({{ user.regsmo }})</span>
+      </li>
+{% endfor %}
+    </ul>
+	</div>
+<br />
+{% else %}
+{% endif %}
+
+{% if fakeuser_list %}
+
+    <h3>{{ regcount }} Registrations by {{ usercount }} Users</h3>
+		  <div class="span-7">
+	<h4>Total Registrations: {{ regcount }}</h4>
+		  <ul class="chartlist">
+{% for user in user_list %}
+      <li>
+        <a href="/user/{{ user.username }}/">{{ user.username }}</a> 
+        <span class="count">{{ user.regsmo }}</span>
+        <span class="index" style="width: {% widthratio user.regsmo 200 100 %}%">({{ user.regsmo }})</span>
+      </li>
+{% endfor %}
+    </ul>
+  </div>
+		  <div class="span-7">
+	<h4>Total Acres: {{ acscount|intcomma }}</h4>
+		  <ul class="chartlist">
+{% for user in user2_list %}
+      <li>
+        <a href="/user/{{ user.username }}/">{{ user.username }}</a> 
+        <span class="count">{{ user.acsmo|intcomma }}</span>
+        <span class="index" style="width: {% widthratio user.acsmo 50000 100 %}%">({{ user.acsmo|intcomma }})</span>
+      </li>
+{% endfor %}
+    </ul>
+  </div>
+  		  <div class="span-7 last">
+	<h4>Total Tons: {{ tonscount|intcomma }}</h4>
+		  <ul class="chartlist">
+{% for user in user3_list %}
+      <li>
+        <a href="/user/{{ user.username }}/">{{ user.username }}</a> 
+        <span class="count">{{ user.tonsmo|intcomma }}</span>
+        <span class="index" style="width: {% widthratio user.tonsmo 50000 100 %}%">({{ user.tonsmo|intcomma }})</span>
+      </li>
+{% endfor %}
+    </ul>
+	</div>
+<br />
+{% else %}
+{% endif %}
+
+{% if fakepuser_list %}
+
+    <h3>{{ plancount }} Plans by {{ pusercount }} Users</h3>
+		  <div class="span-7">
+	<h4>Total Plans: {{ plancount }}</h4>
+		  <ul class="chartlist">
+{% for user in puser_list %}
+      <li>
+        <a href="/user/{{ user.username }}/">{{ user.username }}</a> 
+        <span class="count">{{ user.regsmo }}</span>
+        <span class="index" style="width: {% widthratio user.regsmo 200 100 %}%">({{ user.regsmo }})</span>
+      </li>
+{% endfor %}
+    </ul>
+  </div>
+		  <div class="span-7">
+	<h4>Total Acres: {{ pacscount|intcomma }}</h4>
+		  <ul class="chartlist">
+{% for user in puser2_list %}
+      <li>
+        <a href="/user/{{ user.username }}/">{{ user.username }}</a> 
+        <span class="count">{{ user.acsmo|intcomma }}</span>
+        <span class="index" style="width: {% widthratio user.acsmo 50000 100 %}%">({{ user.acsmo|intcomma }})</span>
+      </li>
+{% endfor %}
+    </ul>
+  </div>
+  		  <div class="span-7 last">
+	<h4>Total Tons: {{ ptonscount|intcomma }}</h4>
+		  <ul class="chartlist">
+{% for user in puser3_list %}
+      <li>
+        <a href="/user/{{ user.username }}/">{{ user.username }}</a> 
+        <span class="count">{{ user.tonsmo|intcomma }}</span>
+        <span class="index" style="width: {% widthratio user.tonsmo 50000 100 %}%">({{ user.tonsmo|intcomma }})</span>
+      </li>
+{% endfor %}
+    </ul>
+	</div>
+<br />
+{% else %}
+{% endif %}
+
+{% if fakedates_reg_list %}
+
+    <h3>{{ regcount }} Registrations</h3>
+		  <div class="span-7">
+	<h4>Total Acres: {{ acscount|intcomma }}</h4>
+		  <ul class="chartlist">
+{% for smokeregister in dates_reg_list %}
+      <li>
+        <a href="/{{ smokeregister.sn }}/">{{ smokeregister.regname|truncatechars:"15" }}</a> 
+        <span class="count">{{ smokeregister.regacres }}</span>
+        <span class="index" style="width: {% widthratio smokeregister.regacres 15000 100 %}%">({{ smokeregister.regacres }})</span>
+      </li>
+{% endfor %}
+    </ul>
+  </div>
+		  <div class="span-7">
+    <h4>Total Pile Tons: {{ ptonscount|intcomma }}</h4>
+		  <ul class="chartlist">
+{% for smokeregister in dates_reg_list %}
+      <li>
+        <a href="/{{ smokeregister.sn }}/">{{ smokeregister.regname|truncatechars:"15" }}</a> 
+        <span class="count">{{ smokeregister.piletons }}</span>
+        <span class="index" style="width: {% widthratio smokeregister.piletons 9999 100 %}%">({{ smokeregister.piletons }})</span>
+      </li>
+{% endfor %}
+    </ul>
+  </div>
+  		  <div class="span-7 last">
+    <h4>Total Landing Tons: {{ ltonscount|intcomma }}</h4>
+		  <ul class="chartlist">
+{% for smokeregister in dates_reg_list %}
+      <li>
+        <a href="/{{ smokeregister.sn }}/">{{ smokeregister.regname|truncatechars:"15" }}</a> 
+        <span class="count">{{ smokeregister.landingtons }}</span>
+        <span class="index" style="width: {% widthratio smokeregister.landingtons 9999 100 %}%">({{ smokeregister.landingtons }})</span>
+      </li>
+{% endfor %}
+		</ul>
+  </div>
+<br />
+{% else %}
+{% endif %}
+							</fieldset>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	    <div class="prepend-1 small altb quiet">
+			<br />
+			<hr>
+			 &copy 1981-{% now "Y" %}   &para   Feared by some.  &para  Adored by billions.   &para   Served by <a href="//{{ request.site.domain }}/">{{ request.site.name }}</a>.   &para   Weaponized text.
+        </div>
+    </div>
+</body>
+</html>

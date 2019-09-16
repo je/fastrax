@@ -1,0 +1,57 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>fastrax</title>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+
+	<link rel="stylesheet" href="/static/blueprint/screen.css" type="text/css" media="screen, projection">
+	<link rel="stylesheet" href="/static/blueprint/print.css" type="text/css" media="print">
+  <!--[if IE]><link rel="stylesheet" href="/static/blueprint/ie.css" type="text/css" media="screen, projection"><![endif]-->
+	<link rel="stylesheet" href="/static/blueprint/plugins/fancy-type/screen.css" type="text/css" media="screen, projection">
+</head>
+<body>
+	<div class="container" style="margin-left:0">
+	<div class="prepend-1">  
+		<h3></h3>
+		<h2 class="altb"></h2>
+		<h3><a href="/">FASTRAX</a></h3>
+		
+		<div class="altb">
+			<div>
+				<div class="span-20">
+					<h3>District List</h3>
+					{% if district_list %}
+						<div>
+							We have {{ district_list|length }} districts in our system. Some are USFS ranger districts, some are BLM resource areas. All are good places to start fires. <br />Click below for registrations and plans by district.
+						</div>
+						<br />
+						<div>
+						 <div class="span-9">
+							<ul>
+								{% for district in district_list %}
+									{% ifequal forloop.counter col1 %}</ul></div>
+<div class="span-9"><ul>{% endifequal %}
+								<li><div class="span-2"><a href="/district/{{ district.tla|lower }}/">{{ district.tla }}</a></div><a href="/district/{{ district.tla|lower }}/{{ district.slug }}/">{{ district.name }}</a></li>
+								{% endfor %}
+							</ul>
+						 </div>
+						</div>
+					{% else %}
+						<div>
+							No districts. What?
+						</div>
+					{% endif %}
+					<div class="span-20">
+					</div>
+				</div>
+		</div>
+	</div>
+	</div>
+	    <div class="prepend-1 small altb quiet">
+		<br />
+		<hr>
+		 &copy 1981-{% now "Y" %}   &para   Feared by some.  &para  Adored by billions.   &para   Served by <a href="//{{ request.site.domain }}/">{{ request.site.name }}</a>.   &para   Weaponized text.
+        </div>
+	</div>
+</body>
+</html>

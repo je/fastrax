@@ -1,0 +1,77 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>fastrax</title>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+
+	<link rel="stylesheet" href="/static/blueprint/screen.css" type="text/css" media="screen, projection">
+	<link rel="stylesheet" href="/static/blueprint/print.css" type="text/css" media="print">
+  <!--[if IE]><link rel="stylesheet" href="/static/blueprint/ie.css" type="text/css" media="screen, projection"><![endif]-->
+	<link rel="stylesheet" href="/static/blueprint/plugins/fancy-type/screen.css" type="text/css" media="screen, projection">
+</head>
+<body>
+	<div class="container" style="margin-left:0">
+		<div class="prepend-1">  
+			<h3></h3>
+			<h2 class="altb"></h2>
+			<h3><a href="/">FASTRAX</a></h3>
+			
+			<div class="altb">
+				<div>
+					<div>
+						<div class="span-24">
+						<p>
+						{% if odfda %}
+						Data in ODF-formatted strings for {{ odfyear }}-{{ odfmo }}-{{ odfda }}. Also available as <a href="/odf/REGISTERDATETIME{{odfyear}}{{odfmo}}{{odfda}}.txt">REGISTERDATETIME{{odfyear}}{{odfmo}}{{odfda}}.txt</a>.
+						{% else %}
+						{% if odfmo %}
+						Data in ODF-formatted strings for {{ odfyear }}-{{ odfmo }}.
+						{% else %}
+						Data in ODF-formatted strings for {{ odfyear }}.
+						{% endif %}
+						{% endif %}
+						</p>
+						<fieldset>
+
+{% if dates_reg_list %}
+<code> 1           2     3 4                   5                   6  7         8    9 012 3  4   5    6    7             8 9 012
+ SN          Dist# CoDistrict            Unit                No TwnRngSec Elev M ZRT %S Ac  Lton Pton BUt/a by size L D SHCut</code><br />
+{% for smokeregister in dates_reg_list %}
+<code>M<a href="/{{ smokeregister.sn }}/">{{ smokeregister.sn }}</a>{{ smokeregister.district.fedunit }}<font color=orange>{{ smokeregister.county }}</font>{{ smokeregister.district.slug|upper|truncatechars:"20"|ljust:"20" }}<font color=orange>{{ smokeregister.regname|slugify|upper|truncatechars:"20"|ljust:"20" }}</font>000<font color=orange>{{ smokeregister.township }}{{ smokeregister.range }}{{ smokeregister.section|ljust:"2" }}</font>{{ smokeregister.elevation|stringformat:"05d" }}<font color=orange>{{ smokeregister.ssradistance|rjust:"2" }}</font>{{ smokeregister.spz }}<font color=orange>{{ smokeregister.reason }}</font>{{ smokeregister.typeburn }}N<font color=orange>{{ smokeregister.slope|stringformat:"03d" }}</font>{{ smokeregister.regacres|stringformat:"04d" }}<font color=orange>{{ smokeregister.landingtons|stringformat:"05d" }}</font>{{ smokeregister.piletons|stringformat:"05d" }}<font color=orange>{{ smokeregister.fuelclass1|stringformat:"02d" }}{{ smokeregister.fuelclass2|stringformat:"02d" }}{{ smokeregister.fuelclass3|stringformat:"02d" }}{{ smokeregister.fuelclass4|stringformat:"02d" }}{{ smokeregister.fuelclass5|stringformat:"03d" }}{{ smokeregister.fuelclass6|stringformat:"03d" }}</font>{{ smokeregister.loadmethod }}<font color=orange>{{ smokeregister.duffdepth|stringformat:"02d" }}</font>{{ smokeregister.fuelspecies }}<font color=orange>{{ smokeregister.harvestd }}</font>{{ smokeregister.cutdate|date:"m" }}{{ smokeregister.cutdate|date:"y" }}</code><br />
+{% endfor %}
+{% else %}
+{% endif %}
+{% if dates_plan_list %}
+
+<code> 1           2     3 4         5   6    7    8
+ SN          Dist# CoIgnition  Ac  Lton Pton BUt/a</code><br />
+{% for smokeplan in dates_plan_list %}
+<code>P<a href="/{{ smokeplan.sn }}/{{ smokeplan.suffix }}/">{{ smokeplan.sn }}</a>{{ smokeplan.sn.district.fedunit }}<font color=orange>{{ smokeplan.sn.county }}</font>{{ smokeplan.ignitiondate|date:"mdy" }}{{ smokeplan.ignitiontime|time:"Hi" }}<font color=orange>{{ smokeplan.acrestoburn|stringformat:"04d" }}</font>{{ smokeplan.landingtons|stringformat:"05d" }}<font color=orange>{{ smokeplan.piletons|stringformat:"05d" }}</font>{{ smokeplan.b_u_tonsperacre|stringformat:"05d" }}</code><br />
+{% endfor %}
+{% else %}
+{% endif %}
+{% if dates_result_list %}
+
+<code> 1           2     3 4         5   6    7    8   9   012   3 4 56  7 8 9 0 1
+ SN          Dist# CoIgnition  Ac  Lton Pton BUt/aDurMRWx  DhKhMDsrF RhWdWsSnow </code><br />
+{% for smokeresult in dates_result_list %}
+<code>R<a href="/{{ smokeresult.snid.sn }}/{{ smokeresult.snid.suffix }}/">{{ smokeresult.snid.sn }}</a>{{ smokeresult.snid.sn.district.fedunit }}<font color=orange>{{ smokeresult.snid.sn.county }}</font>{{ smokeresult.ignitiondated|date:"mdy" }}{{ smokeresult.ignitiontimed|time:"Hi" }}<font color=orange>{{ smokeresult.acresburned|stringformat:"04d" }}</font>{{ smokeresult.landingtonned|stringformat:"05d" }}<font color=orange>{{ smokeresult.piletonned|stringformat:"05d" }}</font>{{ smokeresult.b_u_tonsperacred|stringformat:"05d" }}<font color=orange>{{ smokeresult.ignitionduration|stringformat:"03d" }}</font>{{ smokeresult.ignitionmethod }}<font color=orange>{{ smokeresult.rapidignition|yesno:"Y,N, " }}</font>{{ smokeresult.weatherstation|truncatechars:"4"|ljust:"4" }}<font color=orange>{{ smokeresult.tenhour|stringformat:"02d" }}</font>{{ smokeresult.thousandhour|stringformat:"02d" }}<font color=orange>{{ smokeresult.thousandhourmethod }}</font>{{ smokeresult.dayssincerain|stringformat:"03d" }}<font color=orange>{{ smokeresult.airtemperature|stringformat:"02d" }}</font>{{ smokeresult.relativehumidity|stringformat:"02d" }}<font color=orange>{{ smokeresult.winddirection }}</font>{{ smokeresult.windspeed|stringformat:"02d" }}<font color=orange>{{ smokeresult.snowoffmonth|truncatechars:"2"|ljust:"2"}}</font></code><br />
+{% endfor %}
+{% else %}
+{% endif %}
+							</fieldset>
+							{% csrf_token %}
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	    <div class="prepend-1 small altb quiet">
+			<br />
+			<hr>
+			 &copy 1981-{% now "Y" %}   &para   Feared by some.  &para  Adored by billions.   &para   Served by <a href="//{{ request.site.domain }}/">{{ request.site.name }}</a>.   &para   Weaponized text.
+        </div>
+    </div>
+</body>
+</html>

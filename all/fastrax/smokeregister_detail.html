@@ -1,0 +1,293 @@
+{% extends "fastrax/smokeregister.html" %}
+
+{% block title %}
+<title>Smoke Registration {{ object.name }}</title>
+{% endblock %}
+
+{% block content %}
+
+{% block mtitle %}
+{% endblock %}
+
+{% block mhead %}
+{% load humanize %}
+{% load guardian_tags %}
+{% get_obj_perms request.user for object as "p_perms" %}
+
+<div class='row'>
+<div class='col-md-12'>
+<h3><span class="text-{% if toedit %}warning{% elif toplan %}success{% else %}danger{% endif %}">{% if toedit %}Editable{% elif toplan %}Active{% else %}Expired{% endif %} <a style='text-decoration:none' href="{% url 'list_smokeregister' %}"><span class='quiet'>Smoke Registration</span></a> #{{ object.sn }}</span><span class= 'pull-right'>{% if "change_smokeregister" in p_perms %}<a class='btn btn-sm btn-default {% if toedit %}{% else %}disabled{% endif %}' href="{% url 'update_smokeregister' object.sn %}">{% if toedit %}<i class="fa fa-unlock-alt"></i>{% else %}<i class="fa fa-lock"></i>{% endif %} edit</a> {% endif %} {% if "change_smokeregister" in p_perms %}<a class='btn btn-sm btn-primary {% if toplan %}{% else %}disabled{% endif %}' href="">{% if toplan %}<i class="fa fa-unlock-alt"></i>{% else %}<i class="fa fa-lock"></i>{% endif %} plan</a> {% endif %}</span></h3>
+</div>
+</div>
+{% endblock %}
+
+{% block thead %}
+<div class='row'>
+<div class="col-md-6">
+</div>
+<div class="col-md-6">
+</div>
+</div>
+
+<div class='row'>
+<div class='col-md-6 col-lg-6 col-sm-8 col-xs-12'>
+<div class='panel panel-{% if toedit %}warning{% elif toplan %}success{% else %}danger{% endif %}'>
+ <table class="table table-bordered table-condensed">
+    <tbody class="">
+    <tr class="{% if toedit %}hdwarning{% elif toplan %}hdsuccess{% else %}hddanger{% endif %}">
+        <th class='col-xs-3 col-sm-3 col-md-2 col-lg-2'><span class='text-{% if toedit %}warning{% elif toplan %}success{% else %}danger{% endif %}'>Project</span></th><td colspan='6'><strong>{{ object.regname }}</strong></td>
+    </tr>
+    <tr>
+        <th class=''>District</th><td colspan='4'><a href='{% url 'district_list_smokeregister' object.district.tla object.district.slug %}'>{{ object.district.name }}</a></td>
+        <th>Acres</th><td class='text-right'>{{ object.regacres|stringformat:"4d" }} ac</td>
+    </tr>
+    <tr>
+        <th class=''>Location</th><td colspan='4'>{{ object.township }} {{ object.range }} {{ object.section }}</td>
+        <th>Elevation</th><td class='text-right'>{{ object.elevation }} ft</td>
+    </tr>
+    <tr>
+        <th class=''>County</th><td colspan='4'>{{ object.get_county_display }}</td>
+        <th>Slope</th><td class='text-right'>{{ object.slope }} %</td>
+    </tr>
+    <tr>
+        <th class=''>Ownership</th><td colspan='4'>{{ object.get_ownership_display }}</td>
+        <th>PD No</th><td>{{ object.fpf }}</td>
+    </tr>
+    <tr>
+        <th class=''>SPZ</th><td colspan='4'>{{ object.get_spz_display }}</td>
+        <th>SSRA Distance</th><td class='text-right'>{{ object.ssradistance }} mi</td>
+    </tr>
+    <tr>
+    </tr>
+    <tr>
+        <th class=''>Type</th><td colspan='4'>{{ object.get_typeburn_display }}</td>
+        <th>Revenue No</th><td>{{ object.revno }}</td>
+    </tr>
+    <tr>
+        <th class=''>Reason</th><td colspan='4'>{{ object.get_reason_display }}</td>
+        <th>Harvest Spec</th><td class='text-right'>{{ object.get_harvestd_display }}</td>
+    </tr>
+    <tr>
+        <th class=''>Fuel Species</th><td colspan='4'>{{ object.get_fuelspecies_display }}</td>
+        <th>Cut Date</th><td><i class="fa fa-calendar"></i> {{ object.cutdate|date:"Y-m-d" }}</td>
+    </tr>
+    <tr>
+    </tr>
+    <tr>
+        <th>Load Method</th><td colspan='4'>{{ object.get_loadmethod_display }}</td>
+        <th>Duff Depth</th><td class='text-right'>{{ object.duffdepth }}"</td>
+    </tr>
+    <tr>
+        <th class="{% if toedit %}hdwarning{% elif toplan %}hdsuccess{% else %}hddanger{% endif %}" ><span class='text-{% if toedit %}warning{% elif toplan %}success{% else %}danger{% endif %}'>Pile Tons</span></th><td colspan='4' class='text-right'>{{ object.piletons|stringformat:"5d" }}</td>
+        <th class="{% if toedit %}hdwarning{% elif toplan %}hdsuccess{% else %}hddanger{% endif %}"><span class='text-{% if toedit %}warning{% elif toplan %}success{% else %}danger{% endif %}'>Landing Tons</span></th><td class='text-right'>{{ object.landingtons|stringformat:"5d" }}</td>
+    </tr>
+    <tr class="{% if toedit %}hdwarning{% elif toplan %}hdsuccess{% else %}hddanger{% endif %}">
+        <th colspan ='1' class=''><span class='text-{% if toedit %}warning{% elif toplan %}success{% else %}danger{% endif %}'>Broadcast Fuel</span></th>
+        <th class='text-right'>0-1/4"</th>
+        <th class='text-right'>1/4-1"</th>
+        <th class='text-right'>1-3"</th>
+        <th class='text-right'>3-9"</th>
+        <th class='text-right'>9-20"</th>
+        <th class='text-right'>20"+</th>
+    </tr>
+    <tr>
+        <th colspan ='1' class='{% if toedit %}hdwarning{% elif toplan %}hdsuccess{% else %}hddanger{% endif %}'><span class='text-{% if toedit %}warning{% elif toplan %}success{% else %}danger{% endif %}'>ton/ac by Size</span></th>
+        <td class='text-right'>{{ object.fuelclass1|stringformat:"2d" }}</td>
+        <td class='text-right'>{{ object.fuelclass2|stringformat:"2d" }}</td>
+        <td class='text-right'>{{ object.fuelclass3|stringformat:"2d" }}</td>
+        <td class='text-right'>{{ object.fuelclass4|stringformat:"2d" }}</td>
+        <td class='text-right'>{{ object.fuelclass5|stringformat:"3d" }}</td>
+        <td class='text-right'>{{ object.fuelclass6|stringformat:"3d" }}</td>
+    </tr>
+    </tbody>
+</table>
+</div>
+</div>
+
+<div class='col-md-6 col-lg-6 col-sm-4 col-xs-12 hidden-xs'>
+<div class='panel panel-{% if toedit %}warning{% elif toplan %}success{% else %}danger{% endif %}'>
+ <table class="table table-condensed">
+    <tbody class="">
+    <tr style="height: 400px;">
+    <td rowspan='13' style="height: 100%;">
+        <link rel="stylesheet" href="/static/leaflet-0.6.4/leaflet.css" />
+        <link rel="stylesheet" href="/static/leaflet-0.6.4/leaflet.ie.css" />
+        <script src="/static/leaflet-0.6.4/leaflet.js"></script>
+        <script src="/static/leaflet-0.6.4/leaflet-providers.js"></script>
+       <div id="map" style="width: 100%; height: 100%;"></div>
+    </td>
+    </tr>
+    </tbody>
+</table>
+</div>
+</div>
+</div>
+
+<div class='row'>
+<div class='col-md-12 col-lg-12 col-sm-12 col-xs-12'>
+<div class='panel panel-{% if toedit %}warning{% elif toplan %}success{% else %}danger{% endif %}'>
+
+                        {% if object.plan_sn %}
+ <table class="table table-bordered table-condensed">
+        <thead>
+    <tr class="{% if toedit %}hdwarning{% elif toplan %}hdsuccess{% else %}hddanger{% endif %}">
+        <th colspan='13' class='col-xs-3 col-sm-3 col-md-2 col-lg-2'><span class='text-{% if toedit %}warning{% elif toplan %}success{% else %}danger{% endif %}'>{{ object.plan_sn.all|length }} Burn Plans</span></th>
+    </tr>
+    <tr>
+        <th>Ignition</th>
+        <th>Acres</th>
+        <th>Ltons</th>
+        <th>Ptons</th>
+        <th>BUt/a</th>
+        <th>Minutes</th>
+        <th>Method</th>
+        <th>Dh</th>
+        <th>Kh</th>
+        <th>DSR</th>
+        <th>°F</th>
+        <th>Rel<br>Hum</th>
+        <th>Wind</th>
+        </tr>
+        </thead>
+        <tbody class="">
+        {% for smokeplan in object.plan_sn.all %}
+        <tr class='text-{% if smokeplan.result_snid.notaccomplished %}dull{% elif smokeplan.result_snid %}dull{% else %}success success{% endif %}'>
+        {% if smokeplan.result_snid.notaccomplished %}
+        <td><i class="fa fa-thumbs-o-down"></i> <strong>{{ smokeplan.ignitiondate|date:"Y-m-d" }} {{ smokeplan.ignitiontime|time:"H:i" }}</strong></td>
+        <td class="text-right">--</td>
+        <td class="text-right">--</td>
+        <td class="text-right">--</td>
+        <td class="text-right">--</td>
+        <td class="text-right">--</td>
+        <td>--</td>
+        <td class="text-right">--</td>
+        <td class="text-right">--</td>
+        <td class="text-right">--</td>
+        <td class="text-right">--</td>
+        <td class="text-right">--</td>
+        <td>--</td>
+        {% elif smokeplan.result_snid %}
+        <td><a class="text-dull" href=""><i class="fa fa-thumbs-o-up"></i> <strong>{{ smokeplan.result_snid.ignitiondated|date:"Y-m-d" }} {{ smokeplan.result_snid.ignitiontimed|time:"H:i" }}</strong></a></td>
+        <td class="text-right">{{ smokeplan.result_snid.acresburned|stringformat:"4d" }}</td>
+        <td class="text-right">{{ smokeplan.result_snid.landingtonned|stringformat:"5d" }}</td>
+        <td class="text-right">{{ smokeplan.result_snid.piletonned|stringformat:"5d" }}</td>
+        <td class="text-right">{{ smokeplan.result_snid.b_u_tonsperacred|stringformat:"5d" }}</td>
+        <td class="text-right">{{ smokeplan.result_snid.ignitionduration|stringformat:"3d" }}</td>
+        <td>{{ smokeplan.result_snid.ignitionmethod }}</td>
+        <td class="text-right">{{ smokeplan.result_snid.tenhour|stringformat:"02d" }}</td>
+        <td class="text-right">{{ smokeplan.result_snid.thousandhour|stringformat:"02d" }}</td>
+        <td class="text-right">{{ smokeplan.result_snid.dayssincerain|stringformat:"3d" }}</td>
+        <td class="text-right">{{ smokeplan.result_snid.airtemperature|stringformat:"2d" }}</td>
+        <td class="text-right">{{ smokeplan.result_snid.relativehumidity|stringformat:"02d" }}</td>
+        <td>{{ smokeplan.result_snid.windspeed|stringformat:"02d" }} {{ smokeplan.result_snid.get_winddirection_display }}</td>
+        {% else %}
+        <td><a class="text-success" href=""><i class="fa fa-hand-o-right"></i> <strong>{{ smokeplan.ignitiondate|date:"Y-m-d" }} {{ smokeplan.ignitiontime|time:"H:i" }}</strong></a></td>
+        <td class="text-right">{{ smokeplan.acrestoburn|stringformat:"4d" }}</td>
+        <td class="text-right">{{ smokeplan.landingtons|stringformat:"5d" }}</td>
+        <td class="text-right">{{ smokeplan.piletons|stringformat:"5d" }}</td>
+        <td class="text-right">{{ smokeplan.b_u_tonsperacre|stringformat:"5d" }}</td>
+        <td class="text-right"><a class="text-success" href=""><strong>???</strong></a></td>
+        <td><a class="text-success" href=""><strong>???</strong></a></td>
+        <td class="text-right"><a class="text-success" href=""><strong>???</strong></a></td>
+        <td class="text-right"><a class="text-success" href=""><strong>???</strong></a></td>
+        <td class="text-right"><a class="text-success" href=""><strong>???</strong></a></td>
+        <td class="text-right"><a class="text-success" href=""><strong>???</strong></a></td>
+        <td class="text-right"><a class="text-success" href=""><strong>???</strong></a></td>
+        <td><a class="text-success" href=""><strong>???</strong></a></td>
+        {% endif %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+                        {% else %}
+                            No plans.
+                        {% endif %} 
+</div>
+</div>
+</div>
+
+<div class='row'>
+<div class='col-md-12 col-lg-12 col-sm-12 col-xs-12'>
+<div class='panel panel-{% if toedit %}warning{% elif toplan %}success{% else %}danger{% endif %}'>
+<table class="table table-bordered table-condensed">
+    <tbody>
+    <tr class="{% if toedit %}hdwarning{% elif toplan %}hdsuccess{% else %}hddanger{% endif %}">
+        <td colspan='4'><span class='text-{% if toedit %}warning{% elif toplan %}success{% else %}danger{% endif %}'><strong>Meta</strong></span></td>
+    </tr>
+    <tr>
+        <th>Added by</th><td><a href="/user/{{ object.author }}/">{% if object.author.last_name and object.author.first_name %}{{ object.author.first_name }} {{ object.author.last_name }}{% else %}{{ object.author }}{% endif %}</a></td>
+        <th>Date:</th><td><i class="fa fa-calendar"></i> {{ object.regdate|date:"Y M d" }}</td>
+    </tr>
+     </tbody>
+</table>
+</div>
+</div>
+</div>
+
+
+  <script>
+
+    var regs = new L.LayerGroup();
+
+    {% if plss %}
+      L.polygon([[{{ plss.miy|floatformat:3 }},{{ plss.mix|floatformat:3 }}],[{{ plss.miy|floatformat:3 }},{{ plss.max|floatformat:3 }}],[{{ plss.may|floatformat:3 }},{{ plss.max|floatformat:3 }}],[{{ plss.may|floatformat:3 }},{{ plss.mix|floatformat:3 }}]], {
+            color: 'red',
+            fillColor: 'red',
+            fillOpacity: 0.0
+          }
+      ).addTo(regs),
+    {% endif %}
+      L.marker([45,-123]);
+
+    var map = L.map('map', {
+      zoom: 11,
+      center: {% if plss %}[{{ plss.y|floatformat:3 }},{{ plss.x|floatformat:3 }}]{% else %}[45,-123]{% endif %},
+      layers: [regs]
+    });
+
+    var defaultLayer = L.tileLayer.provider('Thunderforest.OpenCycleMap').addTo(map);
+    var baseLayers = {
+        //'OpenStreetMap Default': L.tileLayer.provider('OpenStreetMap.Mapnik'),
+        'OpenStreetMap German Style': L.tileLayer.provider('OpenStreetMap.DE'),
+        'OpenStreetMap Black and White': L.tileLayer.provider('OpenStreetMap.BlackAndWhite'),
+        //'OpenStreetMap H.O.T.': L.tileLayer.provider('OpenStreetMap.HOT'),
+        //'OpenCycleMap': L.tileLayer.provider('Thunderforest.OpenCycleMap'),
+        'OpenCycleMap': defaultLayer,
+        'Transport': L.tileLayer.provider('Thunderforest.Transport'),
+        'Landscape': L.tileLayer.provider('Thunderforest.Landscape'),
+        //'MapQuest OSM': L.tileLayer.provider('MapQuestOpen.OSM'),
+        //'MapQuest Aerial': L.tileLayer.provider('MapQuestOpen.Aerial'),
+        //'MapBox Example': L.tileLayer.provider('MapBox.examples.map-zr0njcqy'),
+        //'Stamen Toner': L.tileLayer.provider('Stamen.TonerLite'),
+        //'Stamen Toner': defaultLayer,
+        'Stamen Terrain': L.tileLayer.provider('Stamen.Terrain'),
+        //'Stamen Watercolor': L.tileLayer.provider('Stamen.Watercolor'),
+        //'Esri WorldStreetMap': L.tileLayer.provider('Esri.WorldStreetMap'),
+        //'Esri DeLorme': L.tileLayer.provider('Esri.DeLorme'),
+        //'Esri WorldTopoMap': L.tileLayer.provider('Esri.WorldTopoMap'),
+        //'Esri WorldImagery': L.tileLayer.provider('Esri.WorldImagery'),
+        //'Esri WorldTerrain': L.tileLayer.provider('Esri.WorldTerrain'),
+        //'Esri WorldShadedRelief': L.tileLayer.provider('Esri.WorldShadedRelief'),
+        //'Esri WorldPhysical': L.tileLayer.provider('Esri.WorldPhysical'),
+        //'Esri OceanBasemap': L.tileLayer.provider('Esri.OceanBasemap'),
+        //'Esri NatGeoWorldMap': L.tileLayer.provider('Esri.NatGeoWorldMap'),
+        //'Esri WorldGrayCanvas': L.tileLayer.provider('Esri.WorldGrayCanvas'),
+        //'Nokia Normal Day': L.tileLayer.provider('Nokia.normalDay'),
+        //'Nokia Normal Day Grey': L.tileLayer.provider('Nokia.normalGreyDay'),
+        //'Nokia Satellite': L.tileLayer.provider('Nokia.satelliteNoLabelsDay'),
+        //'Nokia Satellite (Labeled)': L.tileLayer.provider('Nokia.satelliteYesLabelsDay'),
+        //'Nokia Terrain': L.tileLayer.provider('Nokia.terrainDay'),
+        //'Acetate': L.tileLayer.provider('Acetate')
+    };
+
+    var overlays = {
+      {% if plss %}"Registriations": regs{% endif %}
+    };
+
+    L.control.layers(baseLayers).addTo(map);
+  </script>
+{% endblock %}
+
+{% block missionhelp %}
+{% endblock %}
+{% endblock %}

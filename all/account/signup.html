@@ -1,0 +1,80 @@
+{% extends "base2.html" %}
+
+{% load url from future %}
+{% load i18n %}
+
+{% block head_title %}Signup{% endblock %}
+
+{% block content %}
+<style>
+.inset {
+    width: 300px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 40px;
+    text-align: center;
+}
+.banner-img-logged-out,
+.banner-img {
+    display:block;
+    margin-right:auto;
+    margin-left:auto;
+    margin-top:50px;
+}
+</style>
+    <div class="panel panel-default inset">
+        <div class="panel-heading">Sign Up</div>
+        <div class="panel-body">
+        <form class="signup" id="signup_form" method="post" action="{% url 'account_signup' %}">
+          {% csrf_token %}
+            {{ form.non_field_errors }}
+          <span class="form-group">
+          <span class="">{{ form.username.errors }}
+          <span class="input-group">
+          <span class="input-group-addon"><i class="glyphicon glyphicon-envelope"></i></span>
+          <input id="id_username" class="form-control input-sm" maxlength="30" name="username" placeholder="username" type="text" />
+          </span>
+          </span>
+          </span><br />
+          <span class="form-group">
+          <span class="">{{ form.email.errors }}
+          <span class="input-group">
+          <span class="input-group-addon"><i class="glyphicon glyphicon-envelope"></i></span>
+          <input id="id_email" class="form-control input-sm" maxlength="30" name="email" placeholder="email@address.com" type="text" />
+          </span>
+          </span>
+          </span>
+          <br />
+          <span class="form-group">
+          <span class="">{{ form.password1.errors }}
+          <span class="input-group">
+          <span class="input-group-addon"><i class="glyphicon glyphicon-lock"></i></span>
+          <input id="id_password1"  class="form-control input-sm" name="password1" placeholder="Password" type="password" />
+          </span>
+          </span>
+          </span><br />
+          <span class="form-group">
+          <span class="">{{ form.password2.errors }}
+          <span class="input-group">
+          <span class="input-group-addon"><i class="glyphicon glyphicon-lock"></i></span>
+          <input id="id_password2"  class="form-control input-sm" name="password2" placeholder="Password" type="password" />
+          </span>
+          </span>
+          </span><br />
+          {% if redirect_field_value %}
+          <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+          {% endif %}
+          <button class="btn" type="submit">{% trans "Sign Up" %} &raquo;</button>
+        </form>
+        </div>
+
+        <div class="panel-footer">
+            <div class="remember-forgot-section">
+                <a class="forgot" href="{% url 'account_reset_password' %}">{% trans "Forgot Password?" %}</a>
+            </div>
+            Already have an account? <a href="{{ login_url }}">sign in</a>
+        </div>
+    </div>
+{% endblock %}
+
+

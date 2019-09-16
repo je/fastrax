@@ -1,0 +1,162 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>fastrax</title>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+
+	<link rel="stylesheet" href="/static/blueprint/screen.css" type="text/css" media="screen, projection">
+	<link rel="stylesheet" href="/static/blueprint/print.css" type="text/css" media="print">
+  <!--[if IE]><link rel="stylesheet" href="/static/blueprint/ie.css" type="text/css" media="screen, projection"><![endif]-->
+	<link rel="stylesheet" href="/static/blueprint/plugins/fancy-type/screen.css" type="text/css" media="screen, projection">
+<script src="/static/sorttable/sorttable.js"></script>
+</head>
+<body>
+	<div class="container" style="margin-left:0">
+	<div class="prepend-1">  
+		<h3></h3>
+		<h2 class="altb"></h2>
+		<h3><a href="/">FASTRAX</a></h3>
+		
+		<div class="altb">
+			<div>
+
+				{% for district in dtla %}
+				<div class="span-16">
+					<h3><a href="/district/{{ district.tla|lower }}/map/">Data</a> for {{ district.tla }}</h3>
+				</div>
+				<div class="last">
+					<form method="get" action="/search/">
+					<p><label for="id_q"></label>
+					<input type="text" name="q" id="id_q" />
+					<input type="submit" value="Search" /></p>
+				{% csrf_token %}
+				</form>
+			</div>
+				<div class="span-24">
+					<script src="/static/chart.js/chart.js"></script>
+					<div class="span-24">
+					{% if reg_list %}
+						<div class="span-11">
+						<canvas id="charta" height="100" width="400"></canvas>
+						<script>
+							var lineChartData = {
+								labels : [{% for month in entry_dates reversed %}"{{ month.month|date:"M"|slice:":1" }}"{% if not forloop.last %},{% endif %}
+							{% endfor %}],
+								datasets : [
+									{
+										fillColor : "rgba(255,153,0,0.5)",
+										strokeColor : "rgba(255,153,0,1)",
+										pointColor : "rgba(255,153,0,1)",
+										pointStrokeColor : "#f90",
+										data : [{% for month in entry_dates reversed %}{{ month.count }}{% if not forloop.last %},{% endif %}{% endfor %}]
+									},
+									{
+										fillColor : "rgba(255,0,0,0.5)",
+										strokeColor : "rgba(255,0,0,1)",
+										pointColor : "rgba(255,0,0,1)",
+										pointStrokeColor : "#f00",
+										data : [{% for month in entry_dates reversed %}{{ month.countp }}{% if not forloop.last %},{% endif %}{% endfor %}]
+									},
+									{
+										fillColor : "rgba(0,0,0,0.5)",
+										strokeColor : "rgba(0,0,0,1)",
+										pointColor : "rgba(0,0,0,1)",
+										pointStrokeColor : "#000",
+										data : [{% for month in entry_dates reversed %}{{ month.countr }}{% if not forloop.last %},{% endif %}{% endfor %}]
+									}
+								]
+							}
+						var options = { barShowStroke : true, barStrokeWidth : 1.5, barValueSpacing : 3, barDatasetSpacing : 2, animation : false, scaleShowGridLines : false, };
+						var myLine = new Chart(document.getElementById("charta").getContext("2d")).Bar(lineChartData, options);
+						</script>
+						<br />
+						<br />
+						</div>
+						<div class="span-10 last">
+						<canvas id="chartb" height="100" width="400"></canvas>
+						<script>
+							var lineChartData = {
+								labels : [{% for month in entry_dates reversed %}"{{ month.month|date:"M"|slice:":1" }}"{% if not forloop.last %},{% endif %}
+							{% endfor %}],
+								datasets : [
+									{
+										fillColor : "rgba(255,153,0,0.5)",
+										strokeColor : "rgba(255,153,0,1)",
+										pointColor : "rgba(255,153,0,1)",
+										pointStrokeColor : "#f90",
+										data : [{% for month in entry_dates reversed %}{{ month.cumu }}{% if not forloop.last %},{% endif %}{% endfor %}]
+									},
+									{
+										fillColor : "rgba(255,0,0,0.5)",
+										strokeColor : "rgba(255,0,0,1)",
+										pointColor : "rgba(255,0,0,1)",
+										pointStrokeColor : "#f00",
+										data : [{% for month in entry_dates reversed %}{{ month.cump }}{% if not forloop.last %},{% endif %}{% endfor %}]
+									},
+									{
+										fillColor : "rgba(0,0,0,0.5)",
+										strokeColor : "rgba(0,0,0,1)",
+										pointColor : "rgba(0,0,0,1)",
+										pointStrokeColor : "#000",
+										data : [{% for month in entry_dates reversed %}{{ month.cumr }}{% if not forloop.last %},{% endif %}{% endfor %}]
+									}
+								]
+							}
+						var options = { pointDot : false, datasetFill : false, animation : false, scaleShowGridLines : false, };
+						var myLine = new Chart(document.getElementById("chartb").getContext("2d")).Line(lineChartData, options);
+						</script>
+						<br />
+						<br />
+						</div>
+					</div>
+					<h3>{% if reg_list %}<span class="quiet">{{ reg_list|length }}</span> {% endif %}Smoke Registrations</h3>
+					<table class="sortable">
+						<th><code><a href="JavaScript:void(0);">SN</a></code></th><th><code> <a href="JavaScript:void(0);">Name</a></code></th><th><code>Co TownRangeSec Elev  %S SSRA SPZ RC Type Acres  Burned LM Ltons Ptons BUt/ac by Size DD Sp Hs Cut</code></th>
+						{% for smokeregister in reg_list %}
+						<tr{% cycle '' ' class="even"' %}><td><code><a href="/{{ smokeregister.sn }}/">{{ smokeregister.sn }}</a></code></td><td><code> {% if smokeregister.regname|length > 20 %}{{ smokeregister.regname|upper|slice:"20"|ljust:"20" }}{% else %}{{ smokeregister.regname|upper|ljust:"20" }}{% endif %}</code></td><td><code>{{ smokeregister.county }} {{ smokeregister.township }} {{ smokeregister.range }} {{ smokeregister.section|ljust:"2" }} {{ smokeregister.elevation|stringformat:"05d" }} {{ smokeregister.slope|stringformat:"02d" }} {{ smokeregister.ssradistance|rjust:"2" }}mi {{ smokeregister.spz }}   {{ smokeregister.reason }}  {{ smokeregister.typeburn }}    <span style="color:{{ smokeregister.color }}">{{ smokeregister.regacres|stringformat:"04d" }}ac</span> {% if smokeregister.black %}<span style="color:{{ smokeregister.color }}">{{ smokeregister.black|stringformat:"04d" }}ac</span>{% else %}      {% endif %} {{ smokeregister.loadmethod|ljust:"2" }} {{ smokeregister.landingtons|stringformat:"05d" }} {{ smokeregister.piletons|stringformat:"05d" }} {{ smokeregister.fuelclass1|stringformat:"02d" }}{{ smokeregister.fuelclass2|stringformat:"02d" }}{{ smokeregister.fuelclass3|stringformat:"02d" }}{{ smokeregister.fuelclass4|stringformat:"02d" }}{{ smokeregister.fuelclass5|stringformat:"03d" }}{{ smokeregister.fuelclass6|stringformat:"03d" }} {{ smokeregister.duffdepth|stringformat:"02d" }} {{ smokeregister.fuelspecies }}  {{ smokeregister.harvestd }}  {{ smokeregister.cutdate|date:"m" }}{{ smokeregister.cutdate|date:"y" }}</code></td></tr>
+						{% endfor %}
+						</table>
+						{% else %}
+						<ul>
+						<li>No smoke registrations.</li>
+						</ul>
+						</div>
+					{% endif %}
+<br />
+					<h3>{% if plan_list %}<span class="quiet">{{ plan_list|length }}</span> {% endif %}Burn Plans</h3>
+
+					{% if plan_list %}
+						<table class="sortable">
+						<th><code><a href="JavaScript:void(0);">SN          -##</a></code></th><th><code><a href="JavaScript:void(0);"> Name                 </a></code></th><th><code>Ignition    Ac   Ltons Ptons BUt/a  Ignition    Ac   Ltons Ptons BUt/a Dur M Dh Kh DSR TF RH WS</code></th>
+						{% for smokeplan in plan_list %}
+						<tr{% cycle '' ' class="even"' %}>
+						{% if smokeplan.result_snid.notaccomplished %}
+						<td><code><a href="/{{ smokeplan.sn }}/{{ smokeplan.suffix }}/">{{ smokeplan.sn }}-{{ smokeplan.suffix }}</a></code></td><td><code> {% if smokeplan.sn.regname|length > 20 %}{{  smokeplan.sn.regname|slice:"20"|ljust:"20" }}{% else %}{{  smokeplan.sn.regname|upper|ljust:"20" }}{% endif %}</code></td><td><code><a href='/{{ smokeplan.ignitiondate|date:"Y/m/d" }}/ignition/'>{{ smokeplan.ignitiondate|date:"mdy" }}</a> {{ smokeplan.ignitiontime|time:"Hi" }} {{ smokeplan.acrestoburn|stringformat:"04d" }} {{ smokeplan.landingtons|stringformat:"05d" }} {{ smokeplan.piletons|stringformat:"05d" }} {{ smokeplan.b_u_tonsperacre|stringformat:"05d" }}  NO IGNITION...........................PLAN NOT ACCOMPLISHED</code></td>
+						{% else %}
+						<td><code><a href="/{{ smokeplan.sn }}/{{ smokeplan.suffix }}/">{{ smokeplan.sn }}-{{ smokeplan.suffix }}</a></code></td><td><code> {% if  smokeplan.sn.regname|length > 20 %}{{  smokeplan.sn.regname|slice:"20"|ljust:"20" }}{% else %}{{  smokeplan.sn.regname|upper|ljust:"20" }}{% endif %}</code></td><td><code><a href='/{{ smokeplan.ignitiondate|date:"Y/m/d" }}/ignition/'>{{ smokeplan.ignitiondate|date:"mdy" }}</a> {{ smokeplan.ignitiontime|time:"Hi" }} {{ smokeplan.acrestoburn|stringformat:"04d" }} {{ smokeplan.landingtons|stringformat:"05d" }} {{ smokeplan.piletons|stringformat:"05d" }} {{ smokeplan.b_u_tonsperacre|stringformat:"05d" }}  <a href='/{{ smokeplan.result_snid.ignitiondated|date:"Y/m/d" }}/ignition/'>{{ smokeplan.result_snid.ignitiondated|date:"mdy" }}</a> {{ smokeplan.result_snid.ignitiontimed|time:"Hi" }} {{ smokeplan.result_snid.acresburned|stringformat:"04d" }} {{ smokeplan.result_snid.landingtonned|stringformat:"05d" }} {{ smokeplan.result_snid.piletonned|stringformat:"05d" }} {{ smokeplan.result_snid.b_u_tonsperacred|stringformat:"05d" }} {{ smokeplan.result_snid.ignitionduration|stringformat:"03d" }} {{ smokeplan.result_snid.ignitionmethod }} {{ smokeplan.result_snid.tenhour|stringformat:"02d" }} {{ smokeplan.result_snid.thousandhour|stringformat:"02d" }} {{ smokeplan.result_snid.dayssincerain|stringformat:"03d" }} {{ smokeplan.result_snid.airtemperature|stringformat:"02d" }} {{ smokeplan.result_snid.relativehumidity|stringformat:"02d" }} {{ smokeplan.result_snid.windspeed|stringformat:"02d" }}</code></td>
+						{% endif %}
+						</tr>
+						{% endfor %}
+						</table>
+						{% else %}
+						<ul>
+							<li>No plans.</li>
+						</ul>
+ 					{% endif %}
+<br />
+					<div>
+						<p>{% if not iyear %}<a href="/district/{{ district.tla|lower }}/closed/">Closed</a> registrations and resulted plans for this area.{% else %}<a href="/district/{{ district.tla|lower }}/">Current</a> registrations and plans for this area.{% endif %}</p>
+					</div>
+				</div>		
+			{% endfor %}
+			</div>
+	</div>
+	</div>
+	    <div class="prepend-1 small altb quiet">
+		<br />
+		<hr>
+		 &copy 1981-{% now "Y" %}   &para   Feared by some.  &para  Adored by billions.   &para   Served by <a href="//{{ request.site.domain }}/">{{ request.site.name }}</a>.   &para   Weaponized text.
+        </div>
+	</div>
+</body>
+</html>

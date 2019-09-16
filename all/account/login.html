@@ -1,0 +1,67 @@
+{% extends "base2.html" %}
+
+{% load i18n %}
+{% load account %}
+{% load url from future %}
+
+{% block head_title %}Sign In{% endblock %}
+
+{% block content %}
+<style>
+.inset {
+    width: 300px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 40px;
+    text-align: center;
+}
+.banner-img-logged-out,
+.banner-img {
+    display:block;
+    margin-right:auto;
+    margin-left:auto;
+    margin-top:50px;
+}
+</style>
+    <a href="/accounts/facebook/login/"><div class="fb"></div></a>
+    {% include "socialaccount/snippets/login_extra.html" %}
+    <div class="panel panel-default inset">
+        <div class="panel-heading">Sign in</div>
+        <div class="panel-body">
+        <form class="login" method="POST" action="{% url 'account_login' %}">
+          {% csrf_token %}
+            {{ form.non_field_errors }}
+                  <span class="form-group">
+                  <span class="">{{ form.login.errors }}
+                  <span class="input-group">
+                  <span class="input-group-addon"><i class="glyphicon glyphicon-envelope"></i></span>
+                  <input id="id_login" class="form-control input-sm" maxlength="30" name="login" placeholder="Username" type="text" />
+                  </span>
+                  </span>
+                  </span>
+                  <br />
+                  <span class="form-group">
+                  <span class="">{{ form.password.errors }}
+                  <span class="input-group">
+                  <span class="input-group-addon"><i class="glyphicon glyphicon-lock"></i></span>
+                  <input id="id_password"  class="form-control input-sm" name="password" placeholder="Password" type="password" />
+                  </span>
+                  </span>
+                  </span><br />
+          {% if redirect_field_value %}
+          <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+          {% endif %}
+
+          <button class="btn" type="submit">{% trans "Sign In" %}</button>
+        </form>
+        </div>
+
+        <div class="panel-footer">
+            <div class="remember-forgot-section">
+                <a class="forgot" href="{% url 'account_reset_password' %}">{% trans "Forgot Password?" %}</a>
+            </div>
+            Don't have an account? <a href="{% url 'account_signup' %}">Sign Up</a>
+        </div>
+    </div>
+{% endblock %}
+

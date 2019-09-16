@@ -1,0 +1,215 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml">
+<head>
+<title>fastrax</title>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+
+	<link rel="stylesheet" href="/static/blueprint/screen.css" type="text/css" media="screen, projection">
+	<link rel="stylesheet" href="/static/blueprint/print.css" type="text/css" media="print">
+  <!--[if IE]><link rel="stylesheet" href="/static/blueprint/ie.css" type="text/css" media="screen, projection"><![endif]-->
+	<link rel="stylesheet" href="/static/blueprint/plugins/fancy-type/screen.css" type="text/css" media="screen, projection">
+<script src="/static/sorttable/sorttable.js"></script>
+    <script src="http://maps.google.com/maps?file=api&amp;v=2&amp;key=ABQIAAAA5T-R0Of6sw7VdjyDmzeTCBSqVWuXpQBiC_MzWlrV_OMT7hpGGhQn-NNsek7fUCSFsd6KA5IeDoQ8EQ" type="text/javascript"></script>
+<script type="text/javascript">
+  var map2;
+  var polyline2 = [
+    [
+          {% for obj in reg_list %}
+          {% if obj.miy %}
+		  new GLatLng({{ obj.miy|floatformat:3 }}, {{ obj.mix|floatformat:3 }}),
+          {% endif %}
+          {% endfor %}
+    ],
+    [
+          {% for plss in plss2_list %}
+		  new GLatLng({{ plss.y|floatformat:3 }}, {{ plss.x|floatformat:3 }}),
+          {% endfor %}
+    ]
+  ];
+
+  var markers2 = [
+    [
+          {% for obj in reg_list %}
+          {% if obj.miy %}
+		  new GLatLng({{ obj.miy|floatformat:3 }}, {{ obj.mix|floatformat:3 }}),
+          {% endif %}
+          {% endfor %}
+    ],
+    [
+          {% for plss in plss2_list %}
+		  new GLatLng({{ plss.y|floatformat:3 }}, {{ plss.x|floatformat:3 }}),
+          {% endfor %}
+    ]
+  ];
+  var polyline3 = new GPolyline (
+    [
+          {% for obj in reg_list %}
+          {% if obj.miy %}
+		  new GLatLng({{ obj.miy|floatformat:3 }}, {{ obj.mix|floatformat:3 }}),
+          {% endif %}
+          {% endfor %}
+    ],
+    [
+          {% for plss in plss2_list %}
+		  new GLatLng({{ plss.y|floatformat:3 }}, {{ plss.x|floatformat:3 }}),
+          {% endfor %}
+    ]
+  );
+  
+  function map2_initialize( )
+  {
+    if ( GBrowserIsCompatible( ) )
+    {
+      map2 = new GMap2( document.getElementById( 'map_canvas' ) );
+      map2.setUIToDefault();
+      map2.setCenter( new GLatLng( 0, 0 ), 0);
+      var mts= map2.getMapTypes();
+      map2.addMapType(G_SATELLITE_3D_MAP);
+      map2.setMapType(mts[3]);
+
+    {% for obj in reg_list %}
+    {% if obj.miy %}
+      var p{{ obj.sn }} = new GLatLng({{ obj.miy|floatformat:3 }},{{ obj.mix|floatformat:3 }});
+      //var h{{ plss.trs }} = "<b>PLSS " + {{ plss.trs }} + "</b><br />" + Blah. + "<br />" + Blah.;
+      var pl{{ obj.sn }} = new GPolygon([
+         new GLatLng({{ obj.miy|floatformat:3 }},{{ obj.mix|floatformat:3 }}),
+         new GLatLng({{ obj.miy|floatformat:3 }},{{ obj.max|floatformat:3 }}),
+         new GLatLng({{ obj.may|floatformat:3 }},{{ obj.max|floatformat:3 }}),
+         new GLatLng({{ obj.may|floatformat:3 }},{{ obj.mix|floatformat:3 }}),
+         new GLatLng({{ obj.miy|floatformat:3 }},{{ obj.mix|floatformat:3 }}),
+      ], "#ff0000", 1, 1, "#00ff00", 0);
+      GEvent.addListener(pl{{ obj.sn }}, "click", function() {
+        map2.openInfoWindowHtml(p{{ obj.sn }}, "{{ obj.sn }}");
+        });
+    {% endif %}
+    {% endfor %}
+    {% for plss in plss2_list %}
+      var p2{{ plss.trs }} = new GLatLng({{ plss.y|floatformat:3 }},{{ plss.x|floatformat:3 }});
+      var pl2{{ plss.trs }} = new GPolygon([
+         new GLatLng({{ plss.miy|floatformat:3 }},{{ plss.mix|floatformat:3 }}),
+         new GLatLng({{ plss.miy|floatformat:3 }},{{ plss.max|floatformat:3 }}),
+         new GLatLng({{ plss.may|floatformat:3 }},{{ plss.max|floatformat:3 }}),
+         new GLatLng({{ plss.may|floatformat:3 }},{{ plss.mix|floatformat:3 }}),
+         new GLatLng({{ plss.miy|floatformat:3 }},{{ plss.mix|floatformat:3 }}),
+      ], "#ff0000", 1, 1, "#ff0000", .5);
+      GEvent.addListener(pl2{{ plss.trs }}, "click", function() {
+        map2.openInfoWindowHtml(p2{{ plss.trs }}, "{{ plss.trs }}");
+        });
+    {% endfor %}
+    //  var latlngbounds = new GLatLngBounds( );
+    //  for ( var i = 0; i < polyline2.length; i++ )
+    //  {
+    //    for ( var j = 0; j < polyline2[ i ].length; j++ )
+    //    {
+    //      latlngbounds.extend( polyline2[ i ][ j ] );
+    //    }
+    //  }
+
+    {% for obj in reg_list %}
+    {% if obj.miy %}
+      map2.addOverlay(pl{{ obj.sn }});
+    {% endif %}
+    {% endfor %}
+    {% for plss in plss2_list %}
+      map2.addOverlay(pl2{{ plss.trs }});
+    {% endfor %}
+	
+	  //map2.addOverlay(polyline2);
+      var latlngbounds2 = polyline3.getBounds( );
+      map2.setCenter( latlngbounds2.getCenter( ), map2.getBoundsZoomLevel( latlngbounds2 ) );
+      //map2.setCenter( latlngbounds.getCenter( ), map2.getBoundsZoomLevel( latlngbounds ) );
+    }
+  }
+  GEvent.addDomListener( window, 'load', map2_initialize );
+</script>
+</head>
+<body onload="map2_initialize()" onunload="GUnload()">
+	<div class="container" style="margin-left:0">
+	<div class="prepend-1">  
+		<h3></h3>
+		<h2 class="altb"></h2>
+		<h3><a href="/">FASTRAX</a></h3>
+		
+		<div class="altb">
+			<div>
+
+				<div class="span-16">
+					<h3><a href="/district/{{ district.tla|lower }}/">{{ district.tla }}</a> <a href="/district/{{ district.tla|lower }}/{{ district.slug }}/">{{ district.name }}</a></h3>
+				</div>
+				<div class="last">
+					<form method="get" action="/search/">
+					<p><label for="id_q"></label>
+					<input type="text" name="q" id="id_q" />
+					<input type="submit" value="Search" /></p>
+				{% csrf_token %}
+				</form>
+			</div>
+					{% if reg_list %}
+					<div id="map_canvas" style="width: 100%; height: 500px; border: 2px solid #e48914;">
+					</div>
+					<br />
+					{% else %}
+				   <div class="span-8 box last">
+						No map for you. For a variety of reasons.<br />
+						CO_LIST: {{ co_list }}<br />
+						COUNTY_LIST: {{ county_list }}<br />
+						TRS_LIST: {{ trs_list }}<br />
+						PLSS_LIST: {{ plss_list }}<br />
+						TRS2_LIST: {{ trs2_list }}<br />
+						PLSS2_LIST: {{ plss2_list }}<br />
+					</div>
+					{% endif %}
+<br />
+				<div class="span-24">
+					<h3>{% if reg_list %}<span class="quiet">{{ reg_list|length }}</span> {% endif %}Smoke Registrations</h3>
+
+					{% if reg_list %}
+						<table class="sortable">
+						<th><code><a href="JavaScript:void(0);">SN</a></code></th><th><code><a href="JavaScript:void(0);">Name</a></code></th><th><code>Co TownRangeSec Elev  %S SSRA SPZ RC Type Acres  GOOG USGS    DSSRA SSRA</code></th>
+						{% for smokeregister in reg_list %}
+						<tr{% cycle '' ' class="even"' %}><td><code><a href="/{{ smokeregister.sn }}/">{{ smokeregister.sn }}</a></code></td><td><code>{% if smokeregister.regname|length > 20 %}{{ smokeregister.regname|upper|slice:"20"|ljust:"20" }}{% else %}{{ smokeregister.regname|upper|ljust:"20" }}{% endif %}</code></td><td><code>{{ smokeregister.county }} {{ smokeregister.township }} {{ smokeregister.range }} {{ smokeregister.section|ljust:"2" }} {{ smokeregister.elevation|stringformat:"05d" }} {{ smokeregister.slope|stringformat:"02d" }} {{ smokeregister.ssradistance|rjust:"2" }}mi {{ smokeregister.spz }}   {{ smokeregister.reason }}  {{ smokeregister.typeburn }}    {{ smokeregister.regacres|stringformat:"04d" }}ac <a href="//maps.googleapis.com/maps/api/elevation/xml?locations={{ smokeregister.pnt1.centroid.y|floatformat:3 }},{{ smokeregister.pnt1.centroid.x|floatformat:3 }}&sensor=false">{{ smokeregister.gelev|floatformat:0 }}</a> <a href="//gisdata.usgs.gov/xmlwebservices2/elevation_service.asmx/getElevation?X_Value={{ smokeregister.pnt1.centroid.x|floatformat:3 }}&Y_Value={{ smokeregister.pnt1.centroid.y|floatformat:3 }}&Elevation_Units=FEET&Source_Layer=-1&Elevation_Only=true">{{ smokeregister.uelev|floatformat:0 }}</a>{{ smokeregister.dssra|stringformat:"6.2d" }}    {{ smokeregister.ssra }}</code></td></tr>
+						{% endfor %}
+						</table>
+					{% else %}
+						<ul>
+						<li>No smoke registrations.</li>
+						</ul>
+					{% endif %}
+<br />
+					<h3>{% if plan_list %}<span class="quiet">{{ plan_list|length }}</span> {% endif %}Burn Plans</h3>
+
+					{% if plan_list %}
+						<table class="sortable">
+						<th><code><a href="JavaScript:void(0);">SN          -##</a></code></th><th><code><a href="JavaScript:void(0);"> Name                 </a></code></th><th><code>Ignition    Ac   Ltons Ptons BUt/a  Ignition    Ac   Ltons Ptons BUt/a Dur M Dh Kh DSR TF RH WS</code></th>
+						{% for smokeplan in plan_list %}
+						<tr{% cycle '' ' class="even"' %}>
+						{% if smokeplan.result_snid.notaccomplished %}
+						<td><code><a href="/{{ smokeplan.sn }}/{{ smokeplan.suffix }}/">{{ smokeplan.sn }}-{{ smokeplan.suffix }}</a></code></td><td><code> {% if  smokeplan.sn.regname|length > 20 %}{{  smokeplan.sn.regname|slice:"20"|ljust:"20" }}{% else %}{{  smokeplan.sn.regname|upper|ljust:"20" }}{% endif %}</code></td><td><code>{{ smokeplan.ignitiondate|date:"mdy" }} {{ smokeplan.ignitiontime|time:"Hi" }} {{ smokeplan.acrestoburn|stringformat:"04d" }} {{ smokeplan.landingtons|stringformat:"05d" }} {{ smokeplan.piletons|stringformat:"05d" }} {{ smokeplan.b_u_tonsperacre|stringformat:"05d" }}  NO IGNITION...........................PLAN NOT ACCOMPLISHED</code></td>
+						{% else %}
+						<td><code><a href="/{{ smokeplan.sn }}/{{ smokeplan.suffix }}/">{{ smokeplan.sn }}-{{ smokeplan.suffix }}</a></code></td><td><code> {% if  smokeplan.sn.regname|length > 20 %}{{  smokeplan.sn.regname|slice:"20"|ljust:"20" }}{% else %}{{  smokeplan.sn.regname|upper|ljust:"20" }}{% endif %}</code></td><td><code>{{ smokeplan.ignitiondate|date:"mdy" }} {{ smokeplan.ignitiontime|time:"Hi" }} {{ smokeplan.acrestoburn|stringformat:"04d" }} {{ smokeplan.landingtons|stringformat:"05d" }} {{ smokeplan.piletons|stringformat:"05d" }} {{ smokeplan.b_u_tonsperacre|stringformat:"05d" }}  {{ smokeplan.result_snid.ignitiondated|date:"mdy" }} {{ smokeplan.result_snid.ignitiontimed|time:"Hi" }} {{ smokeplan.result_snid.acresburned|stringformat:"04d" }} {{ smokeplan.result_snid.landingtonned|stringformat:"05d" }} {{ smokeplan.result_snid.piletonned|stringformat:"05d" }} {{ smokeplan.result_snid.b_u_tonsperacred|stringformat:"05d" }} {{ smokeplan.result_snid.ignitionduration|stringformat:"03d" }} {{ smokeplan.result_snid.ignitionmethod }} {{ smokeplan.result_snid.tenhour|stringformat:"02d" }} {{ smokeplan.result_snid.thousandhour|stringformat:"02d" }} {{ smokeplan.result_snid.dayssincerain|stringformat:"03d" }} {{ smokeplan.result_snid.airtemperature|stringformat:"02d" }} {{ smokeplan.result_snid.relativehumidity|stringformat:"02d" }} {{ smokeplan.result_snid.windspeed|stringformat:"02d" }}</code></td>
+						{% endif %}
+						</tr>
+						{% endfor %}
+						</table>
+						{% else %}
+						<ul>
+							<li>No plans.</li>
+						</ul>
+ 					{% endif %}
+<br />
+					<div>
+						<p>{% if not iyear %}<a href="/district/{{ district.tla|lower }}/{{ district.slug|lower }}/register/">Register</a> new smoke for this district. <a href="/district/{{ district.tla|lower }}/{{ district.slug|lower }}/closed/">Closed</a> registrations and resulted plans for this district.{% else %}<a href="/district/{{ district.tla|lower }}/{{ district.slug|lower }}/">Current</a> registrations and plans for this district.{% endif %}</p>
+					</div>
+				</div>		
+			</div>
+	</div>
+	</div>
+	    <div class="prepend-1 small altb quiet">
+		<br />
+		<hr class="fix">
+		 &copy 1981-{% now "Y" %}   &para   Feared by some.  &para  Adored by billions.   &para   Served by <a href="//{{ request.site.domain }}/">{{ request.site.name }}</a>.   &para   Weaponized text.
+        </div>
+	</div>
+</body>
+</html>

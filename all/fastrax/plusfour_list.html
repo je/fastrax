@@ -1,0 +1,92 @@
+{% extends "fastrax/plusfour.html" %}
+
+{% block content %}
+{% load humanize %}
+        <h3 style="margin: 30px">PL4+ Burn Requests <span class= 'pull-right'><a class='btn btn-default' href="{% url 'create_plusfour' %}"><i class="fa fa fa-hand-o-right"></i> new request</a></span></h3>
+          {% if user.is_authenticated %}
+          {% else %}
+          <div class="alert alert-warning alert-dismissable" style='margin: 30px;margin-top:10px;padding-top:5px;padding-bottom:5px;'>
+          <button type="button" class="close" data-dismiss="alert">&times;</button>
+          <strong>Check it out:</strong> If you need to file a PL4+ burn request form, <a class='alert-link' href="/login/?next=/plusfour/">log in</a> or contact {{ settings.ADMIN_EMAIL }} for an account.
+          </div>
+          {% endif %}
+        <div style="margin: 30px">
+            {% if plusfour_list %}
+            <table class="table table-striped table-bordered table-condensed s" id="s1">
+                <thead>
+                <th>Name</th>
+                <th>District</th>
+                <th>Ignition</th>
+                <th>Timer</th>
+                <th>Status</th>
+                </thead>
+                {% for plusfour in plusfour_list %}
+                    <tr>
+                        <td><span class='text-{% if plusfour.finapp %}success{% elif plusfour.lo and plusfour.dfmo %}danger{% else %}{% ifequal plusfour.finapp False %}danger{% else %}warning{% endifequal %}{% endif %}'><strong><a class="text-{% if plusfour.finapp %}success{% elif plusfour.lo and plusfour.dfmo %}danger{% else %}{% ifequal plusfour.finapp False %}danger{% else %}warning{% endifequal %}{% endif %}" href="{% url 'print_plusfour' plusfour.pk %}">{{ plusfour.name }}</a></strong></span><span class="pull-right">{% if plusfour.finapp %}<a class="text-success" href="{% url 'print_plusfour' plusfour.pk %}"><i class="fa fa fa-file-text"></i></a>{% else %}<a class="text-{% if plusfour.lo and plusfour.dfmo %}danger{% else %}{% ifequal plusfour.finapp False %}danger{% else %}warning{% endifequal %}{% endif %}" href="{% url 'print_plusfour' plusfour.pk %}"><i class="fa fa fa-file{% if plusfour.lo and plusfour.dfmo %}-text{% else %}{% ifequal plusfour.finapp False %}{% else %}-o{% endifequal %}{% endif %}"></i></a>{% endif %}</span></td>
+                        <td>{{ plusfour.district }}</td>
+                        <td>{{ plusfour.ignitionstart|date:'Y M d' }}</td>
+                        <td><span class="text-{% if plusfour.is_past %}dull">--{% else %}">{{ plusfour.ignitionstart|timeuntil }}</span>{% endif %}</td>
+                        <td>
+                        {% if plusfour.finapp %}
+                            <span class="text-success"><strong>Approved</strong></span>
+                        {% else %}
+                        {% ifequal plusfour.finapp Unknown %}
+                        {% if plusfour.lo and plusfour.dfmo %}
+                            <span class="text-danger"><strong>Pending</strong></span>
+                        {% else %}
+                            <span class="text-warning"><strong>Unfiled</strong></span>
+                        {% endif %}
+                        {% endifequal %}
+                        {% endif %}
+                        {% ifequal plusfour.finapp False %}
+                            <span class="text-danger"><strong>Denied</strong></span>
+                        {% endifequal %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+            {% endif %}
+            <p><a href="{% url 'create_plusfour' %}">New burn request</a></p>
+        </div>
+{% endblock %}
+
+    objective
+    complexity
+    compsum
+    risk
+    risksum
+    cons
+    conssum
+    technical
+    technicalsum
+    rn1 
+    rn2 
+    rn3 
+    rn4 
+    rn5
+    rdetail
+    cn1
+    cn2
+    cn3
+    cdetail
+    psa
+    forecast
+    plan
+    longrange
+    are
+    measures
+    lo
+    lodate
+    dfmo
+    dfmodate
+    gmacdate
+    gmaccom
+    preapp 
+    pre
+    predate 
+    preoff
+    finapp
+    fin 
+    findate
+    finoff 
+    remarks

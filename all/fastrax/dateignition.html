@@ -1,0 +1,240 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml">
+<head>
+<title>fastrax</title>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+
+	<link rel="stylesheet" href="/static/blueprint/screen.css" type="text/css" media="screen, projection">
+	<link rel="stylesheet" href="/static/blueprint/print.css" type="text/css" media="print">
+  <!--[if IE]><link rel="stylesheet" href="/static/blueprint/ie.css" type="text/css" media="screen, projection"><![endif]-->
+	<link rel="stylesheet" href="/static/blueprint/plugins/fancy-type/screen.css" type="text/css" media="screen, projection">
+<link rel="stylesheet" href="/static/leaflet-0.6.4/leaflet.css">
+   <!--[if lte IE 8]>
+       <link rel="stylesheet" href="/static/leaflet-0.6.4/leaflet.ie.css" />
+   <![endif]-->
+<link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:900' rel='stylesheet' type='text/css'>
+<style type="text/css">
+
+
+    img.olTileImage {
+        max-width: none;
+    }
+
+    .olLayerGooglePoweredBy {
+      display: none;
+    }
+
+@media print {
+      .visible-print  { display: inherit !important; }
+      .hidden-print   { display: none !important; }
+      a:link:after, a:visited:after {
+        content: "";
+      }
+    }
+</style>
+</head>
+		{% load humanize %}
+
+<body onload="" onunload="">
+  <script src="/static/leaflet-0.6.4/leaflet.js"></script>
+  <script src="/static/leaflet-0.6.4/leaflet-providers.js"></script>
+<div class="container prepend-1">
+<h3><a href="/">FASTRAX</a></h3>
+	<div>
+		<div class="span-16">
+			<h3>{% if adate %}<span class="quiet">{% if dates_plan_list %}{{ dates_plan_list|length }}{% else %}0{% endif %}</span> Upcoming Ignitions
+				{% else %}
+				{% if dateda %}
+				Ignitions</a> for {{ dateyear }}-{{ datemo }}-{{ dateda }}.
+				{% else %}
+				{% if datemo %}
+				<a href="/{{ dateyear }}/{{ datemo }}/">Ignitions</a> for <a href="/{{ dateyear }}/">{{ dateyear }}</a>-{{ datemo }}.
+				{% else %}
+				<a href="/{{ dateyear }}/">Ignitions</a> for {{ dateyear }}.
+				{% endif %}
+				{% endif %}
+				{% endif %}</h3>
+		</div>
+		<div class="last">
+			<form method="get" action="/search/">
+			<p><label for="id_q"></label>
+			<input type="text" name="q" id="id_q" />
+			<input type="submit" value="Search" /></p>
+			{% csrf_token %}
+			</form>
+		</div>
+			{% if plss_list or plss2_list or plss3_list %}
+		<div id="map" class="last" style="width: 100%; height: 500px; border: 2px solid #e48914;">
+		</div>
+		<br />
+		{% else %}
+		<div id="map" class="last" style="width: 100%; height: 500px; border: 2px solid #e48914;">
+		</div>
+		<br />
+		{% endif %}
+		<br />
+	</div>
+	<div>
+		<h3><span class="quiet">{% if dates_plan_list %}{{ dates_plan_list|length }}{% else %}0{% endif %}</span> Ignition Plan{{ dates_plan_list|length|pluralize }}</h3>
+		<div class="row">
+			<div class="span12">
+			{% if dates_plan_list %}
+			<table class="table table-condensed table-striped">
+			<th>Name</th><th>Co</th><th>SSRA</th><th>SPZ</th><th>RC</th><th>Type</th><th>LM</th><th>DD</th><th>Sp</th><th>Hs</th><th>Cut</th><th>Ignition</th><th>Ac</th><th>Ltons</th><th>Ptons</th><th>BUt/a</th><th>Dur</th><th>M</th><th>Dh</th><th>Kh</th><th>DSR</th><th>TF</th><th>RH</th><th>WS</th>
+			{% for smokeplan in dates_plan_list %}
+			<tr{% cycle '' ' class="even"' %}>
+			{% if smokeplan.result_snid.notaccomplished %}
+			<td><a href="/{{ smokeplan.sn }}/{{ smokeplan.suffix }}/">{{ smokeplan.sn.regname|upper }}</a></td><td>{{ smokeplan.sn.get_county_display }}</td><td class="number">{{ smokeplan.sn.ssradistance|rjust:"2" }}mi</td><td class="center">{{ smokeplan.sn.spz }}</td><td>{{ smokeplan.sn.reason }}</td><td>{{ smokeplan.sn.typeburn }}</td><td>{{ smokeplan.sn.loadmethod|ljust:"2" }}</td><td class="number">{{ smokeplan.sn.duffdepth|stringformat:"2d" }}</td><td class="center">{{ smokeplan.sn.fuelspecies }}</td><td>{{ smokeplan.sn.harvestd }}</td<td>NO IGNITION</td><td class="number">--</td><td class="number">--</td><td class="number">--</td><td class="number">--</td><td class="number">--</td><td>--</td><td class="number">--</td><td class="number">--</td><td class="number">--</td><td class="number">--</td><td class="number">--</td><td class="number">--</td>
+			{% else %}
+			{% if smokeplan.result_snid %}
+			<td><a href="/{{ smokeplan.sn }}/{{ smokeplan.suffix }}/">{{ smokeplan.sn.regname|upper }}</a></td><td>{{ smokeplan.sn.get_county_display }}</td><td class="number">{{ smokeplan.sn.ssradistance|rjust:"2" }}mi</td><td class="center">{{ smokeplan.sn.spz }}</td><td>{{ smokeplan.sn.reason }}</td><td>{{ smokeplan.sn.typeburn }}</td><td>{{ smokeplan.sn.loadmethod|ljust:"2" }}</td><td class="number">{{ smokeplan.sn.duffdepth|stringformat:"2d" }}</td><td class="center">{{ smokeplan.sn.fuelspecies }}</td><td>{{ smokeplan.sn.harvestd }}</td><td>{{ smokeplan.sn.cutdate|date:"m" }}{{ smokeplan.sn.cutdate|date:"y" }}</td><td>{% if adate %}<a href="/{{ smokeplan.result_snid.ignitiondated|date:"Y/m/d" }}/ignition/">{{ smokeplan.result_snid.ignitiondated|naturalday }}</a>{% else %}{{ smokeplan.result_snid.ignitiondated|naturalday }}{% endif %} @ {{ smokeplan.result_snid.ignitiontimed|time:"H:i" }}</td><td class="number">{{ smokeplan.result_snid.acresburned|stringformat:"4d" }}</td><td class="number">{{ smokeplan.result_snid.landingtonned|stringformat:"5d" }}</td><td class="number">{{ smokeplan.result_snid.piletonned|stringformat:"5d" }}</td><td class="number">{{ smokeplan.result_snid.b_u_tonsperacred|stringformat:"5d" }}</td><td class="number">{{ smokeplan.result_snid.ignitionduration|stringformat:"3d" }}</td><td>{{ smokeplan.result_snid.ignitionmethod }}</td><td class="number">{{ smokeplan.result_snid.tenhour|stringformat:"2d" }}</td><td class="number">{{ smokeplan.result_snid.thousandhour|stringformat:"2d" }}</td><td class="number">{{ smokeplan.result_snid.dayssincerain|stringformat:"3d" }}</td><td class="number">{{ smokeplan.result_snid.airtemperature|stringformat:"2d" }}</td><td class="number">{{ smokeplan.result_snid.relativehumidity|stringformat:"2d" }}</td><td class="number">{{ smokeplan.result_snid.windspeed|stringformat:"2d" }}</td>
+			{% else %}
+			<td><a href="/{{ smokeplan.sn }}/{{ smokeplan.suffix }}/">{{ smokeplan.sn.regname|upper }}</a></td><td>{{ smokeplan.sn.get_county_display }}</td><td class="number">{{ smokeplan.sn.ssradistance|rjust:"2" }}mi</td><td class="center">{{ smokeplan.sn.spz }}</td><td>{{ smokeplan.sn.reason }}</td><td>{{ smokeplan.sn.typeburn }}</td><td>{{ smokeplan.sn.loadmethod|ljust:"2" }}</td><td class="number">{{ smokeplan.sn.duffdepth|stringformat:"2d" }}</td><td class="center">{{ smokeplan.sn.fuelspecies }}</td><td>{{ smokeplan.sn.harvestd }}</td><td>{{ smokeplan.sn.cutdate|date:"m" }}{{ smokeplan.sn.cutdate|date:"y" }}</td><td>{% if adate %}<a href="/{{ smokeplan.ignitiondate|date:"Y/m/d" }}/ignition/">{{ smokeplan.ignitiondate|naturalday }}</a>{% else %}{{ smokeplan.ignitiondate|naturalday }}{% endif %} @ {{ smokeplan.ignitiontime|time:"H:i" }}</td><td class="number">{{ smokeplan.acrestoburn|stringformat:"4d" }}ac</td><td class="number">{{ smokeplan.landingtons|stringformat:"5d" }}</td><td class="number">{{ smokeplan.piletons|stringformat:"5d" }}</td><td class="number">{{ smokeplan.b_u_tonsperacre|stringformat:"5d" }}</td><td class="number">{{ smokeplan.result_snid.ignitionduration|stringformat:"3d" }}</td><td>{{ smokeplan.result_snid.ignitionmethod }}</td><td class="number">{{ smokeplan.result_snid.tenhour|stringformat:"2d" }}</td><td class="number">{{ smokeplan.result_snid.thousandhour|stringformat:"2d" }}</td><td class="number">{{ smokeplan.result_snid.dayssincerain|stringformat:"3d" }}</td><td class="number">{{ smokeplan.result_snid.airtemperature|stringformat:"2d" }}</td><td class="number">{{ smokeplan.result_snid.relativehumidity|stringformat:"2d" }}</td><td class="number">{{ smokeplan.result_snid.windspeed|stringformat:"2d" }}</td>
+			{% endif %}
+			{% endif %}
+			</tr>
+			{% endfor %}
+			</table>
+			{% else %}
+			<br /><br />
+			{% endif %}	
+			</div>
+		</div>
+{% if not adate %}
+		<br />
+		<h3><span class="quiet">{% if dates_result_list %}{{ dates_result_list|length }}{% else %}0{% endif %}</span> Resulted Plan{{ dates_result_list|length|pluralize }}</h3>
+		<div class="row">
+			<div class="span12">
+			{% if dates_result_list %}
+			<table class="table table-condensed table-striped">
+      <th>Name</th><th>Co</th><th>SSRA</th><th>SPZ</th><th>RC</th><th>Type</th><th>LM</th><th>DD</th><th>Sp</th><th>Hs</th><th>Cut</th><th>Ignition</th><th>Ac</th><th>Ltons</th><th>Ptons</th><th>BUt/a</th><th>Dur</th><th>M</th><th>Dh</th><th>Kh</th><th>DSR</th><th>TF</th><th>RH</th><th>WS</th>
+			{% for smokeplan in dates_result_list %}
+			<tr{% cycle '' ' class="even"' %}>
+			{% if smokeplan.result_snid.notaccomplished %}
+			<td><a href="/{{ smokeplan.sn }}/{{ smokeplan.suffix }}/">{{ smokeplan.sn.regname|upper }}</a></td><td>{{ smokeplan.sn.get_county_display }}</td><td class="number">{{ smokeplan.sn.ssradistance|rjust:"2" }}mi</td><td class="center">{{ smokeplan.sn.spz }}</td><td>{{ smokeplan.sn.reason }}</td><td>{{ smokeplan.sn.typeburn }}</td><td>{{ smokeplan.sn.loadmethod|ljust:"2" }}</td><td class="number">{{ smokeplan.sn.duffdepth|stringformat:"2d" }}</td><td class="center">{{ smokeplan.sn.fuelspecies }}</td><td>{{ smokeplan.sn.harvestd }}</td><td>{{ smokeplan.sn.cutdate|date:"m" }}{{ smokeplan.sn.cutdate|date:"y" }}</td><td>NO IGNITION</td><td class="number">--</td><td class="number">--</td><td class="number">--</td><td class="number">--</td><td class="number">--</td><td>--</td><td class="number">--</td><td class="number">--</td><td class="number">--</td><td class="number">--</td><td class="number">--</td><td class="number">--</td>
+			{% else %}
+      {% if smokeplan.result_snid %}
+      <td><a href="/{{ smokeplan.sn }}/{{ smokeplan.suffix }}/">{{ smokeplan.sn.regname|upper }}</a></td><td>{{ smokeplan.sn.get_county_display }}</td><td class="number">{{ smokeplan.sn.ssradistance|rjust:"2" }}mi</td><td class="center">{{ smokeplan.sn.spz }}</td><td>{{ smokeplan.sn.reason }}</td><td>{{ smokeplan.sn.typeburn }}</td><td>{{ smokeplan.sn.loadmethod|ljust:"2" }}</td><td class="number">{{ smokeplan.sn.duffdepth|stringformat:"2d" }}</td><td class="center">{{ smokeplan.sn.fuelspecies }}</td><td>{{ smokeplan.sn.harvestd }}</td><td>{{ smokeplan.sn.cutdate|date:"m" }}{{ smokeplan.sn.cutdate|date:"y" }}</td><td>{% if adate %}<a href="/{{ smokeplan.result_snid.ignitiondated|date:"Y/m/d" }}/ignition/">{{ smokeplan.result_snid.ignitiondated|naturalday }}</a>{% else %}{{ smokeplan.result_snid.ignitiondated|naturalday }}{% endif %} @ {{ smokeplan.result_snid.ignitiontimed|time:"H:i" }}</td><td class="number">{{ smokeplan.result_snid.acresburned|stringformat:"4d" }}</td><td class="number">{{ smokeplan.result_snid.landingtonned|stringformat:"5d" }}</td><td class="number">{{ smokeplan.result_snid.piletonned|stringformat:"5d" }}</td><td class="number">{{ smokeplan.result_snid.b_u_tonsperacred|stringformat:"5d" }}</td><td class="number">{{ smokeplan.result_snid.ignitionduration|stringformat:"3d" }}</td><td>{{ smokeplan.result_snid.ignitionmethod }}</td><td class="number">{{ smokeplan.result_snid.tenhour|stringformat:"2d" }}</td><td class="number">{{ smokeplan.result_snid.thousandhour|stringformat:"2d" }}</td><td class="number">{{ smokeplan.result_snid.dayssincerain|stringformat:"3d" }}</td><td class="number">{{ smokeplan.result_snid.airtemperature|stringformat:"2d" }}</td><td class="number">{{ smokeplan.result_snid.relativehumidity|stringformat:"2d" }}</td><td class="number">{{ smokeplan.result_snid.windspeed|stringformat:"2d" }}</td>
+      {% else %}
+      <td><a href="/{{ smokeplan.sn }}/{{ smokeplan.suffix }}/">{{ smokeplan.sn.regname|upper }}</a></td><td>{{ smokeplan.sn.get_county_display }}</td><td class="number">{{ smokeplan.sn.ssradistance|rjust:"2" }}mi</td><td class="center">{{ smokeplan.sn.spz }}</td><td>{{ smokeplan.sn.reason }}</td><td>{{ smokeplan.sn.typeburn }}</td><td>{{ smokeplan.sn.loadmethod|ljust:"2" }}</td><td class="number">{{ smokeplan.sn.duffdepth|stringformat:"2d" }}</td><td class="center">{{ smokeplan.sn.fuelspecies }}</td><td>{{ smokeplan.sn.harvestd }}</td><td>{{ smokeplan.sn.cutdate|date:"m" }}{{ smokeplan.sn.cutdate|date:"y" }}</td><td>{% if adate %}<a href="/{{ smokeplan.ignitiondate|date:"Y/m/d" }}/ignition/">{{ smokeplan.ignitiondate|naturalday }}</a>{% else %}{{ smokeplan.ignitiondate|naturalday }}{% endif %} @ {{ smokeplan.ignitiontime|time:"H:i" }}</td><td class="number">{{ smokeplan.acrestoburn|stringformat:"4d" }}ac</td><td class="number">{{ smokeplan.landingtons|stringformat:"5d" }}</td><td class="number">{{ smokeplan.piletons|stringformat:"5d" }}</td><td class="number">{{ smokeplan.b_u_tonsperacre|stringformat:"5d" }}</td><td class="number">{{ smokeplan.result_snid.ignitionduration|stringformat:"3d" }}</td><td>{{ smokeplan.result_snid.ignitionmethod }}</td><td class="number">{{ smokeplan.result_snid.tenhour|stringformat:"2d" }}</td><td class="number">{{ smokeplan.result_snid.thousandhour|stringformat:"2d" }}</td><td class="number">{{ smokeplan.result_snid.dayssincerain|stringformat:"3d" }}</td><td class="number">{{ smokeplan.result_snid.airtemperature|stringformat:"2d" }}</td><td class="number">{{ smokeplan.result_snid.relativehumidity|stringformat:"2d" }}</td><td class="number">{{ smokeplan.result_snid.windspeed|stringformat:"2d" }}</td>
+      {% endif %}
+			{% endif %}
+			</tr>
+			{% endfor %}
+			</table>
+			{% else %}
+			<br /><br />
+			{% endif %}	
+			</div>
+		</div>
+{% endif %}
+	</div>
+    <div class="small altb quiet">
+	<br />
+	<hr class="fix">
+	 &copy 1981-{% now "Y" %}   &para   Feared by some.  &para  Adored by billions.   &para   Served by <a href="//{{ request.site.domain }}/">{{ request.site.name }}</a>.   &para   Weaponized text.
+    </div>
+</div>
+  <script>
+
+    {% if plss2_list %}
+    var plans = new L.LayerGroup();
+
+    {% for plss in plss2_list %}
+      L.polygon([[{{ plss.miy|floatformat:3 }},{{ plss.mix|floatformat:3 }}],[{{ plss.miy|floatformat:3 }},{{ plss.max|floatformat:3 }}],[{{ plss.may|floatformat:3 }},{{ plss.max|floatformat:3 }}],[{{ plss.may|floatformat:3 }},{{ plss.mix|floatformat:3 }}]], {
+            color: 'red',
+            fillColor: 'red',
+            fillOpacity: 0.5
+          }
+      ).bindPopup('<ul>{% for plan in dates_plan_list %}{% ifequal plss plan.plss %}<li><a href="/{{ plan.sn }}/">{{ plan.sn.regname }}</a></li>{% endifequal %}{% endfor %}</ul>').addTo(plans),
+    {% endfor %}
+      L.marker([44, -128]);
+    {% endif %}
+
+
+    {% if plss3_list %}
+    var results = new L.LayerGroup();
+
+    {% for plss in plss3_list %}
+      L.polygon([[{{ plss.miy|floatformat:3 }},{{ plss.mix|floatformat:3 }}],[{{ plss.miy|floatformat:3 }},{{ plss.max|floatformat:3 }}],[{{ plss.may|floatformat:3 }},{{ plss.max|floatformat:3 }}],[{{ plss.may|floatformat:3 }},{{ plss.mix|floatformat:3 }}]], {
+            color: 'black',
+            fillColor: 'black',
+            fillOpacity: 0.5
+          }
+      ).bindPopup('<ul>{% for plan in dates_result_list %}{% ifequal plss plan.plss %}<li><a href="/{{ plan.sn }}/">{{ plan.sn.regname }}</a></li>{% endifequal %}{% endfor %}</ul>').addTo(results),
+    {% endfor %}
+      L.marker([44, -128]);
+    {% endif %}
+
+    {% if plss_list %}
+    var regs = new L.LayerGroup();
+
+	  {% for plss in plss_list %}
+      L.polygon([[{{ plss.miy|floatformat:3 }},{{ plss.mix|floatformat:3 }}],[{{ plss.miy|floatformat:3 }},{{ plss.max|floatformat:3 }}],[{{ plss.may|floatformat:3 }},{{ plss.max|floatformat:3 }}],[{{ plss.may|floatformat:3 }},{{ plss.mix|floatformat:3 }}]], {
+            color: 'red',
+            fillColor: 'red',
+            fillOpacity: 0.0
+          }
+      ).bindPopup('<ul>{% for reg in dates_reg_list %}{% ifequal plss reg.plss %}<li><a href="/{{ reg.sn }}/">{{ reg.regname }}</a></li>{% endifequal %}{% endfor %}</ul>').addTo(regs),
+    {% endfor %}
+      L.marker([44, -128]);
+    {% endif %}
+
+    var map = L.map('map', {
+      zoom: 10,
+      layers: [{% if plss3_list %}results{% if plss2_list or plss_list %}, {% endif %}{% endif %}{% if plss2_list %}plans{% if plss_list %}, {% endif %}{% endif %}{% if plss_list %}regs{% endif %}]
+    });
+
+    var bounds = new L.LatLngBounds([
+      {% if plss2_list %}{% for plss in plss2_list %}[{{ plss.miy|floatformat:3 }},{{ plss.mix|floatformat:3 }}],[{{ plss.miy|floatformat:3 }},{{ plss.max|floatformat:3 }}],[{{ plss.may|floatformat:3 }},{{ plss.max|floatformat:3 }}],[{{ plss.may|floatformat:3 }},{{ plss.mix|floatformat:3 }}]{% endfor %},{% endif %}
+      {% if plss3_list %}{% for plss in plss3_list %}[{{ plss.miy|floatformat:3 }},{{ plss.mix|floatformat:3 }}],[{{ plss.miy|floatformat:3 }},{{ plss.max|floatformat:3 }}],[{{ plss.may|floatformat:3 }},{{ plss.max|floatformat:3 }}],[{{ plss.may|floatformat:3 }},{{ plss.mix|floatformat:3 }}]{% endfor %},{% endif %}
+      {% if plss_list %}{% for plss in plss_list %}[{{ plss.miy|floatformat:3 }},{{ plss.mix|floatformat:3 }}],[{{ plss.miy|floatformat:3 }},{{ plss.max|floatformat:3 }}],[{{ plss.may|floatformat:3 }},{{ plss.max|floatformat:3 }}],[{{ plss.may|floatformat:3 }},{{ plss.mix|floatformat:3 }}]{% endfor %}{% endif %}
+    ]);
+
+    map.fitBounds(bounds);
+
+	var defaultLayer = L.tileLayer.provider('Stamen.TonerLite').addTo(map);
+	var baseLayers = {
+		//'OpenStreetMap Default': L.tileLayer.provider('OpenStreetMap.Mapnik'),
+		'OpenStreetMap German Style': L.tileLayer.provider('OpenStreetMap.DE'),
+		'OpenStreetMap Black and White': L.tileLayer.provider('OpenStreetMap.BlackAndWhite'),
+		//'OpenStreetMap H.O.T.': L.tileLayer.provider('OpenStreetMap.HOT'),
+		'Thunderforest OpenCycleMap': L.tileLayer.provider('Thunderforest.OpenCycleMap'),
+		'Thunderforest Transport': L.tileLayer.provider('Thunderforest.Transport'),
+		'Thunderforest Landscape': L.tileLayer.provider('Thunderforest.Landscape'),
+		//'MapQuest OSM': L.tileLayer.provider('MapQuestOpen.OSM'),
+		//'MapQuest Aerial': L.tileLayer.provider('MapQuestOpen.Aerial'),
+		//'MapBox Example': L.tileLayer.provider('MapBox.examples.map-zr0njcqy'),
+		//'Stamen Toner': L.tileLayer.provider('Stamen.TonerLite'),
+		'Stamen Toner': defaultLayer,
+		'Stamen Terrain': L.tileLayer.provider('Stamen.Terrain'),
+		//'Stamen Watercolor': L.tileLayer.provider('Stamen.Watercolor'),
+		//'Esri WorldStreetMap': L.tileLayer.provider('Esri.WorldStreetMap'),
+		//'Esri DeLorme': L.tileLayer.provider('Esri.DeLorme'),
+		'Esri WorldTopoMap': L.tileLayer.provider('Esri.WorldTopoMap'),
+		//'Esri WorldImagery': L.tileLayer.provider('Esri.WorldImagery'),
+		//'Esri WorldTerrain': L.tileLayer.provider('Esri.WorldTerrain'),
+		//'Esri WorldShadedRelief': L.tileLayer.provider('Esri.WorldShadedRelief'),
+		//'Esri WorldPhysical': L.tileLayer.provider('Esri.WorldPhysical'),
+		//'Esri OceanBasemap': L.tileLayer.provider('Esri.OceanBasemap'),
+		//'Esri NatGeoWorldMap': L.tileLayer.provider('Esri.NatGeoWorldMap'),
+		//'Esri WorldGrayCanvas': L.tileLayer.provider('Esri.WorldGrayCanvas'),
+		//'Nokia Normal Day': L.tileLayer.provider('Nokia.normalDay'),
+		//'Nokia Normal Day Grey': L.tileLayer.provider('Nokia.normalGreyDay'),
+		//'Nokia Satellite': L.tileLayer.provider('Nokia.satelliteNoLabelsDay'),
+		//'Nokia Satellite (Labeled)': L.tileLayer.provider('Nokia.satelliteYesLabelsDay'),
+		//'Nokia Terrain': L.tileLayer.provider('Nokia.terrainDay'),
+		'Acetate': L.tileLayer.provider('Acetate')
+	};
+
+    var overlays = {
+      {% if plss3_list %}"Results": results,{% endif %}
+      {% if plss2_list %}"Plans": plans,{% endif %}
+      {% if plss_list %}"Registriations": regs{% endif %}
+    };
+
+    L.control.layers(baseLayers, overlays).addTo(map);
+  </script>
+</body>
+</html>

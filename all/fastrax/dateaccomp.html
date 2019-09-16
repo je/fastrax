@@ -1,0 +1,100 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>fastrax</title>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+
+	<link rel="stylesheet" href="/static/blueprint/screen.css" type="text/css" media="screen, projection">
+	<link rel="stylesheet" href="/static/blueprint/print.css" type="text/css" media="print">
+	<!--[if IE]><link rel="stylesheet" href="/static/blueprint/ie.css" type="text/css" media="screen, projection"><![endif]-->
+	<link rel="stylesheet" href="/static/blueprint/plugins/fancy-type/screen.css" type="text/css" media="screen, projection">
+</head>
+<body>
+{% load humanize %}
+	<div class="container" style="margin-left:0">
+		<div class="prepend-1">  
+			<h3></h3>
+			<h2 class="altb"></h2>
+			<h3><a href="/">FASTRAX</a></h3>
+			
+				<div class="span-24">
+					<h3>{% if dateda %}
+						Accomplishment Summary for <a href="/{{ dateyear }}/">{{ dateyear }}</a>-<a href="/{{ dateyear }}/{{ datemo }}/">{{ datemo }}</a>-<a href="/{{ dateyear }}/{{ datemo }}/{{ dateda }}/map/">{{ dateda }}</a>.
+						{% else %}
+						{% if datemo %}
+						Accomplishment Summary for <a href="/{{ dateyear }}/">{{ dateyear }}</a>-{{ datemo }}.
+						{% else %}
+						Accomplishment Summary for FY{{ dateyear }}.
+						{% endif %}
+						{% endif %}</h3>
+				</div>
+
+
+    <style type="text/css">
+        td {vertical-align:top;}
+        th.number {text-align:right;}
+        th.why {text-align:center;}
+        td.number {text-align:right;}
+        td.date {text-align:right;}
+        td.why {width:100px;}
+    </style>
+    <div class="span-24">
+    <fieldset>
+    <table>
+    <thead>
+    <th class='why'>tla</th>
+    <th>district</th>
+    <th>burn<br>type</th>
+    <th>name</th>
+    <th class='number'>acres</th>
+    <th class='number'>ptons</th>
+    <th class='number'>ltons</th>
+    <th class='number'>btons/ac</th>
+    <th class='number'>burn acres<br>(plan>actual)</th>
+    <th class='number'>burn date<br>(plan>actual)</th>
+    <th class='number'>no?</th>
+    <th class='why'>why?</th>
+    </thead>
+    <tbody>
+    {% for result in dates_result_list %}
+    <tr {% cycle 'class="even"' 'class="odd"' %}>
+    <td><a href="/district/{{ result.snid.sn.district.tla|lower }}/">{{ result.snid.sn.district.tla }}</a></td>
+    <td><a href="/district/{{ result.snid.sn.district.tla|lower }}/{{ result.snid.sn.district.slug }}/">{{ result.snid.sn.district.name }}</a></td>
+    <td>{{ result.snid.sn.typeburn }}</td>
+    <td><a href="/{{ result.snid.sn }}/">{{ result.snid.sn.regname }}</a></td>
+    <td class='number'>{{ result.snid.sn.regacres }}</td>
+    <td class='number'>{{ result.snid.sn.piletons }}</td>
+    <td class='number'>{{ result.snid.sn.landingtons }}</td>
+    <td class='number'>{{ result.snid.sn.fuelclass1|add:result.snid.sn.fuelclass2|add:result.snid.sn.fuelclass3|add:result.snid.sn.fuelclass4|add:result.snid.sn.fuelclass5|add:result.snid.sn.fuelclass6 }}</td>
+    <td class='number'>{{ result.snid.acrestoburn }}{% if result.snid.acrestoburn != result.acresburned %} > {{ result.acresburned }}{% endif %}</td>
+    <td class='date'>{{ result.snid.ignitiondate|date:"m-d" }}{% if result.snid.ignitiondate == result.ignitiondated %}{% else %} > {{ result.ignitiondated|date:"m-d" }}{% endif %}</td>
+    <td class='number'>{% if result.snid.acrestoburn > result.acresburned and result.no %}{{ result.no }}{% else %}{% endif %}</td>
+    <td class='why'>{% if result.snid.acrestoburn > result.acresburned and result.why %}: {{ result.why }}{% else %}{% endif %}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+    </table>
+    <br /><br />
+    </fieldset>
+    </div>
+
+{% if datemo %}
+Summary as csv: <a href="/accomp/accomp-{{ dateyear }}-{{ datemo }}.csv">accomp-{{ dateyear }}-{{ datemo }}.csv</a>
+{% else %}
+Summary as csv: <a href="/accomp/accomp-{{ dateyear }}-fiscal.csv">accomp-{{ dateyear }}-fiscal.csv</a>
+{% endif %}
+<br /><br />
+
+			</div>
+		</div>
+
+
+
+	    <div class="prepend-1 small altb quiet">
+			<br />
+			<hr>
+			 &copy 1981-{% now "Y" %}   &para   Feared by some.  &para  Adored by billions.   &para   Served by <a href="//{{ request.site.domain }}/">{{ request.site.name }}</a>.   &para   Weaponized text.
+        </div>
+    </div>
+</body>
+</html>

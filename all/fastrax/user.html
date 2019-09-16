@@ -1,0 +1,108 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>fastrax</title>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+
+	<link rel="stylesheet" href="/static/blueprint/screen.css" type="text/css" media="screen, projection">
+	<link rel="stylesheet" href="/static/blueprint/print.css" type="text/css" media="print">
+  <!--[if IE]><link rel="stylesheet" href="/static/blueprint/ie.css" type="text/css" media="screen, projection"><![endif]-->
+	<link rel="stylesheet" href="/static/blueprint/plugins/fancy-type/screen.css" type="text/css" media="screen, projection">
+<script src="/static/sorttable/sorttable.js"></script>
+</head>
+<body>
+	<div class="container" style="margin-left:0">
+	<div class="prepend-1">  
+		<h3></h3>
+		<h2 class="altb"></h2>
+		<h3><a href="/">FASTRAX</a></h3>
+		
+		<div class="altb">
+			<div>
+
+				{% for author in uuser %}
+				<div class="span-16">
+					<h3>User "{{ author.username }}"</h3>
+				</div>
+				<div class="last">
+					<form method="get" action="/search/">
+					<p><label for="id_q"></label>
+					<input type="text" name="q" id="id_q" />
+					<input type="submit" value="Search" /></p>
+				{% csrf_token %}
+				</form>
+			</div>
+				<div>
+					<h3>{% if reg_list %}<span class="quiet">{{ reg_list|length }}</span> {% endif %}Smoke Registrations</h3>
+
+					{% if reg_list %}
+						<table class="sortable">
+						<th><code><a href="JavaScript:void(0);">SN</a></code></th><th><code><a href="JavaScript:void(0);">Name</a></code></th><th><code>Co TownRangeSec Elev  %S SSRA SPZ RC Type Acres  Burned LM Ltons Ptons BUt/ac by Size DD Sp Hs Cut</code></th>
+						{% for smokeregister in reg_list %}
+						<tr{% cycle '' ' class="even"' %}><td><code><a href="/{{ smokeregister.sn }}/">{{ smokeregister.sn }}</a> </code></td><td><code>{% if smokeregister.regname|length > 20 %}{{ smokeregister.regname|upper|slice:"20"|ljust:"20" }}{% else %}{{ smokeregister.regname|upper|ljust:"20" }}{% endif %}</code></td><td><code>{{ smokeregister.county }} {{ smokeregister.township }} {{ smokeregister.range }} {{ smokeregister.section|ljust:"2" }} {{ smokeregister.elevation|stringformat:"05d" }} {{ smokeregister.slope|stringformat:"02d" }} {{ smokeregister.ssradistance|rjust:"2" }}mi {{ smokeregister.spz }}   {{ smokeregister.reason }}  {{ smokeregister.typeburn }}    <span style="color:{{ smokeregister.color }}">{{ smokeregister.regacres|stringformat:"04d" }}ac</span> {% if smokeregister.black %}<span style="color:{{ smokeregister.color }}">{{ smokeregister.black|stringformat:"04d" }}ac</span>{% else %}      {% endif %} {{ smokeregister.loadmethod|ljust:"2" }} {{ smokeregister.landingtons|stringformat:"05d" }} {{ smokeregister.piletons|stringformat:"05d" }} {{ smokeregister.fuelclass1|stringformat:"02d" }}{{ smokeregister.fuelclass2|stringformat:"02d" }}{{ smokeregister.fuelclass3|stringformat:"02d" }}{{ smokeregister.fuelclass4|stringformat:"02d" }}{{ smokeregister.fuelclass5|stringformat:"03d" }}{{ smokeregister.fuelclass6|stringformat:"03d" }} {{ smokeregister.duffdepth|stringformat:"02d" }} {{ smokeregister.fuelspecies }}  {{ smokeregister.harvestd }}  {{ smokeregister.cutdate|date:"m" }}{{ smokeregister.cutdate|date:"y" }}</code></td></tr>
+						{% endfor %}
+						</table>
+						{% else %}
+						<ul>
+						<li>No smoke registrations.</li>
+						</ul>
+					{% endif %}
+<br />
+					<h3>{% if plan_list %}<span class="quiet">{{ plan_list|length }}</span> {% endif %}Burns Planned</h3>
+
+					{% if plan_list %}
+						<table class="sortable">
+						<th><code><a href="JavaScript:void(0);">SN          -##</a></code></th><th><code><a href="JavaScript:void(0);"> Name                 </a></code></th><th><code>Ignition    Ac   Ltons Ptons BUt/a  Ignition    Ac   Ltons Ptons BUt/a Dur M Dh Kh DSR TF RH WS</code></th>
+						{% for smokeplan in plan_list %}
+						<tr{% cycle '' ' class="even"' %}>
+						{% if smokeplan.result_snid.notaccomplished %}
+						<td><code><a href="/{{ smokeplan.sn }}/{{ smokeplan.suffix }}/">{{ smokeplan.sn }}-{{ smokeplan.suffix }}</a></code></td><td><code> {% if  smokeplan.sn.regname|length > 20 %}{{  smokeplan.sn.regname|slice:"20"|ljust:"20" }}{% else %}{{  smokeplan.sn.regname|upper|ljust:"20" }}{% endif %}</code></td><td><code><a href='/{{ smokeplan.ignitiondate|date:"Y/m/d" }}/ignition/'>{{ smokeplan.ignitiondate|date:"mdy" }}</a> {{ smokeplan.ignitiontime|time:"Hi" }} {{ smokeplan.acrestoburn|stringformat:"04d" }} {{ smokeplan.landingtons|stringformat:"05d" }} {{ smokeplan.piletons|stringformat:"05d" }} {{ smokeplan.b_u_tonsperacre|stringformat:"05d" }}  NO IGNITION...........................PLAN NOT ACCOMPLISHED</code></td>
+						{% else %}
+						<td><code><a href="/{{ smokeplan.sn }}/{{ smokeplan.suffix }}/">{{ smokeplan.sn }}-{{ smokeplan.suffix }}</a></code></td><td><code> {% if  smokeplan.sn.regname|length > 20 %}{{  smokeplan.sn.regname|slice:"20"|ljust:"20" }}{% else %}{{  smokeplan.sn.regname|upper|ljust:"20" }}{% endif %}</code></td><td><code><a href='/{{ smokeplan.ignitiondate|date:"Y/m/d" }}/ignition/'>{{ smokeplan.ignitiondate|date:"mdy" }}</a> {{ smokeplan.ignitiontime|time:"Hi" }} {{ smokeplan.acrestoburn|stringformat:"04d" }} {{ smokeplan.landingtons|stringformat:"05d" }} {{ smokeplan.piletons|stringformat:"05d" }} {{ smokeplan.b_u_tonsperacre|stringformat:"05d" }}  <a href='/{{ smokeplan.result_snid.ignitiondated|date:"Y/m/d" }}/ignition/'>{{ smokeplan.result_snid.ignitiondated|date:"mdy" }}</a> {{ smokeplan.result_snid.ignitiontimed|time:"Hi" }} {{ smokeplan.result_snid.acresburned|stringformat:"04d" }} {{ smokeplan.result_snid.landingtonned|stringformat:"05d" }} {{ smokeplan.result_snid.piletonned|stringformat:"05d" }} {{ smokeplan.result_snid.b_u_tonsperacred|stringformat:"05d" }} {{ smokeplan.result_snid.ignitionduration|stringformat:"03d" }} {{ smokeplan.result_snid.ignitionmethod }} {{ smokeplan.result_snid.tenhour|stringformat:"02d" }} {{ smokeplan.result_snid.thousandhour|stringformat:"02d" }} {{ smokeplan.result_snid.dayssincerain|stringformat:"03d" }} {{ smokeplan.result_snid.airtemperature|stringformat:"02d" }} {{ smokeplan.result_snid.relativehumidity|stringformat:"02d" }} {{ smokeplan.result_snid.windspeed|stringformat:"02d" }}</code></td>
+						{% endif %}
+						</tr>
+						{% endfor %}
+						</table>
+					{% else %}
+						<ul>
+							<li>No plans.</li>
+						</ul>
+ 					{% endif %}
+<br />
+					<h3>{% if result_list %}<span class="quiet">{{ result_list|length }}</span> {% endif %}Plans Resulted</h3>
+
+					{% if result_list %}
+						<table class="sortable">
+						<th><code>SN          -##</code></th><th><code> Name                 </code></th><th><code>Ignition    Ac   Ltons Ptons BUt/a  Ignition    Ac   Ltons Ptons BUt/a Dur M Dh Kh DSR TF RH WS</code></th>
+						{% for smokeresult in result_list %}
+						<tr{% cycle '' ' class="even"' %}>
+						{% if smokeresult.notaccomplished %}
+						<td><code><a href="/{{ smokeresult.snid.sn }}/{{ smokeresult.snid.suffix }}/">{{ smokeresult.snid.sn }}-{{ smokeresult.snid.suffix }}</a></code></td> <td><code> {% if smokeresult.snid.sn.regname|length > 20 %}{{ smokeresult.snid.sn.regname|slice:"20"|ljust:"20" }}{% else %}{{ smokeresult.snid.sn.regname|upper|ljust:"20" }}{% endif %}</a></code></td> <td><code><code><a href='/{{ smokeresult.snid.ignitiondate|date:"Y/m/d" }}/ignition/'>{{ smokeresult.snid.ignitiondate|date:"mdy" }}</a> {{ smokeresult.snid.ignitiontime|time:"Hi" }} {{ smokeresult.snid.acrestoburn|stringformat:"04d" }} {{ smokeresult.snid.landingtons|stringformat:"05d" }} {{ smokeresult.snid.piletons|stringformat:"05d" }} {{ smokeresult.snid.b_u_tonsperacre|stringformat:"05d" }}  NO IGNITION...........................PLAN NOT ACCOMPLISHED</code></td>
+						{% else %}
+						<td><code><a href="/{{ smokeresult.snid.sn }}/{{ smokeresult.snid.suffix }}/">{{ smokeresult.snid.sn }}-{{ smokeresult.snid.suffix }}</a></a></code></td> <td><code> {% if smokeresult.snid.sn.regname|length > 20 %}{{ smokeresult.snid.sn.regname|slice:"20"|ljust:"20" }}{% else %}{{ smokeresult.snid.sn.regname|upper|ljust:"20" }}{% endif %}</a></code></td> <td><code><a href='/{{ smokeresult.snid.ignitiondate|date:"Y/m/d" }}/ignition/'>{{ smokeresult.snid.ignitiondate|date:"mdy" }}</a> {{ smokeresult.snid.ignitiontime|time:"Hi" }} {{ smokeresult.snid.acrestoburn|stringformat:"04d" }} {{ smokeresult.snid.landingtons|stringformat:"05d" }} {{ smokeresult.snid.piletons|stringformat:"05d" }} {{ smokeresult.snid.b_u_tonsperacre|stringformat:"05d" }}  <a href='/{{ smokeresult.ignitiondated|date:"Y/m/d" }}/ignition/'>{{ smokeresult.ignitiondated|date:"mdy" }}</a> {{ smokeresult.ignitiontimed|time:"Hi" }} {{ smokeresult.acresburned|stringformat:"04d" }} {{ smokeresult.landingtonned|stringformat:"05d" }} {{ smokeresult.piletonned|stringformat:"05d" }} {{ smokeresult.b_u_tonsperacred|stringformat:"05d" }} {{ smokeresult.ignitionduration|stringformat:"03d" }} {{ smokeresult.ignitionmethod }} {{ smokeresult.tenhour|stringformat:"02d" }} {{ smokeresult.thousandhour|stringformat:"02d" }} {{ smokeresult.dayssincerain|stringformat:"03d" }} {{ smokeresult.airtemperature|stringformat:"02d" }} {{ smokeresult.relativehumidity|stringformat:"02d" }} {{ smokeresult.windspeed|stringformat:"02d" }}</code></td>
+						{% endif %}
+						</tr>
+						{% endfor %}
+						</table>
+					{% else %}
+						<ul>
+							<li>No results.</li>
+						</ul>
+ 					{% endif %}
+<br />
+					<div>
+						<p>{% if not iyear %}<a href="/user/{{ author.username|lower }}/closed/">Closed</a> registrations and resulted plans for this user.{% else %}<a href="/user/{{ author.username|lower }}/">Current</a> registrations and plans for this user.{% endif %}</p>
+					</div>
+				</div>		
+			{% endfor %}
+			</div>
+	</div>
+	</div>
+	    <div class="prepend-1 small altb quiet">
+		<br />
+		<hr>
+		 &copy 1981-{% now "Y" %}   &para   Feared by some.  &para  Adored by billions.   &para   Served by <a href="//{{ request.site.domain }}/">{{ request.site.name }}</a>.   &para   Weaponized text.
+        </div>
+	</div>
+</body>
+</html>

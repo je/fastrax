@@ -1,0 +1,128 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>fastrax</title>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+
+	<link rel="stylesheet" href="/static/blueprint/screen.css" type="text/css" media="screen, projection">
+	<link rel="stylesheet" href="/static/blueprint/print.css" type="text/css" media="print">
+  <!--[if IE]><link rel="stylesheet" href="/static/blueprint/ie.css" type="text/css" media="screen, projection"><![endif]-->
+	<link rel="stylesheet" href="/static/blueprint/plugins/fancy-type/screen.css" type="text/css" media="screen, projection">
+</head>
+<body>
+	<div class="container" style="margin-left:0">
+	<div class="prepend-1">  
+		<h3></h3>
+		<h2 class="altb"></h2>
+		<h3><a href="/">FASTRAX</a></h3>
+		
+		<div class="altb">
+			<div>
+
+				{% if plan_list %}
+					{% for smokeplan in plan_list %}
+						<h3><a href="/district/{{ smokeplan.sn.district.tla|lower }}/">{{ smokeplan.sn.district.tla }}</a> <a href="/district/{{ smokeplan.sn.district.tla|lower }}/{{ smokeplan.sn.district.slug }}/">{{ smokeplan.sn.district.name }}</a><br />
+						Smoke Registration #<a href="/{{ smokeplan.sn }}/">{{ smokeplan.sn}}</a> or <a href="/{{ smokeplan.sn }}/">{{ smokeplan.sn.regname }}</a><br />
+						Registered <a href="/{{ smokeplan.sn.regdate|date:"Y/m/d" }}/">{{ smokeplan.sn.regdate|date:"d M Y" }}</a> by <a href="/user/{{ smokeplan.sn.author }}/">{{ smokeplan.sn.author }}</a></h3>
+						<div class="span-7 colborder">
+						<table>
+						<tr><td>County:</td> <td>{{ regco }}</td></tr>
+						<tr class="even"><td>PLSS:</td> <td>{{ smokeplan.sn.township }} {{ smokeplan.sn.range }} {{ smokeplan.sn.section|ljust:"2" }}</td></tr>
+						<tr><td>Elevation:</td> <td>{{ smokeplan.sn.elevation|stringformat:"05d" }} ft</td></tr>
+						<tr class="even"><td>% Slope:</td> <td>{{ smokeplan.sn.slope|stringformat:"02d" }}</td></tr>
+						<tr><td>dSSRA:</td> <td>{{ smokeplan.sn.ssradistance|rjust:"2" }} mi</td></tr>
+						<tr class="even"><td>SPZ:</td> <td>{{ regspz }}</td></tr>
+						<tr><td>Reason:</td> <td>{{ regreason }}</td></tr>
+						<tr class="even"><td>Burn Type:</td> <td>{{ regtype }}</td></tr>
+						<tr><td>Acres:</td> <td>{{ smokeplan.sn.regacres|stringformat:"04d" }} ac</td></tr>
+						<tr class="even"><td>Load Method:</td> <td>{{ reglm }}</td></tr>
+						<tr><td>Landings:</td> <td>{{ smokeplan.sn.landingtons|stringformat:"05d" }} tons</td></tr>
+						<tr class="even"><td>Piles:</td> <td>{{ smokeplan.sn.piletons|stringformat:"05d" }} tons</td></tr>
+						<tr><td>Broadcast/Underburn:</td> </tr>
+						<tr><td>0-1/4":</td> <td>{{ smokeplan.sn.fuelclass1|stringformat:"02d" }} tons/ac</td></tr>
+						<tr><td>1/4"-1":</td> <td>{{ smokeplan.sn.fuelclass2|stringformat:"02d" }} tons/ac</td></tr>
+						<tr><td>1"-3":</td> <td>{{ smokeplan.sn.fuelclass3|stringformat:"02d" }} tons/ac</td></tr>
+						<tr><td>3"-9":</td> <td>{{ smokeplan.sn.fuelclass4|stringformat:"02d" }} tons/ac</td></tr>
+						<tr><td>9"-20":</td> <td>{{ smokeplan.sn.fuelclass5|stringformat:"03d" }} tons/ac</td></tr>
+						<tr><td>20+":</td> <td>{{ smokeplan.sn.fuelclass6|stringformat:"03d" }} tons/ac</td></tr>
+						<tr class="even"><td>Duff:</td> <td>{{ smokeplan.sn.duffdepth|stringformat:"02d" }} tenths inch</td></tr>
+						<tr><td>Species:</td> <td>{{ regspecies }}</td></tr>
+						<tr class="even"><td>Harvest spec:</td> <td>{{ reghd }}</td></tr>
+						<tr><td>Cutdate:</td> <td>{{ smokeplan.sn.cutdate|date:"M Y" }}</td></tr>
+						</table>
+						</div>
+						{% if plan_list %}
+						<div class="span-12 last">
+						<div class="span-12">
+						<h3>Burn <a href="/{{ smokeplan.sn }}/{{ smokeplan.suffix }}/">{{ smokeplan.suffix }}</a><br />
+						Planned Ignition @ {{ smokeplan.ignitiontime|time:"Hi" }} <a href="/{{ smokeplan.ignitiondate|date:"Y/m/d" }}/ignition/">{{ smokeplan.ignitiondate|date:"d M Y" }}</a><br />
+						Planned <a href="/{{ smokeplan.plan_date|date:"Y/m/d" }}/">{{ smokeplan.plan_date|date:"d M Y" }}</a> by <a href="/user/{{ smokeplan.author }}/">{{ smokeplan.author }}</a></h3>
+						<table>
+						{% for smokeplan in plan_list %}
+						<tr class="even"><td>Acres:</td><td>{{ smokeplan.acrestoburn|stringformat:"04d" }} ac</td></tr>
+						<tr><td>Landings:</td> <td>{{ smokeplan.landingtons|stringformat:"05d" }} tons</td></tr>
+						<tr class="even"><td>Piles:</td> <td>{{ smokeplan.piletons|stringformat:"05d" }} tons</td></tr>
+						<tr><td>Broadcast/Underburn:</td> <td>{{ smokeplan.b_u_tonsperacre|stringformat:"05d" }} tons/ac</td></tr>
+						</table>
+						</div>
+						<br />
+						<div class="span-12 last">
+						<br />
+						{% if result_list %}
+						<h3>Actual Ignition @ {{ smokeplan.result_snid.ignitiontimed|time:"Hi" }} <a href="/{{ smokeplan.result_snid.ignitiondated|date:"Y/m/d" }}/ignition/">{{ smokeplan.result_snid.ignitiondated|date:"d M Y" }}</a><br />
+						Resulted <a href="/{{ smokeplan.result_snid.result_date|date:"Y/m/d" }}/">{{ smokeplan.result_snid.result_date|date:"d M Y" }}</a> by <a href="/user/{{ smokeplan.result_snid.author }}/">{{ smokeplan.result_snid.author }}</a></h3>
+						<table>
+						<tr><td>Acres:</td><td>{{ smokeplan.result_snid.acresburned|stringformat:"04d" }} ac</td><td></td><td></td></tr>
+						<tr class="even"><td>Landings:</td><td>{{ smokeplan.result_snid.landingtonned|stringformat:"05d" }} tons</td><td></td><td></td></tr>
+						<tr><td>Piles:</td><td>{{ smokeplan.result_snid.piletonned|stringformat:"05d" }} tons</td><td></td><td></td></tr>
+						<tr class="even"><td>Broadcast/Underburn:</td><td>{{ smokeplan.result_snid.b_u_tonsperacred|stringformat:"05d" }} tons/ac</td><td></td><td></td></tr>
+						<tr><td>Ignition:</td><td>{{ resigm }}</td><td>Intrustion?:</td><td>{{ smokeplan.result_snid.smokeintrusion }}</td></tr>
+						<tr class="even"><td>Duration:</td><td>{{ smokeplan.result_snid.ignitionduration|stringformat:"03d" }} min</td><td>Rapid?:</td><td>{{ smokeplan.result_snid.rapidignition }}</td></tr>
+						<tr><td>Moisture 10hr:</td><td>{{ smokeplan.result_snid.tenhour|stringformat:"02d" }}</td></tr>
+						<tr><td>Moisture 1000hr:</td><td>{{ smokeplan.result_snid.thousandhour|stringformat:"02d" }}</td><td>1000hr Method:</td><td>{{ reskhr }}</td></tr>
+						<tr class="even"><td>Weatherstation:</td><td>{{ smokeplan.result_snid.weatherstation }}</td><td></td><td></td></tr>
+						<tr><td>Since Rain:</td><td>{{ smokeplan.result_snid.dayssincerain|stringformat:"03d" }} days</td><td>Snow off:</td><td>{{ ressno }}</td></tr>
+						<tr class="even"><td>TempF:</td><td>{{ smokeplan.result_snid.airtemperature|stringformat:"02d" }}</td><td>RelH:</td><td>{{ smokeplan.result_snid.relativehumidity|stringformat:"02d" }}</td></tr>
+						<tr><td>Windspeed:</td><td>{{ smokeplan.result_snid.windspeed|stringformat:"02d" }}</td><td>Winddir:</td><td>{{ reswdr }}</td></tr>
+						</table>
+						{% else %}
+						{% for smokeplan in plan_list %}
+							<form method="POST" action="/{{ smokeplan.sn }}/{{ smokeplan.suffix }}/result1/">
+						{% endfor %}
+							<fieldset>
+								<legend>Result</legend>
+								<ol>
+								{% for field in form %}
+									<li>{{ field.errors }} {{ field.label_tag }}: {{ field }} <span class="span-6 small quiet last">{{ field.help_text }}</span></li>
+								{% endfor %}
+								</ol>
+							<div class="span-10">
+							<input type="submit" value="Result" name="save"/>
+							</div>
+							</fieldset>
+							{% csrf_token %}
+							</form>
+						{% endif %}
+						</div>
+						{% endfor %}
+						{% else %}
+						No plan under this number.
+						{% endif %}
+<br />
+				
+						{% endfor %}
+						{% else %}
+						{% endif %}
+						</div>
+			</div>
+		</div>
+<hr>
+	</div>
+	    <div class="prepend-1 small altb quiet">
+		<br />
+		<hr>
+		 &copy 1981-{% now "Y" %}   &para   Feared by some.  &para  Adored by billions.   &para   Served by <a href="//{{ request.site.domain }}/">{{ request.site.name }}</a>.   &para   Weaponized text.
+        </div>
+	</div>
+</body>
+</html>	

@@ -1,0 +1,70 @@
+User-agent: Googlebot
+Disallow: /
+Disallow: /static/
+Disallow: /media/
+
+User-agent: baiduspider
+Disallow: /
+Disallow: /static/
+Disallow: /media/
+
+User-agent: msnbot
+Disallow: /
+Disallow: /static/
+Disallow: /media/
+
+User-agent: naverbot
+Disallow: /
+Disallow: /static/
+Disallow: /media/
+
+User-agent: seznambot
+Disallow: /
+Disallow: /static/
+Disallow: /media/
+
+User-agent: Slurp
+Disallow: /
+Disallow: /static/
+Disallow: /media/
+
+User-agent: teoma
+Disallow: /
+Disallow: /static/
+Disallow: /media/
+
+User-agent: Yandex
+Disallow: /
+Disallow: /static/
+Disallow: /media/
+
+User-agent: CCBot
+Disallow: /
+Disallow: /static/
+Disallow: /media/
+
+User-agent: Telefonica
+Disallow: /
+Disallow: /static/
+Disallow: /media/
+
+User-agent: Mediapartners-Google
+Disallow: /
+Disallow: /static/
+Disallow: /media/
+
+User-agent: Yahoo Pipes 1.0
+Disallow: /
+Disallow: /static/
+Disallow: /media/
+
+User-agent: Googlebot-Image
+Disallow: /
+Disallow: /static/
+Disallow: /media/
+
+User-agent: *
+Disallow: /
+Disallow: /static/
+Disallow: /media/
+Allow: /humans.txt

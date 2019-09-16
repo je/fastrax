@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+  {% block favico %} 
+  {% endblock %}
+
+  {% block title %}
+    <title>FASTRAX</title>
+  {% endblock %}
+
+  {% block maincss %}
+    <![if !IE]>
+    <link href="/static/b3c/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/fa-4.0.0/css/font-awesome.min.css">
+    <![endif]>
+    <!--[if gte IE 9 ]>
+    <link href="/static/b3c/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/fa-4.0.0/css/font-awesome.min.css">
+    <![endif]-->
+    <!--[if lt IE 9 ]>
+    <link href="/static/b3c/css/bootstrap.ie.css" rel="stylesheet">
+    <link href="/static/b3c/glyphicon.css" rel="stylesheet">
+    <![endif]-->
+
+    <link href="/static/b3c/sticky-footer-navbar.css" rel="stylesheet">
+
+    <!--[if lt IE 9]>
+      <script src="/static/b3c/html5shiv.js"></script>
+      <script src="/static/b3c/respond.min.js"></script>
+    <![endif]-->
+  <style>
+  .dropdown-menu, .navbar-nav > li > .dropdown-menu.pull-right {
+      z-index: 9999;
+      right: 0px;
+      left: auto;
+  }
+  </style>
+  {% endblock %}
+
+  {% block extrahead %} 
+    <link href='//fonts.googleapis.com/css?family=Lilita+One' rel='stylesheet' type='text/css'>
+    <style type="text/css">
+  /* Custom container */
+  .container { padding: 0 15px; margin: 0 auto; width: 100%;}
+  .row { padding: 0px; margin: 0 0;}
+  .map {height:440px;border:thick solid black;}
+  .navbar-nav > li > a {padding-top:5px !important; padding-bottom:5px !important;}
+  .navbar {min-height:30px !important;}
+
+    styled {font-family: 'Lilita One', serif;}
+
+    quiet {color:#666;} /* grey */
+    .quiet {color:#666;} /* grey */
+    ccalculated {color:#8B0000;} /* DarkRed */
+    dcalculated {color:#006400;} /* DarkGreen */
+    tcalculated {color:#8B0000; width:50px; margin-right:auto; text-align:right;}
+    tm {width:50px; float:right; margin-right:auto; text-align:right;}
+    rt {width:60px; float:right; margin-right:auto; text-align:right;}
+    lt {width:60px; margin-right:auto; text-align:right;}
+    label.text {cursor: text;}
+    span.lt {width:90px;}
+    unk {color:white;background-color:black;} /* white on black */
+    td.plane {width:100px;}
+    td.date {width:80px;}
+    td.ex {background-color:white;border-left:thick solid #FF4500;}
+    td.total {background-color:white;border-top:thick solid;text-align:right;}
+    td.number {text-align:right;}
+    td.blank {background-color:white;}
+    tr.hdsuccess {background-color:Gainsboro;}
+    tr.hddanger {background-color:Gainsboro;}
+    tr.hdwarning {background-color:Gainsboro;}
+    td.hdsuccess {background-color:Gainsboro;}
+    td.hddanger {background-color:Gainsboro;}
+    td.hdwarning {background-color:Gainsboro;}
+    th.hdsuccess {background-color:Gainsboro;}
+    th.hddanger {background-color:Gainsboro;}
+    th.hdwarning {background-color:Gainsboro;}
+    tr.zg {background-color: #f9f9f9;} /* zebra */
+    tr.zb {background-color: #F0F8FF;} /* zebra */
+    dogreen {color:#556B2F;} /* DarkOliveGreen */
+    fgreen {color:#228B22;} /* ForestGreen */
+    ored {color:#FF4500;} /* OrangeRed */
+    /* a:visited {color:#4B0082;}  Indigo */
+
+    table.s .tablesorter-header {
+      cursor: pointer;
+    }
+    table.s .tablesorter-header:after {
+      content: "";
+      float: right;
+      margin-top: 7px;
+      border-width: 0 4px 4px;
+      border-style: solid;
+      border-color: #000000 transparent;
+      visibility: hidden;
+    }
+    table.s .tablesorter-headerSortUp, table.s .tablesorter-headerSortDown {
+      background-color: #f7f7f9;
+      text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75);
+    }
+    table.s .tablesorter-header:hover:after {
+      visibility: visible;
+    }
+    table.s .tablesorter-headerSortDown:after, table.s .tablesorter-headerSortDown:hover:after {
+      visibility: visible;
+      filter: alpha(opacity=60);
+      -moz-opacity: 0.6;
+      opacity: 0.6;
+    }
+    table.s .tablesorter-headerSortUp:after {
+      border-bottom: none;
+      border-left: 4px solid transparent;
+      border-right: 4px solid transparent;
+      border-top: 4px solid #000000;
+      visibility: visible;
+      -webkit-box-shadow: none;
+      -moz-box-shadow: none;
+      box-shadow: none;
+      filter: alpha(opacity=60);
+      -moz-opacity: 0.6;
+      opacity: 0.6;background-color:white;border-top:thick solid;
+    }
+
+        img.olTileImage {
+            max-width: none;
+        }
+
+        .olLayerGooglePoweredBy {
+          display: none;
+        }
+
+    @media print {
+          .visible-print  { display: inherit !important; }
+          .hidden-print   { display: none !important; }
+          a:link:after, a:visited:after {
+            content: "";
+          }
+        }
+    </style>
+  {% endblock %}
+
+  </head>
+
+  {% block load %}
+  <body>
+  {% endblock %}
+
+    <!-- Wrap all page content here -->
+    <div id="wrap">
+
+      <!-- Fixed navbar -->
+      <div class="navbar navbar-default navbar-top" role="navigation" style="min-height:30px;margin-bottom:0px;">
+        <div class="container">
+          <div class="navbar-header" style="height:30px;">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            {% block brand %}
+            <a class="navbar-brand" style="height:30px;padding:5px 5px 5px 15px;" href="{% url 'index' %}"><strong>FASTRAX</strong></a>
+            {% endblock %}
+          </div>
+          <div class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+            {% block nav %} 
+            {% endblock %} 
+            </ul>
+                  <ul class="nav navbar-nav pull-right" style="height:30px;min-height:30px;padding:5px 15px 5px 10px;margin-right:-30px;">
+      <li class="dropdown">
+      {% block login %}
+                 <button href="#" type="button" class="btn btn-xs btn-default dropdown-toggle" data-toggle="dropdown">{% if user.is_authenticated %}{{ user.email }}</button>{% else %}Log In</button>{% endif %} 
+      {% endblock %}
+                <ul class="dropdown-menu" style="padding:0px 0px 0px 0px;">
+                  {% block navuser %}
+                  {% if request %}
+                  {% if user.is_authenticated %}
+                    <li><a href="/password/"><strong>Change password</strong></a></li>
+                    <li><a href="/logout/?next=/"><strong>Log out</strong></a></li>
+                  {% else %}
+<style>
+.minset {
+    width: 300px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: auto;
+    text-align: center;
+}
+</style>
+    <div class="panel panel-default minset">
+        <div class="panel-heading"><strong>{% if user.is_authenticated %}{{ user.email }}{% else %}Log In{% endif %}</strong></div>
+        <div class="panel-body">
+        <form class="login" method="POST" action="{% url 'account_login' %}">
+          {% csrf_token %}
+            {{ form.non_field_errors }}
+                  <span class="form-group">
+                  <span class="">{{ form.login.errors }}
+                  <span class="input-group">
+                  <span class="input-group-addon"><i class="glyphicon glyphicon-envelope"></i></span>
+                  <input id="id_login" class="form-control input-sm" maxlength="30" name="login" placeholder="Username" type="text" />
+                  </span>
+                  </span>
+                  </span>
+                  <br />
+                  <span class="form-group">
+                  <span class="">{{ form.password.errors }}
+                  <span class="input-group">
+                  <span class="input-group-addon"><i class="glyphicon glyphicon-lock"></i></span>
+                  <input id="id_password"  class="form-control input-sm" name="password" placeholder="Password" type="password" />
+                  </span>
+                  </span>
+                  </span><br />
+          {% if redirect_field_value %}
+          <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+          {% endif %}
+
+          <button class="btn" type="submit">Sign In</button>
+        </form>
+        </div>
+
+        <div class="panel-footer">
+            <div class="remember-forgot-section">
+                <a class="forgot" href="{% url 'account_reset_password' %}">Forgot Password?</a>
+            </div>
+            Don't have an account? <a href="{% url 'account_signup' %}">Sign Up</a>
+        </div>
+    </div>
+                  {% block browserid %}
+                  {% endblock %}
+                  {% endif %}
+                  {% endif %}
+                  {% endblock %}
+                </ul>
+              </li>
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
+
+      <!-- Begin page content -->
+      <div class="container" style="padding-top:0px;">
+        {% block messages %}
+        {% if messages %}
+          {% for message in messages %}
+          <div class="alert{% if message.tags %} alert-{{ message.tags }}{% endif %}" style='margin-top:10px;padding-top:5px;padding-bottom:5px;'>
+          <button type="button" class="close" data-dismiss="alert">&times;</button>
+          {% if message.tags %}<strong>{{ message.tags|title }}:</strong> {% endif %}{{ message|safe }}
+          </div>
+          {% endfor %}
+        {% endif %}
+        {% endblock %}
+
+        {% block pagetitle %}
+        {% endblock %}
+
+        {% block content %}
+        <div>
+        {{ flatpage.content }}
+        </div>
+        {% endblock %}
+      </div>
+    </div>
+
+    <div id="footer">
+      <div class="container">
+        <p class="text-muted"></p>
+      </div>
+    </div>
+
+{% block endscripts %}
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+<script src="/static/b3c/js/bootstrap.min.js"></script>
+{% endblock %}
+
+
+
+  </body>
+</html>

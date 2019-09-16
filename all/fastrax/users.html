@@ -1,0 +1,75 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>fastrax</title>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+
+	<link rel="stylesheet" href="/static/blueprint/screen.css" type="text/css" media="screen, projection">
+	<link rel="stylesheet" href="/static/blueprint/print.css" type="text/css" media="print">
+  <!--[if IE]><link rel="stylesheet" href="/static/blueprint/ie.css" type="text/css" media="screen, projection"><![endif]-->
+	<link rel="stylesheet" href="/static/blueprint/plugins/fancy-type/screen.css" type="text/css" media="screen, projection">
+</head>
+<body>
+	<div class="container" style="margin-left:0">
+	<div class="prepend-1">  
+		<h3></h3>
+		<h2 class="altb"></h2>
+		<h3><a href="/">FASTRAX</a></h3>
+		
+		<div class="altb">
+			<div>
+				<div class="span-22">
+					<h3>User List</h3>
+					{% if user_list %}
+						<div>
+							We have {{ user_list|length }} users in our system, all stout pyrotechnicians. For the most part. <br />Click below for registrations and plans by user.
+						</div>
+						<br />
+						<div>
+						 <div class="span-5">
+							<ul>
+								{% for author in user_list %}
+									{% ifequal forloop.counter col1 %}
+							</ul></div>
+<div class="span-5">
+  <ul>
+    {% endifequal %}
+									{% ifequal forloop.counter col2 %}
+  </ul></div>
+<div class="span-5">
+  <ul>
+    {% endifequal %}
+									{% ifequal forloop.counter col3 %}
+  </ul></div>
+<div class="span-5">
+  <ul>
+    {% endifequal %}
+									{% ifequal forloop.counter col4 %}
+  </ul></div>
+<div class="span-5">
+  <ul>
+    {% endifequal %}
+								<li><a href="/user/{{ author.username|lower }}/">{{ author.username }}</a> ({{ author.rx }}|{{ author.px }})</li>
+								{% endfor %}
+							</ul>
+						 </div>
+						</div>
+					{% else %}
+						<div>
+							No users. What?
+						</div>
+					{% endif %}
+					<div class="span-20">
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	    <div class="prepend-1 small altb quiet">
+		<br />
+		<hr>
+		 &copy 1981-{% now "Y" %}   &para   Feared by some.  &para  Adored by billions.   &para   Served by <a href="//{{ request.site.domain }}/">{{ request.site.name }}</a>.   &para   Weaponized text.
+        </div>
+	</div>
+</body>
+</html>

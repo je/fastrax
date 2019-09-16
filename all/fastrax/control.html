@@ -1,0 +1,99 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<title>fastrax</title>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<link rel="stylesheet" href="/static/blueprint/screen.css" type="text/css" media="screen, projection">
+	<link rel="stylesheet" href="/static/blueprint/print.css" type="text/css" media="print">
+  <!--[if IE]><link rel="stylesheet" href="/static/blueprint/ie.css" type="text/css" media="screen, projection"><![endif]-->
+	<link rel="stylesheet" href="/static/blueprint/plugins/fancy-type/screen.css" type="text/css" media="screen, projection">
+	<script src="/static/sorttable/sorttable.js"></script>
+	<script src="/static/chart.js/chart.js"></script>
+</head>
+<body>
+	<div class="container" style="margin-left:0">
+		<div class="prepend-1">  
+			<h3></h3>
+			<h2 class="altb"></h2>
+			<h3><a href="/">FASTRAX</a></h3>
+			
+			<div class="altb">
+				<div>
+					{% for district in district_list %}
+					<div class="span-24">
+						<h4><a href="/district/{{ district.tla|lower }}/">{{ district.tla }}</a> <a href="/district/{{ district.tla|lower }}/{{ district.slug }}/">{{ district.name }}</a> <small> has {{ district.maxcount }} registrations, {{ district.maxplan }} plans, and {{ district.cumrt }} resulted plans</small></h4>
+					</div>
+					<div class="span-24">
+						{% if district.entry_dates %}
+						<div class="span-24">
+							<canvas id="charta_{{ district.tla|lower }}_{{ district.slug }}" height="180" width="900"></canvas>
+							<script>
+								var barChartData = {
+									labels : [{% for month in district.entry_dates reversed %}"{{ month.month|date:"M"|slice:":1" }}"{% if not forloop.last %},{% endif %}{% endfor %}],
+									datasets : [
+										{
+											fillColor : "rgba(255,153,0,0.5)",
+											strokeColor : "rgba(255,153,0,1)",
+											pointColor : "rgba(255,153,0,1)",
+											pointStrokeColor : "#f90",
+											data : [{% for month in district.entry_dates reversed %}{{ month.count }}{% if not forloop.last %},{% endif %}{% endfor %}]
+										},
+										{
+											fillColor : "rgba(255,0,0,0.5)",
+											strokeColor : "rgba(255,0,0,1)",
+											pointColor : "rgba(255,0,0,1)",
+											pointStrokeColor : "#f00",
+											data : [{% for month in district.entry_dates reversed %}{{ month.countp }}{% if not forloop.last %},{% endif %}{% endfor %}]
+										},
+										{
+											fillColor : "rgba(0,0,0,0.5)",
+											strokeColor : "rgba(0,0,0,1)",
+											pointColor : "rgba(0,0,0,1)",
+											pointStrokeColor : "#000",
+											data : [{% for month in district.entry_dates reversed %}{{ month.countr }}{% if not forloop.last %},{% endif %}{% endfor %}]
+										}
+									]
+								}
+								var lineChartData = {
+									labels : [{% for month in district.entry_dates reversed %}"{{ month.month|date:"M"|slice:":1" }}"{% if not forloop.last %},{% endif %}{% endfor %}],
+									datasets : [
+										{
+											fillColor : "rgba(255,153,0,0.5)",
+											strokeColor : "rgba(255,153,0,1)",
+											pointColor : "rgba(255,153,0,1)",
+											pointStrokeColor : "#f90",
+											data : [{% for month in district.entry_dates reversed %}{{ month.cumu }}{% if not forloop.last %},{% endif %}{% endfor %}]
+										},
+										{
+											fillColor : "rgba(255,0,0,0.5)",
+											strokeColor : "rgba(255,0,0,1)",
+											pointColor : "rgba(255,0,0,1)",
+											pointStrokeColor : "#f00",
+											data : [{% for month in district.entry_dates reversed %}{{ month.cump }}{% if not forloop.last %},{% endif %}{% endfor %}]
+										},
+										{
+											fillColor : "rgba(0,0,0,0.5)",
+											strokeColor : "rgba(0,0,0,1)",
+											pointColor : "rgba(0,0,0,1)",
+											pointStrokeColor : "#000",
+											data : [{% for month in district.entry_dates reversed %}{{ month.cumr }}{% if not forloop.last %},{% endif %}{% endfor %}]
+										}
+									]
+								}
+							var myBar = new Chart(document.getElementById("charta_{{ district.tla|lower }}_{{ district.slug }}").getContext("2d")).Bar(barChartData, { barShowStroke : true, barStrokeWidth : 1.5, barValueSpacing : 3, barDatasetSpacing : 2, animation : false, scaleShowGridLines : false }).Line(lineChartData, { pointDot : false, datasetFill : false, animation : false, scaleShowGridLines : false });
+							</script>
+						</div>
+						{% endif %}
+					</div>
+					{% endfor %}
+				</div>
+			</div>
+		</div>
+	    <div class="prepend-1 small altb quiet">
+			<br />
+			<hr>
+			 &copy 1981-{% now "Y" %}   &para   Feared by some.  &para  Adored by billions.   &para   Served by <a href="//{{ request.site.domain }}/">{{ request.site.name }}</a>.   &para   Weaponized text.
+	    </div>
+	</div>
+</body>
+</html>

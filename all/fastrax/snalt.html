@@ -1,0 +1,128 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>fastrax</title>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+
+	<link rel="stylesheet" href="/static/blueprint/screen.css" type="text/css" media="screen, projection">
+	<link rel="stylesheet" href="/static/blueprint/print.css" type="text/css" media="print">
+	<link rel="stylesheet" href="/static/blueprint/charts.css" type="text/css" media="screen, projection">
+  <!--[if IE]><link rel="stylesheet" href="/static/blueprint/ie.css" type="text/css" media="screen, projection"><![endif]-->
+	<link rel="stylesheet" href="/static/blueprint/plugins/fancy-type/screen.css" type="text/css" media="screen, projection">
+	<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+</head>
+<body>
+	<div class="container" style="margin-left:0">
+	<div class="prepend-1">  
+		<h3></h3>
+		<h2 class="altb"></h2>
+		<h3><a href="/">FASTRAX</a></h3>
+		
+		<div class="altb">
+			<div>
+
+				{% if reg_list %}
+					{% for smokeregister in reg_list %}
+						<h3><a href="/district/{{ smokeregister.district.tla|lower }}/">{{ smokeregister.district.tla }}</a> <a href="/district/{{ smokeregister.district.tla|lower }}/{{ smokeregister.district.slug }}/">{{ smokeregister.district.name }}</a><br />
+						Smoke Registration #<a href="/{{ smokeregister.sn }}/">{{ smokeregister.sn }}</a> or <a href="/{{ smokeregister.sn }}/dyn/">{{ smokeregister.regname }}</a><br />
+						Registered <a href="/{{ smokeregister.regdate|date:"Y/m/d" }}/">{{ smokeregister.regdate|date:"d M Y" }}</a> by <a href="/user/{{ smokeregister.author }}/">{{ smokeregister.author }}</a></h3>
+
+						<div class="span-7 colborder">
+						<table>
+						<tr><td>County: {{ smokeregister.get_county_display }}</td></tr>
+						<tr class="even"><td>PLSS: {{ smokeregister.township }} {{ smokeregister.range }} {{ smokeregister.section|ljust:"2" }}</td></tr>
+						<tr><td>Elevation: {{ smokeregister.elevation|stringformat:"05d" }} ft</td></tr>
+						<tr class="even"><td>Slope: {{ smokeregister.slope|stringformat:"02d" }}%</td></tr>
+						<tr><td>SSRA distance: {{ smokeregister.ssradistance|rjust:"2" }} mi</td></tr>
+						<tr class="even"><td>Smoke Protection Zone: {{ smokeregister.get_spz_display }}</td></tr>
+						<tr><td>Reason: {{ smokeregister.get_reason_display }}</td></tr>
+						<tr class="even"><td>{{ smokeregister.get_typeburn_display }}</td></tr>
+						<tr><td>Acres: {{ smokeregister.regacres|stringformat:"04d" }} ac</td></tr>
+						<tr class="even"><td>Method: {{ smokeregister.get_loadmethod_display }}</td></tr>
+						<tr><td>Landings: {{ smokeregister.landingtons|stringformat:"05d" }} tons</td></tr>
+						<tr class="even"><td>Piles: {{ smokeregister.piletons|stringformat:"05d" }} tons</td></tr>
+						<tr><td>Broadcast/Underburn:</td> </tr>
+						<tr><td>0-1/4": {{ smokeregister.fuelclass1|stringformat:"02d" }} tons/ac</td></tr>
+						<tr><td>1/4"-1": {{ smokeregister.fuelclass2|stringformat:"02d" }} tons/ac</td></tr>
+						<tr><td>1"-3": {{ smokeregister.fuelclass3|stringformat:"02d" }} tons/ac</td></tr>
+						<tr><td>3"-9": {{ smokeregister.fuelclass4|stringformat:"02d" }} tons/ac</td></tr>
+						<tr><td>9"-20": {{ smokeregister.fuelclass5|stringformat:"03d" }} tons/ac</td></tr>
+						<tr><td>20+": {{ smokeregister.fuelclass6|stringformat:"03d" }} tons/ac</td></tr>
+						<tr class="even"><td>Duff: {{ smokeregister.duffdepth|stringformat:"02d" }} tenths inch</td></tr>
+						<tr><td>Species: {{ smokeregister.get_fuelspecies_display }}</td></tr>
+						<tr class="even"><td>Harvest spec: {{ smokeregister.get_harvestd_display }}</td></tr>
+						<tr><td>Cutdate: {{ smokeregister.cutdate|date:"M Y" }}</td></tr>
+						</table></div>
+{% if reg_list %}
+ {% for county in co %}
+  {% if trsr %}
+   {% for plss in trsr %}
+    <div class="span-15 last"><a href="/{{ smokeregister.sn }}/dyn/"><img src="http://maps.google.com/maps/api/staticmap?path=color:0xff0000ff|weight:1|{{ plss.miy }},{{ plss.mix }}|{{ plss.miy }},{{ plss.max }}|{{ plss.may }},{{ plss.max }}|{{ plss.may }},{{ plss.mix }}|{{ plss.miy }},{{ plss.mix }}&zoom=12&size=540x380&maptype=terrain&key=ABQIAAAA5T-R0Of6sw7VdjyDmzeTCBSqVWuXpQBiC_MzWlrV_OMT7hpGGhQn-NNsek7fUCSFsd6KA5IeDoQ8EQ&sensor=false" class="top"></a>
+    </div>
+   {% endfor %}
+   {% else %}
+	<div class="span-13 box last">
+    Township, range, section combination ({{ smokeregister.township }} {{ smokeregister.range }} {{ smokeregister.section }}) not in PLSS layer. No map for you.
+	</div>
+  {% endif %}
+ {% endfor %}
+{% endif %}
+<hr>
+				<div class="span-20">
+					<h3>Burn Plans for {{ smokeregister.regname }}:</h3>
+					<ul>
+						<p>
+						{% if plan_list %}
+						<table>
+						<th><code>## Ignition    Acres  Ltons Ptons BUt/a  Username Ignition    Ac   Ltons Ptons BUt/a Dur M Dh Kh DSR TF RH WS Username</code></th>
+							{% for smokeplan in plan_list %}
+							<tr{% cycle '' ' class="even"' %}>
+							{% if smokeplan.result_snid.notaccomplished %}
+							<td><code><a href="/{{ smokeplan.sn }}/{{ smokeplan.suffix }}/">{{ smokeplan.suffix|stringformat:"02s" }}</a> {{ smokeplan.ignitiondate|date:"mdy" }} {{ smokeplan.ignitiontime|time:"Hi" }} {{ smokeplan.acrestoburn|stringformat:"04d" }}ac {{ smokeplan.landingtons|stringformat:"05d" }} {{ smokeplan.piletons|stringformat:"05d" }} {{ smokeplan.b_u_tonsperacre|stringformat:"05d" }}  {{ smokeplan.author.username|truncatechars:"8" }} NO IGNITION...........................PLAN NOT ACCOMPLISHED {{ smokeplan.result_snid.author.username|truncatechars:"8" }}</code></td>
+							{% else %}
+							<td><code><a href="/{{ smokeplan.sn }}/{{ smokeplan.suffix }}/">{{ smokeplan.suffix|stringformat:"02s" }}</a> {{ smokeplan.ignitiondate|date:"mdy" }} {{ smokeplan.ignitiontime|time:"Hi" }} {{ smokeplan.acrestoburn|stringformat:"04d" }}ac {{ smokeplan.landingtons|stringformat:"05d" }} {{ smokeplan.piletons|stringformat:"05d" }} {{ smokeplan.b_u_tonsperacre|stringformat:"05d" }}  {{ smokeplan.author.username|truncatechars:"8" }} {{ smokeplan.result_snid.ignitiondated|date:"mdy" }} {{ smokeplan.result_snid.ignitiontimed|time:"Hi" }} {{ smokeplan.result_snid.acresburned|stringformat:"04d" }} {{ smokeplan.result_snid.landingtonned|stringformat:"05d" }} {{ smokeplan.result_snid.piletonned|stringformat:"05d" }} {{ smokeplan.result_snid.b_u_tonsperacred|stringformat:"05d" }} {{ smokeplan.result_snid.ignitionduration|stringformat:"03d" }} {{ smokeplan.result_snid.ignitionmethod }} {{ smokeplan.result_snid.tenhour|stringformat:"02d" }} {{ smokeplan.result_snid.thousandhour|stringformat:"02d" }} {{ smokeplan.result_snid.dayssincerain|stringformat:"03d" }} {{ smokeplan.result_snid.airtemperature|stringformat:"02d" }} {{ smokeplan.result_snid.relativehumidity|stringformat:"02d" }} {{ smokeplan.result_snid.windspeed|stringformat:"02d" }} {% if smokeplan.result_snid.author.username %}{{ smokeplan.result_snid.author.username|truncatechars:"8" }}{% endif %}</code></td>
+							{% endif %}
+							</tr>
+							{% endfor %}
+						</table>
+						<br />
+							  <div class="last">
+								<ul class="timeline">
+							  {% for smokeplan in plan_list %}
+								  <li>
+									<a href="/{{ smokeplan.sn }}/{{ smokeplan.suffix }}/" title="{{ smokeplan.ignitiondate }}: {{ smokeplan.acrestoburn }}">
+									  <span class="label">{{ smokeplan.suffix }}</span>
+									  <span class="count" style="height: {% widthratio smokeplan.acrestoburn smokeplan.sn.regacres 100 %}%">({{ smokeplan.acrestoburn }})</span>
+									</a>
+								  </li>
+							{% endfor %}
+								</ul>
+							  </div>
+						{% else %}
+							No plans.
+						{% endif %}	
+						</p>
+					</ul>
+						<div>
+						{% if smokeregister.regdate|date:"Y"|add:'2' < 2012 %}
+						<p>This registration is closed. <a href="/{{ smokeregister.sn }}/registerlike/">Create similar</a> registration.</p>
+						{% else %}
+						<p><a href="/{{ smokeregister.sn }}/plan/">Add a plan</a> to this registration. <a href="/{{ smokeregister.sn }}/registerlike/">Create similar</a> registration.</p>
+						{% endif %}
+					</div>
+
+					{% endfor %}				
+					{% else %}
+ 				{% endif %}
+				</div>
+				</div>
+		</div>
+	</div>
+	    <div class="prepend-1 small altb quiet">
+		<br />
+		<hr>
+		 &copy 1981-{% now "Y" %}   &para   Feared by some.  &para  Adored by billions.   &para   Served by <a href="//{{ request.site.domain }}/">{{ request.site.name }}</a>.   &para   Weaponized text.
+        </div>
+	</div>
+</body>
+</html>
