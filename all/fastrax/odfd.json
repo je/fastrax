@@ -16,7 +16,7 @@
 },
 "Plan": [
 {
-"Id": {% if r.snid.suffix|slice:":1" = '0' %}{{r.snid.suffix|slice:"1:"}}{% else %}{{r.snid.suffix}}{% endif %},
+"Id": {% if r.snid.suffix|slice:":1" == '0' %}{{r.snid.suffix|slice:"1:"}}{% else %}{{r.snid.suffix}}{% endif %},
 "FedId": {{r.snid.id}},
 "RegistrationNumber": "{{r.snid.sn}}",
 "PlannedIgnitionDateTime": "{{r.snid.ignitiondate|date:'Y-m-d'}}T{{r.snid.ignitiontime|time:'H:i:s'}}-07:00",
@@ -36,28 +36,28 @@
 "DuffFuelMoisture": {{r.duffmoisture|default_if_none:'null'}},
 "FuelMoisture10hr": {{r.tenhour|default_if_none:'null'}},
 "FuelMoisture1000hr": {{r.thousandhour|default_if_none:'null'}},
-"FuelMoisture1000hrCode": {% if r.thousandhourmethod = ' ' %}null{% elif r.thousandhourmethod = 'N' %}1{% elif r.thousandhourmethod = 'A' %}2{% elif r.thousandhourmethod = 'W' %}3{% endif %},
+"FuelMoisture1000hrCode": {% if r.thousandhourmethod == ' ' %}null{% elif r.thousandhourmethod == 'N' %}1{% elif r.thousandhourmethod == 'A' %}2{% elif r.thousandhourmethod == 'W' %}3{% endif %},
 "DaysSinceSignificantRain": {{r.dayssincerain|default_if_none:'null'}},
 "WindSpeed": {{r.windspeed|default_if_none:'null'}}
 }
 ],
 "RegistrationNumber": "{{r.snid.sn}}",
 "DateRegistered": "{{r.snid.sn.entered|date:'Y-m-d'}}",
-"Township": "{{r.snid.sn.township}}",
-"Range": "{{r.snid.sn.range}}",
+"Township": "{% if r.snid.sn.township|slice:'0:1' == '0' %}{% else %}{{r.snid.sn.township|slice:'0:1'}}{% endif %}{{r.snid.sn.township|slice:'1:2'}}{% if r.snid.sn.township|slice:'2:3' == '0' %}{% else %}.{{r.snid.sn.township|slice:'2:3'}}{% endif %}{{r.snid.sn.township|slice:'3:'}}",
+"Range": "{% if r.snid.sn.range|slice:'0:1' == '0' %}{% else %}{{r.snid.sn.range|slice:'0:1'}}{% endif %}{{r.snid.sn.range|slice:'1:2'}}{% if r.snid.sn.range|slice:'2:3' == '0' %}{% else %}.{{r.snid.sn.range|slice:'2:3'}}{% endif %}{{r.snid.sn.range|slice:'3:'}}",
 "Section": "{{r.snid.sn.section}}",
 "Latitude": {{ r.y|floatformat:'-4'}},
 "Longitude": {{ r.x|floatformat:'-4'}},
 "SaleName": "{{r.snid.sn.regname}}",
 "DistanceFromSSRA": {{r.snid.sn.ssradistance}},
 "Elevation": {{r.snid.sn.elevation}},
-"ForestFloorFuel": [{% if r.snid.sn.littertype = ' ' or r.snid.sn.littertype = '' or r.snid.sn.littertype = None  %}{% else %}
+"ForestFloorFuel": [{% if r.snid.sn.littertype == ' ' or r.snid.sn.littertype == '' or r.snid.sn.littertype == None  %}{% else %}
     {
         "FedId": {{r.snid.sn.id}},
         "RegistrationNumber": "{{r.snid.sn}}",
         "LitterDepth": {{r.snid.sn.litterdepth|default_if_none:'null'}},
-        "LitterCoverage": {% if r.snid.sn.littercoverage = ' ' %}null{% else %}{{r.snid.sn.littercoverage|default_if_none:'null'}}{% endif %},
-        "LitterType": {% if r.snid.sn.littertype = ' ' or r.snid.sn.littertype = '' %}null{% else %}{% if r.snid.sn.littertype = 'S' %}1{% elif r.snid.sn.littertype = 'L' %}2{% elif r.snid.sn.littertype = 'O' %}3{% elif r.snid.sn.littertype = 'D' %}4{% elif r.snid.sn.littertype = 'E' %}5{% elif r.snid.sn.littertype = 'G' %}6{% endif %}{% endif %}
+        "LitterCoverage": {% if r.snid.sn.littercoverage == ' ' %}null{% else %}{{r.snid.sn.littercoverage|default_if_none:'null'}}{% endif %},
+        "LitterType": {% if r.snid.sn.littertype == ' ' or r.snid.sn.littertype == '' %}null{% else %}{% if r.snid.sn.littertype == 'S' %}1{% elif r.snid.sn.littertype == 'L' %}2{% elif r.snid.sn.littertype == 'O' %}3{% elif r.snid.sn.littertype == 'D' %}4{% elif r.snid.sn.littertype == 'E' %}5{% elif r.snid.sn.littertype == 'G' %}6{% endif %}{% endif %}
     }
 {% endif %}],
 "Slope": {{r.snid.sn.slope}},
@@ -112,7 +112,7 @@
 },
 "Plan": [
 {
-"Id": {% if snid.suffix|slice:":1" = '0' %}{{snid.suffix|slice:"1:"}}{% else %}{{snid.suffix}}{% endif %},
+"Id": {% if snid.suffix|slice:":1" == '0' %}{{snid.suffix|slice:"1:"}}{% else %}{{snid.suffix}}{% endif %},
 "FedId": {{snid.id}},
 "RegistrationNumber": "{{snid.sn}}",
 "PlannedIgnitionDateTime": "{{snid.ignitiondate|date:'Y-m-d'}}T{{snid.ignitiontime|time:'H:i:s'}}-07:00",
@@ -139,21 +139,21 @@
 ],
 "RegistrationNumber": "{{snid.sn}}",
 "DateRegistered": "{{snid.sn.entered|date:'Y-m-d'}}",
-"Township": "{{snid.sn.township}}",
-"Range": "{{snid.sn.range}}",
+"Township": "{% if snid.sn.township|slice:'0:1' == '0' %}{% else %}{{snid.sn.township|slice:'0:1'}}{% endif %}{{snid.sn.township|slice:'1:2'}}{% if snid.sn.township|slice:'2:3' == '0' %}{% else %}.{{snid.sn.township|slice:'2:3'}}{% endif %}{{snid.sn.township|slice:'3:'}}",
+"Range": "{% if snid.sn.range|slice:'0:1' == '0' %}{% else %}{{snid.sn.range|slice:'0:1'}}{% endif %}{{snid.sn.range|slice:'1:2'}}{% if snid.sn.range|slice:'2:3' == '0' %}{% else %}.{{snid.sn.range|slice:'2:3'}}{% endif %}{{snid.sn.range|slice:'3:'}}",
 "Section": "{{snid.sn.section}}",
 "Latitude": {{ snid.y|floatformat:'-4'}},
 "Longitude": {{ snid.x|floatformat:'-4'}},
 "SaleName": "{{snid.sn.regname}}",
 "DistanceFromSSRA": {{snid.sn.ssradistance}},
 "Elevation": {{snid.sn.elevation}},
-"ForestFloorFuel": [{% if snid.sn.littertype = ' ' or snid.sn.littertype = '' or snid.sn.littertype = None  %}{% else %}
+"ForestFloorFuel": [{% if snid.sn.littertype == ' ' or snid.sn.littertype == '' or snid.sn.littertype == None  %}{% else %}
     {
         "FedId": {{snid.sn.id}},
         "RegistrationNumber": "{{snid.sn}}",
         "LitterDepth": {{snid.sn.litterdepth|default_if_none:'null'}},
-        "LitterCoverage": {% if snid.sn.littercoverage = ' ' %}null{% else %}{{snid.sn.littercoverage|default_if_none:'null'}}{% endif %},
-        "LitterType": {% if snid.sn.littertype = ' ' or snid.sn.littertype = '' %}null{% else %}{% if snid.sn.littertype = 'S' %}1{% elif snid.sn.littertype = 'L' %}2{% elif snid.sn.littertype = 'O' %}3{% elif snid.sn.littertype = 'D' %}4{% elif snid.sn.littertype = 'E' %}5{% elif snid.sn.littertype = 'G' %}6{% endif %}{% endif %}
+        "LitterCoverage": {% if snid.sn.littercoverage == ' ' %}null{% else %}{{snid.sn.littercoverage|default_if_none:'null'}}{% endif %},
+        "LitterType": {% if snid.sn.littertype == ' ' or snid.sn.littertype == '' %}null{% else %}{% if snid.sn.littertype == 'S' %}1{% elif snid.sn.littertype == 'L' %}2{% elif snid.sn.littertype == 'O' %}3{% elif snid.sn.littertype == 'D' %}4{% elif snid.sn.littertype == 'E' %}5{% elif snid.sn.littertype == 'G' %}6{% endif %}{% endif %}
     }
 {% endif %}],
 "Slope": {{snid.sn.slope}},
@@ -210,21 +210,21 @@
 ],
 "RegistrationNumber": "{{sn}}",
 "DateRegistered": "{{sn.entered|date:'Y-m-d'}}",
-"Township": "{{sn.township}}",
-"Range": "{{sn.range}}",
+"Township": "{% if sn.township|slice:'0:1' == '0' %}{% else %}{{sn.township|slice:'0:1'}}{% endif %}{{sn.township|slice:'1:2'}}{% if sn.township|slice:'2:3' == '0' %}{% else %}.{{sn.township|slice:'2:3'}}{% endif %}{{sn.township|slice:'3:'}}",
+"Range": "{% if sn.range|slice:'0:1' == '0' %}{% else %}{{sn.range|slice:'0:1'}}{% endif %}{{sn.range|slice:'1:2'}}{% if sn.range|slice:'2:3' == '0' %}{% else %}.{{sn.range|slice:'2:3'}}{% endif %}{{sn.range|slice:'3:'}}",
 "Section": "{{sn.section}}",
 "Latitude": {{ sn.y|floatformat:'-4'}},
 "Longitude": {{ sn.x|floatformat:'-4'}},
 "SaleName": "{{sn.regname}}",
 "DistanceFromSSRA": {{sn.ssradistance}},
 "Elevation": {{sn.elevation}},
-"ForestFloorFuel": [{% if sn.littertype = ' ' or sn.littertype = '' or sn.littertype = None  %}{% else %}
+"ForestFloorFuel": [{% if sn.littertype == ' ' or sn.littertype == '' or sn.littertype == None  %}{% else %}
     {
         "FedId": {{sn.id}},
         "RegistrationNumber": "{{sn}}",
         "LitterDepth": {{sn.litterdepth|default_if_none:'null'}},
-        "LitterCoverage": {% if sn.littercoverage = ' ' %}null{% else %}{{sn.littercoverage|default_if_none:'null'}}{% endif %},
-        "LitterType": {% if sn.littertype = ' ' or sn.littertype = '' %}null{% else %}{% if sn.littertype = 'S' %}1{% elif sn.littertype = 'L' %}2{% elif sn.littertype = 'O' %}3{% elif sn.littertype = 'D' %}4{% elif sn.littertype = 'E' %}5{% elif sn.littertype = 'G' %}6{% endif %}{% endif %}
+        "LitterCoverage": {% if sn.littercoverage == ' ' %}null{% else %}{{sn.littercoverage|default_if_none:'null'}}{% endif %},
+        "LitterType": {% if sn.littertype == ' ' or sn.littertype == '' %}null{% else %}{% if sn.littertype == 'S' %}1{% elif sn.littertype == 'L' %}2{% elif sn.littertype == 'O' %}3{% elif sn.littertype == 'D' %}4{% elif sn.littertype == 'E' %}5{% elif sn.littertype == 'G' %}6{% endif %}{% endif %}
     }
 {% endif %}],
 "Slope": {{sn.slope}},

@@ -1,11 +1,11 @@
 from django.template import Context, loader, RequestContext
-from django.shortcuts import render_to_response, get_object_or_404
+from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib.auth.decorators import login_required, permission_required
 from django.db.models import Q, F, Max, Min, Count, Avg, Sum
 from django.contrib import messages
-from o_fastrax.fastrax.models import *
-from o_fastrax.fastrax.forms import *
+from fastrax.models import *
+from fastrax.forms import *
 from django.contrib.auth.models import User, Group
 import datetime
 from datetime import timedelta
@@ -19,18 +19,19 @@ from xml.dom import minidom
 from django.contrib.gis import geos
 from django.contrib.gis.geos import *
 from django.contrib.gis.measure import D
-from django.contrib.gis.maps.google import GPolygon, GPolyline
+#from django.contrib.gis.maps.google import GPolygon, GPolyline
+from google.overlays import GPolygon
 from decimal import Decimal
 from dateutil.relativedelta import relativedelta
 import calendar
-from django.core.urlresolvers import reverse_lazy
+from django.urls import reverse_lazy
 from django.core.mail import send_mail, send_mass_mail
 from django.core.mail import EmailMultiAlternatives
 from guardian.shortcuts import assign, get_users_with_perms, get_objects_for_user, remove_perm
 from guardian.utils import clean_orphan_obj_perms
 from django.utils.decorators import method_decorator
-
 from django.contrib.auth.signals import user_logged_in
+import settings
 
 def update_user_login(sender, user, **kwargs):
     m = 'User %s login successful.' % (user)
@@ -47,7 +48,7 @@ def index(request):
     latest_reg_list = SmokeRegister.objects.all().order_by('-entered')[:6]
     latest_plan_list = SmokePlan.objects.all().order_by('-entered')[:6]
     latest_result_list = SmokeResult.objects.all().order_by('-entered')[:6]
-    return render_to_response('fastrax/index.html', {'latest_reg_list': latest_reg_list, 'latest_plan_list': latest_plan_list, 'latest_result_list': latest_result_list}, context_instance=RequestContext(request))
+    return render(request,'fastrax/index.html', {'latest_reg_list': latest_reg_list, 'latest_plan_list': latest_plan_list, 'latest_result_list': latest_result_list},)
 
 def search(request):
     query = request.GET['q']
@@ -60,7 +61,7 @@ def search(request):
         elif object.black >= object.regacres:
             object.color = 'red'
     template = loader.get_template('fastrax/search.html')
-    context = Context({ 'query': query, 'reg_list': reg_list })
+    context = { 'query': query, 'reg_list': reg_list }
     response = template.render(context)
     return HttpResponse(response)
 
@@ -91,8 +92,8 @@ class CreatePlusFour(CreateView):
             l.save()
             group = Group.objects.get(name='fastrax-ro-fuels')
             user_list = group.user_set.all()
-            mtxt = 'Burn request %s [/plusfour/%s/] added and forwarded to the Duty Officer.' % (obj.name, obj.id)
-            mhtm = 'Burn request <a class=\'alert-link\' href=\'/plusfour/%s/\'>%s</a> added and forwarded to the Duty Officer.' % (obj.id, obj.name)
+            mtxt = 'Burn request %s [{{ request.site.domain }}/plusfour/%s/] added and forwarded to the Duty Officer.' % (obj.name, obj.id)
+            mhtm = 'Burn request <a class=\'alert-link\' href=\'{{ request.site.domain }}/plusfour/%s/\'>%s</a> added and forwarded to the Duty Officer.' % (obj.id, obj.name)
             for user in user_list:
                 msg = EmailMultiAlternatives('New burn request', mtxt, settings.ADMIN_EMAIL, [user.email])
                 msg.attach_alternative(mhtm, "text/html")
@@ -126,8 +127,8 @@ class UpdatePlusFour(UpdateView):
             group = Group.objects.get(name='fastrax-ro-fuels')
             user_list = group.user_set.all()
             mtit = 'Burn request %s updated' % (obj.name)
-            mtxt = 'Burn request %s [/plusfour/%s/] updated. Duty officer notified.' % (obj.name, obj.id)
-            mhtm = 'Burn request <a class=\'alert-link\' href=\'/plusfour/%s/\'>%s</a> updated. Duty officer notified.' % (obj.id, obj.name)
+            mtxt = 'Burn request %s [{{ request.site.domain }}/plusfour/%s/] updated. Duty officer notified.' % (obj.name, obj.id)
+            mhtm = 'Burn request <a class=\'alert-link\' href=\'{{ request.site.domain }}/plusfour/%s/\'>%s</a> updated. Duty officer notified.' % (obj.id, obj.name)
             for user in user_list:
                 msg = EmailMultiAlternatives(mtit, mtxt, settings.ADMIN_EMAIL, [user.email])
                 msg.attach_alternative(mhtm, "text/html")
@@ -161,8 +162,8 @@ class StatusPlusFour(UpdateView):
             #user_list = get_users_with_perms(airbase)
             user_list = User.objects.filter(id=airbase.author.id)
             mtit = 'Burn request %s status updated' % (obj.name)
-            mtxt = 'Burn request %s [/plusfour/%s/] status updated. Requesting users notified.' % (obj.name, obj.id)
-            mhtm = 'Burn request <a class=\'alert-link\' href=\'/plusfour/%s/\'>%s</a> status updated. Requesting users notified.' % (obj.id, obj.name)
+            mtxt = 'Burn request %s [{{ request.site.domain }}/plusfour/%s/] status updated. Requesting users notified.' % (obj.name, obj.id)
+            mhtm = 'Burn request <a class=\'alert-link\' href=\'{{ request.site.domain }}/plusfour/%s/\'>%s</a> status updated. Requesting users notified.' % (obj.id, obj.name)
             for user in user_list:
                 msg = EmailMultiAlternatives(mtit, mtxt, settings.ADMIN_EMAIL, [user.email])
                 msg.attach_alternative(mhtm, "text/html")
@@ -181,7 +182,6 @@ class StatusPlusFour(UpdateView):
 class DeletePlusFour(DeleteView):
     model = PlusFour
     success_url = reverse_lazy('list_plusfour')
-
 
 ### vanilla fastrax
 
@@ -455,9 +455,9 @@ def register(request):
     else:
         form = SmokeRegisterForm()
 
-    return render_to_response('fastrax/fastrax_form.html', {
+    return render(request,'fastrax/fastrax_form.html', {
         'form': form,
-    }, context_instance=RequestContext(request))
+    },)
 
 @login_required
 @permission_required('fastrax.add_smokeregister')
@@ -491,9 +491,9 @@ def tndnregister1(request, tn, dn):
         data_dict = {'district': did}
         form = SmokeRegisterFormSN1(initial=data_dict)
 
-    return render_to_response('fastrax/tndnregister1.html', {
+    return render(request,'fastrax/tndnregister1.html', {
         'form': form, 'reg_list': reg_list, 'dreg_list': dreg_list, 'ddistrict': ddistrict, 'dtla': dtla
-    }, context_instance=RequestContext(request))
+    },)
 
 @login_required
 @permission_required('fastrax.add_smokeregister')
@@ -636,9 +636,9 @@ def tndnregister(request, tn, dn):
         data_dict = {'district': did, 'fpf': dfpf}
         form = SmokeRegisterFormSN(initial=data_dict)
 
-    return render_to_response('fastrax/tndnregister.html', {
+    return render(request,'fastrax/tndnregister.html', {
         'form': form, 'reg_list': reg_list, 'dreg_list': dreg_list, 'ddistrict': ddistrict, 'dtla': dtla
-    }, context_instance=RequestContext(request))
+    },)
 
 def snalt(request, sn):
     reg_list = SmokeRegister.objects.filter(sn__exact=sn).order_by('sn')[:1]
@@ -648,7 +648,7 @@ def snalt(request, sn):
     result_list = SmokeResult.objects.filter(
         Q(snid__sn__exact=sn)
         ).order_by('snid')
-    return render_to_response('fastrax/snalt.html', {'reg_list': reg_list, 'plan_list': plan_list, 'result_list': result_list})
+    return render(request,'fastrax/snalt.html', {'reg_list': reg_list, 'plan_list': plan_list, 'result_list': result_list})
 
 def sn(request, sn):
     reg_list = SmokeRegister.objects.filter(sn__exact=sn).order_by('sn')[:1]
@@ -693,7 +693,7 @@ def sn(request, sn):
             reg.deaddate = reg.regdate + timedelta(days=14)
         reg.deadline = datetime.datetime(reg.deaddate.year, reg.deaddate.month, reg.deaddate.day)
         reg.now = datetime.datetime.now()
-    return render_to_response('fastrax/sn.html', {'reg_list': reg_list, 'plan_list': plan_list, 'result_list': result_list, 'regco': regco, 'regspz': regspz, 'regreason': regreason, 'regtype': regtype, 'regspecies': regspecies, 'reghd': reghd, 'reglm': reglm, 'trsr': trsr }, context_instance=RequestContext(request))
+    return render(request,'fastrax/sn.html', {'reg_list': reg_list, 'plan_list': plan_list, 'result_list': result_list, 'regco': regco, 'regspz': regspz, 'regreason': regreason, 'regtype': regtype, 'regspecies': regspecies, 'reghd': reghd, 'reglm': reglm, 'trsr': trsr },)
 
 def sndyn(request, sn):
     reg_list = SmokeRegister.objects.filter(sn__exact=sn).order_by('sn')[:1]
@@ -738,7 +738,7 @@ def sndyn(request, sn):
             reg.deaddate = reg.regdate + timedelta(days=14)
         reg.deadline = datetime.datetime(reg.deaddate.year, reg.deaddate.month, reg.deaddate.day)
         reg.now = datetime.datetime.now()
-    return render_to_response('fastrax/sndyn.html', {'reg_list': reg_list, 'plan_list': plan_list, 'result_list': result_list, 'regco': regco, 'regspz': regspz, 'regreason': regreason, 'regtype': regtype, 'regspecies': regspecies, 'reghd': reghd, 'reglm': reglm, 'trsr': trsr }, context_instance=RequestContext(request))
+    return render(request,'fastrax/sndyn.html', {'reg_list': reg_list, 'plan_list': plan_list, 'result_list': result_list, 'regco': regco, 'regspz': regspz, 'regreason': regreason, 'regtype': regtype, 'regspecies': regspecies, 'reghd': reghd, 'reglm': reglm, 'trsr': trsr },)
 
 @login_required
 @permission_required('fastrax.add_smokeregister')
@@ -783,12 +783,12 @@ def snedit(request, sn):
                 obj.save()
                 return HttpResponseRedirect('/%s/' % (obj.sn))
         else:
-            form = SmokeRegisterEditForm(instance=reg) # A bound form
+            form = SmokeRegisterEditForm(instance=reg)
     else:
         form = 'None'
-    return render_to_response('fastrax/snedit.html', {
+    return render(request,'fastrax/snedit.html', {
         'form': form, 'reg': reg, 'trsr': trsr
-    }, context_instance=RequestContext(request))
+    },)
 
 @login_required
 @permission_required('fastrax.add_smokeregister')
@@ -942,17 +942,17 @@ def snregisterlike(request, sn):
                                     seq = int(str(seq)[-2:])
                                 obj.sn = u"%s%3s%05s%02d" % (yy, odf, odfid, seq)
             obj.sequence = 66
-            #return render_to_response('fastrax/tndnregister_debug.html', {
+            #return render(request,'fastrax/tndnregister_debug.html', {
             #    'form': form, 'base_list': base_list, 'sn_list': sn_list, 'seq': seq
-            #}, context_instance=RequestContext(request))
+            #},)
             obj.save() # dupfail
             return HttpResponseRedirect('/%s/' % (obj.sn))
     else:
         form = SmokeRegisterLikeForm(initial=data_dict)
 
-    return render_to_response('fastrax/snregisterlike.html', {
+    return render(request,'fastrax/snregisterlike.html', {
         'data_dict': data_dict, 'form': form, 'ddistrict': ddistrict, 'reg_list': reg_list, 'dreg_list': dreg_list, 'trsr': trsr
-    }, context_instance=RequestContext(request))
+    },)
 
 @login_required
 @permission_required('fastrax.add_smokeplan')
@@ -967,9 +967,9 @@ def plan(request):
     else:
         form = SmokePlanForm()
 
-    return render_to_response('fastrax/plan.html', {
+    return render(request,'fastrax/plan.html', {
         'form': form,
-    }, context_instance=RequestContext(request))
+    },)
 
 @login_required
 @permission_required('fastrax.add_smokeplan')
@@ -1029,9 +1029,9 @@ def snplan(request, sn):
         regacres = reg_list[0].regacres
         form = SmokePlanFormSN2(regacres, initial=data_dict)
 
-    return render_to_response('fastrax/snplan.html', {
+    return render(request,'fastrax/snplan.html', {
         'form': form, 'reg_list': reg_list, 'plan_list': plan_list, 'result_list': result_list, 'data_dict': data_dict, 'regco': regco, 'regspz': regspz, 'regreason': regreason, 'regtype': regtype, 'regspecies': regspecies, 'reghd': reghd, 'reglm': reglm, 'trsr': trsr , 'regacres': regacres
-    }, context_instance=RequestContext(request))
+    },)
 
 @login_required
 @permission_required('fastrax.add_smokeplan')
@@ -1089,9 +1089,9 @@ def snplan2(request, sn):
         data_dict = { 'sn': sn, 'acrestoburn': acrestoburn, 'piletons': piletons, 'landingtons': landingtons, 'b_u_tonsperacre': b_u_tonsperacre }
         form = SmokePlanFormSN3(initial=data_dict)
 
-    return render_to_response('fastrax/snplan2.html', {
+    return render(request,'fastrax/snplan2.html', {
         'form': form, 'reg_list': reg_list, 'plan_list': plan_list, 'result_list': result_list, 'data_dict': data_dict, 'regco': regco, 'regspz': regspz, 'regreason': regreason, 'regtype': regtype, 'regspecies': regspecies, 'reghd': reghd, 'reglm': reglm, 'trsr': trsr 
-    }, context_instance=RequestContext(request))
+    },)
 
 def snpnalt(request, sn, pn):
     reg_list = SmokeRegister.objects.filter(sn__exact=sn).order_by('sn')[:1]
@@ -1103,7 +1103,7 @@ def snpnalt(request, sn, pn):
         Q(snid__sn__exact=sn),
         Q(snid__suffix__exact=pn)
         )
-    return render_to_response('fastrax/snpnalt.html', {'reg_list': reg_list, 'plan_list': plan_list, 'result_list': result_list}, context_instance=RequestContext(request))
+    return render(request,'fastrax/snpnalt.html', {'reg_list': reg_list, 'plan_list': plan_list, 'result_list': result_list},)
 
 def snpn(request, sn, pn):
     reg_list = SmokeRegister.objects.filter(sn__exact=sn).order_by('sn')[:1]
@@ -1144,7 +1144,7 @@ def snpn(request, sn, pn):
         reswdr = 0
         reskhr = 0
         ressno = 0
-    return render_to_response('fastrax/snpn.html', {'reg_list': reg_list, 'plan_list': plan_list, 'result_list': result_list, 'regco': regco, 'regspz': regspz, 'regreason': regreason, 'regtype': regtype, 'regspecies': regspecies, 'reghd': reghd, 'reglm': reglm, 'trsr': trsr , 'resigm': resigm, 'reswdr': reswdr, 'reskhr': reskhr, 'ressno': ressno}, context_instance=RequestContext(request))
+    return render(request,'fastrax/snpn.html', {'reg_list': reg_list, 'plan_list': plan_list, 'result_list': result_list, 'regco': regco, 'regspz': regspz, 'regreason': regreason, 'regtype': regtype, 'regspecies': regspecies, 'reghd': reghd, 'reglm': reglm, 'trsr': trsr , 'resigm': resigm, 'reswdr': reswdr, 'reskhr': reskhr, 'ressno': ressno},)
 
 @login_required
 @permission_required('fastrax.add_smokeresult')
@@ -1159,9 +1159,9 @@ def result(request):
     else:
         form = SmokeResultForm()
 
-    return render_to_response('fastrax/result.html', {
+    return render(request,'fastrax/result.html', {
         'form': form,
-    }, context_instance=RequestContext(request))
+    },)
 
 def getsnid(self):
     u"%s-%s" % (self.sn, self.suffix)
@@ -1212,8 +1212,8 @@ def snpnresult1(request, sn, pn):
     else:
         regacres = reg_list[0].regacres
         form = SmokeResultFormSN2(regacres, initial=data_dict)
-    return render_to_response('fastrax/snpnresult1.html', {
-        'form': form, 'reg_list': reg_list, 'plan_list': plan_list, 'result_list': result_list, 'regco': regco, 'regspz': regspz, 'regreason': regreason, 'regtype': regtype, 'regspecies': regspecies, 'reghd': reghd, 'reglm': reglm, 'trsr': trsr }, context_instance=RequestContext(request))
+    return render(request,'fastrax/snpnresult1.html', {
+        'form': form, 'reg_list': reg_list, 'plan_list': plan_list, 'result_list': result_list, 'regco': regco, 'regspz': regspz, 'regreason': regreason, 'regtype': regtype, 'regspecies': regspecies, 'reghd': reghd, 'reglm': reglm, 'trsr': trsr },)
 
 @login_required
 @permission_required('fastrax.add_smokeresult')
@@ -1279,8 +1279,8 @@ def snpnresult(request, sn, pn):
             snowoffmonth = ' '
             data_dict = { 'snid': snid, 'acresburned': acresburned, 'piletonned': piletonned, 'landingtonned': landingtonned, 'b_u_tonsperacred': b_u_tonsperacred, 'ignitiondated': ignitiondated, 'ignitiontimed': ignitiontimed, 'ignitionmethod': ignitionmethod, 'ignitionduration': ignitionduration, 'weatherstation': weatherstation, 'airtemperature': airtemperature, 'relativehumidity': relativehumidity, 'winddirection': winddirection, 'windspeed': windspeed, 'tenhour': tenhour, 'thousandhour': thousandhour, 'thousandhourmethod': thousandhourmethod, 'dayssincerain': dayssincerain, 'snowoffmonth': snowoffmonth }
         form = SmokeResultFormSN3(initial=data_dict) # Unbound
-    return render_to_response('fastrax/snpnresult.html', {
-        'form': form, 'reg_list': reg_list, 'plan_list': plan_list, 'result_list': result_list, 'regco': regco, 'regspz': regspz, 'regreason': regreason, 'regtype': regtype, 'regspecies': regspecies, 'reghd': reghd, 'reglm': reglm, 'trsr': trsr }, context_instance=RequestContext(request))
+    return render(request,'fastrax/snpnresult.html', {
+        'form': form, 'reg_list': reg_list, 'plan_list': plan_list, 'result_list': result_list, 'regco': regco, 'regspz': regspz, 'regreason': regreason, 'regtype': regtype, 'regspecies': regspecies, 'reghd': reghd, 'reglm': reglm, 'trsr': trsr },)
 
 @login_required
 @permission_required('fastrax.add_smokeresult')
@@ -1347,9 +1347,9 @@ def snpnnoresult(request, sn, pn):
         data_dict = {'snid': snid, 'notaccomplished': True, 'acresburned': 0, 'landingtonned': 0, 'piletonned': 0, 'b_u_tonsperacred': 0, 'ignitiondated': '1900-01-01', 'ignitiontimed': '00:00', 'ignitionmethod': 'M', 'ignitionduration': 0, 'rapidignition': False, 'smokeintrusion': False, 'airtemperature': 0, 'relativehumidity': 0, 'winddirection': '00', 'windspeed': 0, 'tenhour': 0, 'thousandhour': 0, 'thousandhourmethod': 'N', 'dayssincerain': 0, 'snowoffmonth': '00'}
         form = NoResultFormSN2(initial=data_dict)
 
-    return render_to_response('fastrax/snpnnoresult.html', {
+    return render(request,'fastrax/snpnnoresult.html', {
         'form': form, 'reg_list': reg_list, 'plan_list': plan_list, 'result_list': result_list, 'regco': regco, 'regspz': regspz, 'regreason': regreason, 'regtype': regtype, 'regspecies': regspecies, 'reghd': reghd, 'reglm': reglm, 'trsr': trsr , 'data_dict': data_dict
-    }, context_instance=RequestContext(request))
+    },)
 
 def odfdate(request, year, mo, da):
     dates_reg_list = SmokeRegister.objects.filter(
@@ -1370,7 +1370,7 @@ def odfdate(request, year, mo, da):
     odfyear = year
     odfmo = mo
     odfda = da
-    return render_to_response('fastrax/odfdate.html', {'dates_reg_list': dates_reg_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'odfyear': odfyear, 'odfmo': odfmo, 'odfda': odfda})
+    return render(request,'fastrax/odfdate.html', {'dates_reg_list': dates_reg_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'odfyear': odfyear, 'odfmo': odfmo, 'odfda': odfda})
 
 def odfmonth(request, year, mo):
     dates_reg_list = SmokeRegister.objects.filter(
@@ -1387,7 +1387,7 @@ def odfmonth(request, year, mo):
         ).order_by('snid__sn', 'snid__suffix')
     odfyear = year
     odfmo = mo
-    return render_to_response('fastrax/odfdate.html', {'dates_reg_list': dates_reg_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'odfyear': odfyear, 'odfmo': odfmo})
+    return render(request,'fastrax/odfdate.html', {'dates_reg_list': dates_reg_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'odfyear': odfyear, 'odfmo': odfmo})
 
 def odfyear(request, year):
     dates_reg_list = SmokeRegister.objects.filter(
@@ -1400,7 +1400,7 @@ def odfyear(request, year):
         Q(result_date__year=year)
         ).order_by('snid__sn', 'snid__suffix')
     odfyear = year
-    return render_to_response('fastrax/odfdate.html', {'dates_reg_list': dates_reg_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'odfyear': odfyear})
+    return render(request,'fastrax/odfdate.html', {'dates_reg_list': dates_reg_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'odfyear': odfyear})
 
 def odfandate(request, year, mo, da):
     dates_reg_list = SmokeRegister.objects.filter(
@@ -1421,7 +1421,7 @@ def odfandate(request, year, mo, da):
     odfyear = year
     odfmo = mo
     odfda = da
-    return render_to_response('fastrax/odfandate.html', {'dates_reg_list': dates_reg_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'odfyear': odfyear, 'odfmo': odfmo, 'odfda': odfda})
+    return render(request,'fastrax/odfandate.html', {'dates_reg_list': dates_reg_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'odfyear': odfyear, 'odfmo': odfmo, 'odfda': odfda})
 
 def odfanmonth(request, year, mo):
     dates_reg_list = SmokeRegister.objects.filter(
@@ -1438,7 +1438,7 @@ def odfanmonth(request, year, mo):
         ).order_by('snid__sn', 'snid__suffix')
     odfyear = year
     odfmo = mo
-    return render_to_response('fastrax/odfandate.html', {'dates_reg_list': dates_reg_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'odfyear': odfyear, 'odfmo': odfmo})
+    return render(request,'fastrax/odfandate.html', {'dates_reg_list': dates_reg_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'odfyear': odfyear, 'odfmo': odfmo})
 
 def odfanyear(request, year):
     dates_reg_list = SmokeRegister.objects.filter(
@@ -1451,7 +1451,7 @@ def odfanyear(request, year):
         Q(result_date__year=year)
         ).order_by('snid__sn', 'snid__suffix')
     odfyear = year
-    return render_to_response('fastrax/odfandate.html', {'dates_reg_list': dates_reg_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'odfyear': odfyear})
+    return render(request,'fastrax/odfandate.html', {'dates_reg_list': dates_reg_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'odfyear': odfyear})
 
 def odfdatetxt(request, year, mo, da):
     dates_reg_list = SmokeRegister.objects.filter(
@@ -1472,8 +1472,8 @@ def odfdatetxt(request, year, mo, da):
     odfyear = year
     odfmo = mo
     odfda = da
-    result = render_to_response('fastrax/odfdate.txt', {'dates_reg_list': dates_reg_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'odfyear': odfyear, 'odfmo': odfmo, 'odfda': odfda})
-    return HttpResponse(result, mimetype='text/plain') 
+    result = render(request,'fastrax/odfdate.txt', {'dates_reg_list': dates_reg_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'odfyear': odfyear, 'odfmo': odfmo, 'odfda': odfda})
+    return HttpResponse(result, content_type='text/plain') 
 
 def odfmotxt(request, year, mo):
     dates_reg_list = SmokeRegister.objects.filter(
@@ -1490,7 +1490,7 @@ def odfmotxt(request, year, mo):
         ).order_by('snid__sn', 'snid__suffix')
     odfyear = year
     odfmo = mo
-    return render_to_response('fastrax/odfdate.txt', {'dates_reg_list': dates_reg_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'odfyear': odfyear, 'odfmo': odfmo})
+    return render(request,'fastrax/odfdate.txt', {'dates_reg_list': dates_reg_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'odfyear': odfyear, 'odfmo': odfmo})
 
 def odfyrtxt(request, year):
     dates_reg_list = SmokeRegister.objects.filter(
@@ -1503,7 +1503,7 @@ def odfyrtxt(request, year):
         Q(result_date__year=year)
         ).order_by('snid__sn', 'snid__suffix')
     odfyear = year
-    return render_to_response('fastrax/odfdate.txt', {'dates_reg_list': dates_reg_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'odfyear': odfyear})
+    return render(request,'fastrax/odfdate.txt', {'dates_reg_list': dates_reg_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'odfyear': odfyear})
 
 def odfjson(request, year, mo, da):
     if mo == '00':
@@ -1562,13 +1562,7 @@ def odfjson(request, year, mo, da):
             Q(result_date__month=mo),
             Q(result_date__day=da)
             ).exclude(
-            Q(snid__plan_date__year=year),
-            Q(snid__plan_date__month=mo),
-            Q(snid__plan_date__day=da)
-            ).exclude(
-            Q(snid__sn__regdate__year=year),
-            Q(snid__sn__regdate__month=mo),
-            Q(snid__sn__regdate__day=da)
+            Q(notaccomplished=True)
             ).exclude(
             Q(snid__snid__icontains='x')
             ).order_by('snid__sn', 'snid__suffix')
@@ -1577,9 +1571,11 @@ def odfjson(request, year, mo, da):
             Q(plan_date__month=mo),
             Q(plan_date__day=da)
             ).exclude(
-            Q(sn__regdate__year=year),
-            Q(sn__regdate__month=mo),
-            Q(sn__regdate__day=da)
+            Q(result_snid__result_date__year=year),
+            Q(result_snid__result_date__month=mo),
+            Q(result_snid__result_date__day=da)
+            ).exclude(
+            Q(result_snid__notaccomplished=True)
             ).exclude(
             Q(sn__sn__icontains='x')
             ).order_by('sn', 'suffix')
@@ -1695,8 +1691,8 @@ def odfjson(request, year, mo, da):
     odfyear = year
     odfmo = mo
     odfda = da
-    result = render_to_response('fastrax/odf.json', {'dates_reg_list': dates_reg_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list})
-    return HttpResponse(result, mimetype='text/plain') 
+    result = render(request,'fastrax/odf.json', {'dates_reg_list': dates_reg_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list})
+    return HttpResponse(result, content_type='text/plain') 
 
 def odfjsondaily(request):
     now = datetime.datetime.today() 
@@ -1727,9 +1723,15 @@ def odfjsondaily(request):
         Q(entered__range=(starp, storp))
         ).exclude(
         Q(snid__snid__icontains='x')
+        ).exclude(
+        Q(notaccomplished=True)
         ).order_by('snid__sn', 'snid__suffix')
     dates_plan_list = SmokePlan.objects.filter(
         Q(entered__range=(starp, storp))
+        ).exclude(
+        Q(result_snid__entered__range=(starp, storp))
+        ).exclude(
+        Q(result_snid__notaccomplished=True)
         ).exclude(
         Q(sn__sn__icontains='x')
         ).order_by('sn', 'suffix')
@@ -1843,8 +1845,8 @@ def odfjsondaily(request):
     odfyear = year
     odfmo = mo
     odfda = da
-    result = render_to_response('fastrax/odfd.json', {'dates_reg_list': dates_reg_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'starp': starp, 'storp': storp })
-    return HttpResponse(result, mimetype='text/plain') 
+    result = render(request,'fastrax/odfd.json', {'dates_reg_list': dates_reg_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'starp': starp, 'storp': storp })
+    return HttpResponse(result, content_type='text/plain') 
 
 def date(request, year, mo, da):
     dates_reg_list = SmokeRegister.objects.filter(
@@ -1922,7 +1924,7 @@ def date(request, year, mo, da):
         cumr = cumr - result_count
         maxplan = max(maxplan,maxresult)
     entry_dates = e
-    return render_to_response('fastrax/date.html', {'entry_dates': entry_dates, 'maxcount': maxcount, 'maxplan': maxplan, 'dates_reg_list': dates_reg_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'dateyear': dateyear, 'datemo': datemo, 'dateda': dateda})
+    return render(request,'fastrax/date.html', {'entry_dates': entry_dates, 'maxcount': maxcount, 'maxplan': maxplan, 'dates_reg_list': dates_reg_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'dateyear': dateyear, 'datemo': datemo, 'dateda': dateda})
 
 def month(request, year, mo):
     dates_reg_list = SmokeRegister.objects.filter(
@@ -1992,7 +1994,7 @@ def month(request, year, mo):
         cumr = cumr - result_count
         maxplan = max(maxplan,maxresult)
     entry_dates = e
-    return render_to_response('fastrax/date.html', {'entry_dates': entry_dates, 'maxcount': maxcount, 'maxplan': maxplan, 'dates_reg_list': dates_reg_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'dateyear': dateyear, 'datemo': datemo})
+    return render(request,'fastrax/date.html', {'entry_dates': entry_dates, 'maxcount': maxcount, 'maxplan': maxplan, 'dates_reg_list': dates_reg_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'dateyear': dateyear, 'datemo': datemo})
 
 def year(request, year):
     dates_reg_list = SmokeRegister.objects.filter(
@@ -2051,7 +2053,7 @@ def year(request, year):
         cumr = cumr - result_count
         maxplan = max(maxplan,maxresult)
     entry_dates = e
-    return render_to_response('fastrax/date.html', {'entry_dates': entry_dates, 'maxcount': maxcount, 'maxplan': maxplan, 'dates_reg_list': dates_reg_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'dateyear': dateyear})
+    return render(request,'fastrax/date.html', {'entry_dates': entry_dates, 'maxcount': maxcount, 'maxplan': maxplan, 'dates_reg_list': dates_reg_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'dateyear': dateyear})
 
 def yearproblems(request, year):
     dates_reg_list = SmokeRegister.objects.filter(
@@ -2167,7 +2169,7 @@ def yearproblems(request, year):
     #    cumr = cumr - result_count
     #    maxplan = max(maxplan,maxresult)
     entry_dates = e
-    return render_to_response('fastrax/dateproblems.html', {'entry_dates': entry_dates, 'maxcount': maxcount, 'dates_reg_list': dates_reg_list, 'dateyear': dateyear, 'errors': errors, 'offs': offs, 'snxs': snxs })
+    return render(request,'fastrax/dateproblems.html', {'entry_dates': entry_dates, 'maxcount': maxcount, 'dates_reg_list': dates_reg_list, 'dateyear': dateyear, 'errors': errors, 'offs': offs, 'snxs': snxs })
 
 def yearoverage(request, year):
     dates_reg_list = SmokeRegister.objects.filter(
@@ -2270,7 +2272,76 @@ def yearoverage(request, year):
         e.append(dict)
         cumu = cumu - entry_count
     entry_dates = e
-    return render_to_response('fastrax/dateoverage.html', {'entry_dates': entry_dates, 'maxcount': maxcount, 'dates_reg_list': dates_reg_list, 'dateyear': dateyear, 'errors': errors, 'noplans': noplans, 'noig':  noig, 'under': under, 'tregcost': tregcost, 'tplancost': tplancost, 'ttotalcost': ttotalcost, 'tover': tover, 'trac': trac, 'tblack': tblack, 'tunder': tunder })
+    return render(request,'fastrax/dateoverage.html', {'entry_dates': entry_dates, 'maxcount': maxcount, 'dates_reg_list': dates_reg_list, 'dateyear': dateyear, 'errors': errors, 'noplans': noplans, 'noig':  noig, 'under': under, 'tregcost': tregcost, 'tplancost': tplancost, 'ttotalcost': ttotalcost, 'tover': tover, 'trac': trac, 'tblack': tblack, 'tunder': tunder })
+
+def yearbilling(request, year, tn):
+    iyear = int(year)
+    eyear = iyear-1
+    adate = datetime.date(eyear, 10, 1)
+    bdate = datetime.date(iyear, 9, 30)
+    if tn == '':
+        dates_reg_list = SmokeRegister.objects.filter(Q(regdate__range=(adate, bdate))|Q(plan_sn__result_snid__ignitiondated__range=(adate, bdate), plan_sn__result_snid__notaccomplished=False)).annotate(planned=Sum('plan_sn__acrestoburn'),lit=Min('plan_sn__result_snid__ignitiondated'),litacs=Sum('plan_sn__result_snid__acresburned')).filter(Q(regdate__range=(adate, bdate))|Q(lit__range=(adate, bdate))).order_by('district__tla','district__name') # charge regs
+    elif tn == 'USFS':
+        dates_reg_list = SmokeRegister.objects.filter(district__tin__startswith='F').filter(plan_sn__result_snid__notaccomplished=False).annotate(lit=Min('plan_sn__result_snid__ignitiondated')).filter(Q(regdate__range=(adate, bdate))|Q(lit__range=(adate, bdate))).order_by('district__tla','district__name') # charge regs
+    elif tn == 'BLM':
+        dates_reg_list = SmokeRegister.objects.filter(district__tin__startswith='B').filter(plan_sn__result_snid__notaccomplished=False).annotate(lit=Min('plan_sn__result_snid__ignitiondated')).filter(Q(regdate__range=(adate, bdate))|Q(lit__range=(adate, bdate))).order_by('district__tla','district__name') # charge regs
+    else:
+        dates_reg_list = SmokeRegister.objects.filter(district__tla__iexact=tn).filter(plan_sn__result_snid__notaccomplished=False).annotate(lit=Min('plan_sn__result_snid__ignitiondated')).filter(Q(regdate__range=(adate, bdate))|Q(lit__range=(adate, bdate))).order_by('district__tla','district__name') # charge regs
+    #dates_result_list = SmokeResult.objects.filter(ignitiondated__range=(adate, bdate)).order_by('ignitiondated')
+    #dates_lit_list = SmokeRegister.objects.filter(plan_sn__result_snid__ignitiondated__range=(adate, bdate), plan_sn__result_snid__notaccomplished=False).annotate(planned=Sum('plan_sn__acrestoburn'),lit=Min('plan_sn__result_snid__ignitiondated'),litacs=Sum('plan_sn__result_snid__acresburned')).filter(lit__range=(adate, bdate)).order_by('district')
+    tregcost = 0
+    tplancost = 0
+    ttotalcost = 0
+    trac = 0
+    tplan = 0
+    tblack = 0
+    for object in dates_reg_list:
+        if object.fuelspecies == 'J' or object.typeburn == 'S':
+                object.regcost = 0
+                object.plancost = 0
+        else:
+            if adate <= object.regdate <= bdate:
+                object.regcost = object.regacres * 0.50
+            else:
+                object.regcost = 0
+            if object.lit != None:
+                if adate <= object.lit <= bdate:
+                    object.plancost = object.regacres * 3.10
+                else:
+                    object.plancost = 0
+            else:
+                object.plancost = 0
+        object.totalcost = object.regcost + object.plancost
+        tregcost = tregcost + object.regcost
+        tplancost = tplancost + object.plancost
+        ttotalcost = ttotalcost + object.totalcost
+        trac = trac + object.regacres
+        #if object.litacs != None:
+        #    tblack = tblack + object.litacs
+        #if object.planned != None:
+        #    tplan = tplan + object.planned
+    dateyear = year
+    intyear = int(year)
+    first_month = datetime.datetime(intyear, 12, 31)
+    previous_months = (first_month - relativedelta(months = months) for months in range(0, 12, 1))
+    themonths = previous_months
+    e=[]
+    cumu = dates_reg_list.count()
+    maxcount = 0
+    for month in themonths:
+        iyear = month.year
+        imonth = month.month
+        entry_count = SmokeRegister.objects.filter(
+            Q(regdate__year=iyear),
+            Q(regdate__month=imonth)
+            ).count()
+        if entry_count >= maxcount:
+            maxcount = entry_count
+        dict = {'month': month, 'count': entry_count, 'cumu': cumu }
+        e.append(dict)
+        cumu = cumu - entry_count
+    entry_dates = e
+    return render(request,'fastrax/datebilling.html', {'tla': tn, 'entry_dates': entry_dates, 'maxcount': maxcount, 'dates_reg_list': dates_reg_list, 'dateyear': dateyear, 'tregcost': tregcost, 'tplancost': tplancost, 'ttotalcost': ttotalcost, 'trac': trac, 'tblack': tblack })
 
 def get_score(self):
     return sum(self.rating_set.values_list('rating', flat=True))
@@ -2344,7 +2415,7 @@ def monthsum(request, year, mo):
     puser3_list = ppluser_list.exclude(regsmo='0').order_by('-tonsmo')
     dateyear = year
     datemo = mo
-    return render_to_response('fastrax/datesum.html', {'dateyear': dateyear, 'datemo': datemo, 'dates_reg_list': dates_reg_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'regcount': regcount, 'plancount': plancount, 'resultcount': resultcount, 'district_list': district_list, 'district2_list': district2_list, 'district3_list': district3_list, 'user_list': user_list, 'user2_list': user2_list, 'user3_list': user3_list, 'pdistrict_list': pdistrict_list, 'pdistrict2_list': pdistrict2_list, 'pdistrict3_list': pdistrict3_list, 'rdistrict_list': rdistrict_list, 'rdistrict2_list': rdistrict2_list, 'rdistrict3_list': rdistrict3_list, 'puser_list': puser_list, 'puser2_list': puser2_list, 'puser3_list': puser3_list, 'distcount': distcount, 'usercount': usercount, 'pdistcount': pdistcount, 'pusercount': pusercount, 'acscount': acscount, 'tonscount': tonscount, 'pacscount': pacscount, 'pptonscount': pptonscount, 'racscount': racscount, 'rptonscount': rptonscount, 'rltonscount': rltonscount, 'rtonscount': rtonscount })
+    return render(request,'fastrax/datesum.html', {'dateyear': dateyear, 'datemo': datemo, 'dates_reg_list': dates_reg_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'regcount': regcount, 'plancount': plancount, 'resultcount': resultcount, 'district_list': district_list, 'district2_list': district2_list, 'district3_list': district3_list, 'user_list': user_list, 'user2_list': user2_list, 'user3_list': user3_list, 'pdistrict_list': pdistrict_list, 'pdistrict2_list': pdistrict2_list, 'pdistrict3_list': pdistrict3_list, 'rdistrict_list': rdistrict_list, 'rdistrict2_list': rdistrict2_list, 'rdistrict3_list': rdistrict3_list, 'puser_list': puser_list, 'puser2_list': puser2_list, 'puser3_list': puser3_list, 'distcount': distcount, 'usercount': usercount, 'pdistcount': pdistcount, 'pusercount': pusercount, 'acscount': acscount, 'tonscount': tonscount, 'pacscount': pacscount, 'pptonscount': pptonscount, 'racscount': racscount, 'rptonscount': rptonscount, 'rltonscount': rltonscount, 'rtonscount': rtonscount })
 
 def yearsum(request, year):
     iyear = int(year)
@@ -2422,7 +2493,7 @@ def yearsum(request, year):
     puser2_list = ppluser_list.exclude(regsmo='0').order_by('-acsmo')
     puser3_list = ppluser_list.exclude(regsmo='0').order_by('-tonsmo')
     dateyear = year
-    return render_to_response('fastrax/datesum.html', {'dateyear': dateyear, 'dates_reg_list': dates_reg_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'regcount': regcount, 'plancount': plancount, 'resultcount': resultcount, 'resultacount': resultacount, 'resultbcount': resultbcount, 'district_list': district_list, 'district2_list': district2_list, 'district3_list': district3_list, 'user_list': user_list, 'user2_list': user2_list, 'user3_list': user3_list, 'pdistrict_list': pdistrict_list, 'pdistrict2_list': pdistrict2_list, 'pdistrict3_list': pdistrict3_list, 'rdistrict_list': rdistrict_list, 'rdistrict2_list': rdistrict2_list, 'rdistrict3_list': rdistrict3_list, 'puser_list': puser_list, 'puser2_list': puser2_list, 'puser3_list': puser3_list, 'distcount': distcount, 'usercount': usercount, 'pdistcount': pdistcount, 'pusercount': pusercount, 'acscount': acscount, 'tonscount': tonscount, 'pacscount': pacscount, 'pptonscount': pptonscount, 'racscount': racscount, 'racscounta': racscounta, 'racscountb': racscountb, 'rptonscount': rptonscount, 'rltonscount': rltonscount, 'rtonscount': rtonscount })
+    return render(request,'fastrax/datesum.html', {'dateyear': dateyear, 'dates_reg_list': dates_reg_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'regcount': regcount, 'plancount': plancount, 'resultcount': resultcount, 'resultacount': resultacount, 'resultbcount': resultbcount, 'district_list': district_list, 'district2_list': district2_list, 'district3_list': district3_list, 'user_list': user_list, 'user2_list': user2_list, 'user3_list': user3_list, 'pdistrict_list': pdistrict_list, 'pdistrict2_list': pdistrict2_list, 'pdistrict3_list': pdistrict3_list, 'rdistrict_list': rdistrict_list, 'rdistrict2_list': rdistrict2_list, 'rdistrict3_list': rdistrict3_list, 'puser_list': puser_list, 'puser2_list': puser2_list, 'puser3_list': puser3_list, 'distcount': distcount, 'usercount': usercount, 'pdistcount': pdistcount, 'pusercount': pusercount, 'acscount': acscount, 'tonscount': tonscount, 'pacscount': pacscount, 'pptonscount': pptonscount, 'racscount': racscount, 'racscounta': racscounta, 'racscountb': racscountb, 'rptonscount': rptonscount, 'rltonscount': rltonscount, 'rtonscount': rtonscount })
 
 def monthaccomp(request, year, mo):
     iyear = int(year)
@@ -2498,7 +2569,7 @@ def monthaccomp(request, year, mo):
     ruser3_list = pruser_list.exclude(regsmo='0').order_by('-tonsmo')
     dateyear = year
     datemo = mo
-    return render_to_response('fastrax/dateaccomp.html', {'dateyear': dateyear, 'datemo': datemo, 'dates_reg_list': dates_reg_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'regcount': regcount, 'plancount': plancount, 'resultcount': resultcount, 'district_list': district_list, 'district2_list': district2_list, 'district3_list': district3_list, 'user_list': user_list, 'user2_list': user2_list, 'user3_list': user3_list, 'pdistrict_list': pdistrict_list, 'pdistrict2_list': pdistrict2_list, 'pdistrict3_list': pdistrict3_list, 'puser_list': puser_list, 'puser2_list': puser2_list, 'puser3_list': puser3_list, 'rdistrict_list': rdistrict_list, 'rdistrict2_list': rdistrict2_list, 'rdistrict3_list': rdistrict3_list, 'ruser_list': ruser_list, 'ruser2_list': ruser2_list, 'ruser3_list': ruser3_list, 'distcount': distcount, 'usercount': usercount, 'pdistcount': pdistcount, 'pusercount': pusercount, 'rdistcount': rdistcount, 'rusercount': rusercount, 'acscount': acscount, 'tonscount': tonscount, 'pacscount': pacscount, 'ptonscount': ptonscount, 'pptonscount': pptonscount, 'racscount': racscount, 'rtonscount': rtonscount, 'rptonscount': rptonscount })
+    return render(request,'fastrax/dateaccomp.html', {'dateyear': dateyear, 'datemo': datemo, 'dates_reg_list': dates_reg_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'regcount': regcount, 'plancount': plancount, 'resultcount': resultcount, 'district_list': district_list, 'district2_list': district2_list, 'district3_list': district3_list, 'user_list': user_list, 'user2_list': user2_list, 'user3_list': user3_list, 'pdistrict_list': pdistrict_list, 'pdistrict2_list': pdistrict2_list, 'pdistrict3_list': pdistrict3_list, 'puser_list': puser_list, 'puser2_list': puser2_list, 'puser3_list': puser3_list, 'rdistrict_list': rdistrict_list, 'rdistrict2_list': rdistrict2_list, 'rdistrict3_list': rdistrict3_list, 'ruser_list': ruser_list, 'ruser2_list': ruser2_list, 'ruser3_list': ruser3_list, 'distcount': distcount, 'usercount': usercount, 'pdistcount': pdistcount, 'pusercount': pusercount, 'rdistcount': rdistcount, 'rusercount': rusercount, 'acscount': acscount, 'tonscount': tonscount, 'pacscount': pacscount, 'ptonscount': ptonscount, 'pptonscount': pptonscount, 'racscount': racscount, 'rtonscount': rtonscount, 'rptonscount': rptonscount })
 
 def monthaccompt(request, year, mo):
     iyear = int(year)
@@ -2574,8 +2645,8 @@ def monthaccompt(request, year, mo):
     ruser3_list = pruser_list.exclude(regsmo='0').order_by('-tonsmo')
     dateyear = year
     datemo = mo
-    result = render_to_response('fastrax/dateaccompt.csv', {'dateyear': dateyear, 'datemo': datemo, 'dates_reg_list': dates_reg_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'regcount': regcount, 'plancount': plancount, 'resultcount': resultcount, 'district_list': district_list, 'district2_list': district2_list, 'district3_list': district3_list, 'user_list': user_list, 'user2_list': user2_list, 'user3_list': user3_list, 'pdistrict_list': pdistrict_list, 'pdistrict2_list': pdistrict2_list, 'pdistrict3_list': pdistrict3_list, 'puser_list': puser_list, 'puser2_list': puser2_list, 'puser3_list': puser3_list, 'rdistrict_list': rdistrict_list, 'rdistrict2_list': rdistrict2_list, 'rdistrict3_list': rdistrict3_list, 'ruser_list': ruser_list, 'ruser2_list': ruser2_list, 'ruser3_list': ruser3_list, 'distcount': distcount, 'usercount': usercount, 'pdistcount': pdistcount, 'pusercount': pusercount, 'rdistcount': rdistcount, 'rusercount': rusercount, 'acscount': acscount, 'tonscount': tonscount, 'pacscount': pacscount, 'ptonscount': ptonscount, 'pptonscount': pptonscount, 'racscount': racscount, 'rtonscount': rtonscount, 'rptonscount': rptonscount })
-    return HttpResponse(result, mimetype='text/plain')
+    result = render(request,'fastrax/dateaccompt.csv', {'dateyear': dateyear, 'datemo': datemo, 'dates_reg_list': dates_reg_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'regcount': regcount, 'plancount': plancount, 'resultcount': resultcount, 'district_list': district_list, 'district2_list': district2_list, 'district3_list': district3_list, 'user_list': user_list, 'user2_list': user2_list, 'user3_list': user3_list, 'pdistrict_list': pdistrict_list, 'pdistrict2_list': pdistrict2_list, 'pdistrict3_list': pdistrict3_list, 'puser_list': puser_list, 'puser2_list': puser2_list, 'puser3_list': puser3_list, 'rdistrict_list': rdistrict_list, 'rdistrict2_list': rdistrict2_list, 'rdistrict3_list': rdistrict3_list, 'ruser_list': ruser_list, 'ruser2_list': ruser2_list, 'ruser3_list': ruser3_list, 'distcount': distcount, 'usercount': usercount, 'pdistcount': pdistcount, 'pusercount': pusercount, 'rdistcount': rdistcount, 'rusercount': rusercount, 'acscount': acscount, 'tonscount': tonscount, 'pacscount': pacscount, 'ptonscount': ptonscount, 'pptonscount': pptonscount, 'racscount': racscount, 'rtonscount': rtonscount, 'rptonscount': rptonscount })
+    return HttpResponse(result, content_type='text/plain')
 
 def fiscalaccomp(request, year):
     iyear = int(year)
@@ -2644,7 +2715,7 @@ def fiscalaccomp(request, year):
     ruser2_list = pruser_list.exclude(regsmo='0').order_by('-acsmo')
     ruser3_list = pruser_list.exclude(regsmo='0').order_by('-tonsmo')
     dateyear = year
-    return render_to_response('fastrax/dateaccomp.html', {'dateyear': dateyear, 'dates_reg_list': dates_reg_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'dates_lit_list': dates_lit_list, 'regcount': regcount, 'plancount': plancount, 'resultcount': resultcount, 'district_list': district_list, 'district2_list': district2_list, 'district3_list': district3_list, 'user_list': user_list, 'user2_list': user2_list, 'user3_list': user3_list, 'pdistrict_list': pdistrict_list, 'pdistrict2_list': pdistrict2_list, 'pdistrict3_list': pdistrict3_list, 'puser_list': puser_list, 'puser2_list': puser2_list, 'puser3_list': puser3_list, 'rdistrict_list': rdistrict_list, 'rdistrict2_list': rdistrict2_list, 'rdistrict3_list': rdistrict3_list, 'ruser_list': ruser_list, 'ruser2_list': ruser2_list, 'ruser3_list': ruser3_list, 'distcount': distcount, 'usercount': usercount, 'pdistcount': pdistcount, 'pusercount': pusercount, 'rdistcount': rdistcount, 'rusercount': rusercount, 'acscount': acscount, 'tonscount': tonscount, 'pacscount': pacscount, 'ptonscount': ptonscount, 'pptonscount': pptonscount, 'racscount': racscount, 'rtonscount': rtonscount, 'rptonscount': rptonscount })
+    return render(request,'fastrax/dateaccomp.html', {'dateyear': dateyear, 'dates_reg_list': dates_reg_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'dates_lit_list': dates_lit_list, 'regcount': regcount, 'plancount': plancount, 'resultcount': resultcount, 'district_list': district_list, 'district2_list': district2_list, 'district3_list': district3_list, 'user_list': user_list, 'user2_list': user2_list, 'user3_list': user3_list, 'pdistrict_list': pdistrict_list, 'pdistrict2_list': pdistrict2_list, 'pdistrict3_list': pdistrict3_list, 'puser_list': puser_list, 'puser2_list': puser2_list, 'puser3_list': puser3_list, 'rdistrict_list': rdistrict_list, 'rdistrict2_list': rdistrict2_list, 'rdistrict3_list': rdistrict3_list, 'ruser_list': ruser_list, 'ruser2_list': ruser2_list, 'ruser3_list': ruser3_list, 'distcount': distcount, 'usercount': usercount, 'pdistcount': pdistcount, 'pusercount': pusercount, 'rdistcount': rdistcount, 'rusercount': rusercount, 'acscount': acscount, 'tonscount': tonscount, 'pacscount': pacscount, 'ptonscount': ptonscount, 'pptonscount': pptonscount, 'racscount': racscount, 'rtonscount': rtonscount, 'rptonscount': rptonscount })
 
 def fiscalaccompt(request, year):
     iyear = int(year)
@@ -2713,8 +2784,8 @@ def fiscalaccompt(request, year):
     ruser2_list = pruser_list.exclude(regsmo='0').order_by('-acsmo')
     ruser3_list = pruser_list.exclude(regsmo='0').order_by('-tonsmo')
     dateyear = year
-    result = render_to_response('fastrax/dateaccompt.csv', {'dateyear': dateyear, 'dates_reg_list': dates_reg_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'dates_lit_list': dates_lit_list, 'regcount': regcount, 'plancount': plancount, 'resultcount': resultcount, 'district_list': district_list, 'district2_list': district2_list, 'district3_list': district3_list, 'user_list': user_list, 'user2_list': user2_list, 'user3_list': user3_list, 'pdistrict_list': pdistrict_list, 'pdistrict2_list': pdistrict2_list, 'pdistrict3_list': pdistrict3_list, 'puser_list': puser_list, 'puser2_list': puser2_list, 'puser3_list': puser3_list, 'rdistrict_list': rdistrict_list, 'rdistrict2_list': rdistrict2_list, 'rdistrict3_list': rdistrict3_list, 'ruser_list': ruser_list, 'ruser2_list': ruser2_list, 'ruser3_list': ruser3_list, 'distcount': distcount, 'usercount': usercount, 'pdistcount': pdistcount, 'pusercount': pusercount, 'rdistcount': rdistcount, 'rusercount': rusercount, 'acscount': acscount, 'tonscount': tonscount, 'pacscount': pacscount, 'ptonscount': ptonscount, 'pptonscount': pptonscount, 'racscount': racscount, 'rtonscount': rtonscount, 'rptonscount': rptonscount })
-    return HttpResponse(result, mimetype='text/plain')
+    result = render(request,'fastrax/dateaccompt.csv', {'dateyear': dateyear, 'dates_reg_list': dates_reg_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'dates_lit_list': dates_lit_list, 'regcount': regcount, 'plancount': plancount, 'resultcount': resultcount, 'district_list': district_list, 'district2_list': district2_list, 'district3_list': district3_list, 'user_list': user_list, 'user2_list': user2_list, 'user3_list': user3_list, 'pdistrict_list': pdistrict_list, 'pdistrict2_list': pdistrict2_list, 'pdistrict3_list': pdistrict3_list, 'puser_list': puser_list, 'puser2_list': puser2_list, 'puser3_list': puser3_list, 'rdistrict_list': rdistrict_list, 'rdistrict2_list': rdistrict2_list, 'rdistrict3_list': rdistrict3_list, 'ruser_list': ruser_list, 'ruser2_list': ruser2_list, 'ruser3_list': ruser3_list, 'distcount': distcount, 'usercount': usercount, 'pdistcount': pdistcount, 'pusercount': pusercount, 'rdistcount': rdistcount, 'rusercount': rusercount, 'acscount': acscount, 'tonscount': tonscount, 'pacscount': pacscount, 'ptonscount': ptonscount, 'pptonscount': pptonscount, 'racscount': racscount, 'rtonscount': rtonscount, 'rptonscount': rptonscount })
+    return HttpResponse(result, content_type='text/plain')
 
 def usersum(request, un):
     uuser = User.objects.filter(username__iexact=un)[:1]
@@ -2760,11 +2831,11 @@ def usersum(request, un):
     pusercount = puser_list.count()
     puser2_list = ppluser_list.exclude(regsmo='0').order_by('-acsmo')
     puser3_list = ppluser_list.exclude(regsmo='0').order_by('-tonsmo')
-    return render_to_response('fastrax/usersum.html', {'uuser': uuser, 'reg_list': reg_list, 'plan_list': plan_list, 'result_list': result_list, 'regcount': regcount, 'plancount': plancount, 'resultcount': resultcount, 'district_list': district_list, 'district2_list': district2_list, 'district3_list': district3_list, 'user_list': user_list, 'user2_list': user2_list, 'user3_list': user3_list, 'pdistrict_list': pdistrict_list, 'pdistrict2_list': pdistrict2_list, 'pdistrict3_list': pdistrict3_list, 'puser_list': puser_list, 'puser2_list': puser2_list, 'puser3_list': puser3_list, 'distcount': distcount, 'usercount': usercount, 'pdistcount': pdistcount, 'pusercount': pusercount, 'acscount': acscount, 'tonscount': tonscount, 'pacscount': pacscount, 'pptonscount': pptonscount })
+    return render(request,'fastrax/usersum.html', {'uuser': uuser, 'reg_list': reg_list, 'plan_list': plan_list, 'result_list': result_list, 'regcount': regcount, 'plancount': plancount, 'resultcount': resultcount, 'district_list': district_list, 'district2_list': district2_list, 'district3_list': district3_list, 'user_list': user_list, 'user2_list': user2_list, 'user3_list': user3_list, 'pdistrict_list': pdistrict_list, 'pdistrict2_list': pdistrict2_list, 'pdistrict3_list': pdistrict3_list, 'puser_list': puser_list, 'puser2_list': puser2_list, 'puser3_list': puser3_list, 'distcount': distcount, 'usercount': usercount, 'pdistcount': pdistcount, 'pusercount': pusercount, 'acscount': acscount, 'tonscount': tonscount, 'pacscount': pacscount, 'pptonscount': pptonscount })
 
 def odfdistrict(request):
     district_list = ODFPD.objects.all().defer('geometry').exclude(nnn='000').order_by('nnn')
-    return render_to_response('fastrax/odfdistrict.html', {'district_list': district_list})
+    return render(request,'fastrax/odfdistrict.html', {'district_list': district_list})
 
 def users(request):
     reg_list = User.objects.filter(groups__name='fastrax-users').annotate(rx=Count('reg_user')).order_by('username')
@@ -2777,7 +2848,7 @@ def users(request):
     col2 = round(col1 * 2 - 1)
     col3 = round(col1 * 3 - 2)
     col4 = round(col1 * 4 - 3)
-    return render_to_response('fastrax/users.html', {'user_list': user_list, 'col1': col1, 'col2': col2, 'col3': col3, 'col4': col4, })
+    return render(request,'fastrax/users.html', {'user_list': user_list, 'col1': col1, 'col2': col2, 'col3': col3, 'col4': col4, })
 
 def user(request, un):
     adate = datetime.datetime.now().year
@@ -2798,7 +2869,7 @@ def user(request, un):
     plan_list = SmokePlan.objects.filter(
         Q(author__username__exact=un)
         ).exclude(result_snid__result_date__isnull=False).order_by('sn', 'suffix')
-    return render_to_response('fastrax/user.html', {'uuser': uuser, 'reg_list': reg_list, 'plan_list': plan_list })
+    return render(request,'fastrax/user.html', {'uuser': uuser, 'reg_list': reg_list, 'plan_list': plan_list })
 
 def uclosed(request, un):
     adate = datetime.datetime.now().year
@@ -2821,7 +2892,7 @@ def uclosed(request, un):
     result_list = SmokeResult.objects.filter(
         Q(author__username__exact=un)
         ).order_by('snid__sn', 'snid__suffix')
-    return render_to_response('fastrax/user.html', {'uuser': uuser, 'reg_list': reg_list, 'plan_list': plan_list, 'result_list': result_list, 'iyear': iyear })
+    return render(request,'fastrax/user.html', {'uuser': uuser, 'reg_list': reg_list, 'plan_list': plan_list, 'result_list': result_list, 'iyear': iyear })
 
 def control(request):
     district_list = District.objects.all().order_by('tla','name')
@@ -2897,12 +2968,12 @@ def control(request):
             d.maxplan = max(maxplan,maxresult)
         d.entry_dates = e
 
-    return render_to_response('fastrax/control.html', { 'district_list': district_list, 'iyear': iyear })
+    return render(request,'fastrax/control.html', { 'district_list': district_list, 'iyear': iyear })
 
 def districts(request):
     district_list = District.objects.all().order_by('tla')
     col1 = round((district_list.count())/2)
-    return render_to_response('fastrax/districts.html', {'district_list': district_list, 'col1': col1, })
+    return render(request,'fastrax/districts.html', {'district_list': district_list, 'col1': col1, })
 
 def tla(request, tn):
     adate = datetime.datetime.now().year
@@ -2974,7 +3045,7 @@ def tla(request, tn):
         cumr = cumr - result_count
         maxplan = max(maxplan,maxresult)
     entry_dates = e
-    return render_to_response('fastrax/tla.html', { 'entry_dates': entry_dates, 'maxcount': maxcount, 'maxplan': maxplan, 'cumrt': cumrt, 'reg_list': reg_list, 'plan_list': plan_list, 'dtla': dtla}) #, 'result_list': result_list })
+    return render(request,'fastrax/tla.html', { 'entry_dates': entry_dates, 'maxcount': maxcount, 'maxplan': maxplan, 'cumrt': cumrt, 'reg_list': reg_list, 'plan_list': plan_list, 'dtla': dtla}) #, 'result_list': result_list })
 
 def tlamap(request, tn):
     adate = datetime.datetime.now().year
@@ -3030,7 +3101,7 @@ def tlamap(request, tn):
     [e2.setdefault(str((a.sn.township.upper() + a.sn.range.upper() + u"%s" % (a.sn.section.zfill(2)))),a) for a in plan_list]
     trs2_list = e2
     plss2_list = PLSS.objects.filter(trs__in=trs2_list).order_by('trs')
-    return render_to_response('fastrax/tlamap.html', { 'reg_list': reg_list, 'plan_list': plan_list, 'dtla': dtla, 'co_list': co_list, 'trs_list': trs_list, 'plss_list': plss_list, 'trs2_list': trs2_list, 'plss2_list': plss2_list,}) #, 'result_list': result_list })
+    return render(request,'fastrax/tlamap.html', { 'reg_list': reg_list, 'plan_list': plan_list, 'dtla': dtla, 'co_list': co_list, 'trs_list': trs_list, 'plss_list': plss_list, 'trs2_list': trs2_list, 'plss2_list': plss2_list,}) #, 'result_list': result_list })
 
 def tclosed(request, tn):
     adate = datetime.datetime.now().year
@@ -3069,7 +3140,7 @@ def tclosed(request, tn):
         e.append(dict)
         cumu = cumu - entry_count
     entry_dates = e
-    return render_to_response('fastrax/tla.html', { 'entry_dates': entry_dates, 'reg_list': reg_list, 'plan_list': plan_list, 'dtla': dtla, 'iyear': iyear }) #, 'result_list': result_list })
+    return render(request,'fastrax/tla.html', { 'entry_dates': entry_dates, 'reg_list': reg_list, 'plan_list': plan_list, 'dtla': dtla, 'iyear': iyear }) #, 'result_list': result_list })
 
 def district(request, tn, dn):
     adate = datetime.datetime.now().year
@@ -3145,7 +3216,7 @@ def district(request, tn, dn):
         cumr = cumr - result_count
         maxplan = max(maxplan,maxresult)
     entry_dates = e
-    return render_to_response('fastrax/district.html', { 'entry_dates': entry_dates, 'maxcount': maxcount, 'maxplan': maxplan, 'cumrt': cumrt, 'reg_list': reg_list, 'plan_list': plan_list, 'ddistrict': ddistrict, 'dtla': dtla}) #, 'result_list': result_list })
+    return render(request,'fastrax/district.html', { 'entry_dates': entry_dates, 'maxcount': maxcount, 'maxplan': maxplan, 'cumrt': cumrt, 'reg_list': reg_list, 'plan_list': plan_list, 'ddistrict': ddistrict, 'dtla': dtla},)
 
 def dclosed(request, tn, dn):
     adate = datetime.datetime.now().year
@@ -3189,7 +3260,7 @@ def dclosed(request, tn, dn):
         e.append(dict)
         cumu = cumu - entry_count
     entry_dates = e
-    return render_to_response('fastrax/district.html', { 'entry_dates': entry_dates, 'reg_list': reg_list, 'plan_list': plan_list, 'ddistrict': ddistrict, 'dtla': dtla, 'iyear': iyear }) #, 'result_list': result_list })
+    return render(request,'fastrax/district.html', { 'entry_dates': entry_dates, 'reg_list': reg_list, 'plan_list': plan_list, 'ddistrict': ddistrict, 'dtla': dtla, 'iyear': iyear }) #, 'result_list': result_list })
 
 def distmap(request, tn, dn):
     adate = datetime.datetime.now().year
@@ -3247,7 +3318,7 @@ def distmap(request, tn, dn):
     [e2.setdefault(str((a.sn.township.upper() + a.sn.range.upper() + u"%s" % (a.sn.section.zfill(2)))),a) for a in plan_list]
     trs2_list = e2
     plss2_list = PLSS.objects.filter(trs__in=trs2_list).order_by('trs')
-    return render_to_response('fastrax/distmap.html', {'dtla': dtla, 'ddistrict': ddistrict, 'reg_list': reg_list, 'plan_list': plan_list, 'co_list': co_list, 'trs_list': trs_list, 'plss_list': plss_list, 'trs2_list': trs2_list, 'plss2_list': plss2_list, })
+    return render(request,'fastrax/distmap.html', {'dtla': dtla, 'ddistrict': ddistrict, 'reg_list': reg_list, 'plan_list': plan_list, 'co_list': co_list, 'trs_list': trs_list, 'plss_list': plss_list, 'trs2_list': trs2_list, 'plss2_list': plss2_list, })
 
 def upcoming(request):
     adate = datetime.datetime.now()
@@ -3279,7 +3350,7 @@ def upcoming(request):
     [e3.setdefault(str((a.sn.township.upper() + a.sn.range.upper() + u"%s" % (a.sn.section.zfill(2)))),a) for a in dates_result_list]
     trs3_list = e3
     plss3_list = PLSS.objects.filter(trs__in=trs3_list).order_by('trs')
-    return render_to_response('fastrax/dateignition.html', {'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'adate': adate, 'trs2_list': trs2_list, 'plss2_list': plss2_list, 'plss3_list': plss3_list, })
+    return render(request,'fastrax/dateignition.html', {'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'adate': adate, 'trs2_list': trs2_list, 'plss2_list': plss2_list, 'plss3_list': plss3_list, })
 
 def date_ignition(request, year, mo, da):
     dates_result_list = SmokePlan.objects.filter(
@@ -3325,7 +3396,7 @@ def date_ignition(request, year, mo, da):
     [e3.setdefault(str((a.sn.township.upper() + a.sn.range.upper() + u"%s" % (a.sn.section.zfill(2)))),a) for a in dates_result_list]
     trs3_list = e3
     plss3_list = PLSS.objects.filter(trs__in=trs3_list).order_by('trs')
-    return render_to_response('fastrax/dateignition.html', {'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'dateyear': dateyear, 'datemo': datemo, 'dateda': dateda, 'trs2_list': trs2_list, 'plss2_list': plss2_list, 'plss3_list': plss3_list, })
+    return render(request,'fastrax/dateignition.html', {'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'dateyear': dateyear, 'datemo': datemo, 'dateda': dateda, 'trs2_list': trs2_list, 'plss2_list': plss2_list, 'plss3_list': plss3_list, })
 
 def datemap(request, year, mo, da):
     black_list = SmokeRegister.objects.filter(
@@ -3400,7 +3471,7 @@ def datemap(request, year, mo, da):
     [e3.setdefault(str((a.snid.sn.township.upper() + a.snid.sn.range.upper() + u"%s" % (a.snid.sn.section.zfill(2)))),a) for a in dates_result_list]
     trs3_list = e3
     plss3_list = PLSS.objects.filter(trs__in=trs3_list).order_by('trs')
-    return render_to_response('fastrax/datemap.html', {'dates_reg_list': dates_reg_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'dateyear': dateyear, 'datemo': datemo, 'dateda': dateda, 'co_list': co_list, 'trs_list': trs_list, 'plss_list': plss_list, 'trs2_list': trs2_list, 'plss2_list': plss2_list, 'plss3_list': plss3_list, })
+    return render(request,'fastrax/datemap.html', {'dates_reg_list': dates_reg_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'dateyear': dateyear, 'datemo': datemo, 'dateda': dateda, 'co_list': co_list, 'trs_list': trs_list, 'plss_list': plss_list, 'trs2_list': trs2_list, 'plss2_list': plss2_list, 'plss3_list': plss3_list, })
 
 def monthmap(request, year, mo):
     black_list = SmokeRegister.objects.filter(
@@ -3473,7 +3544,7 @@ def monthmap(request, year, mo):
     [e3.setdefault(str((a.snid.sn.township.upper() + a.snid.sn.range.upper() + u"%s" % (a.snid.sn.section.zfill(2)))),a) for a in dates_result_list]
     trs3_list = e3
     plss3_list = PLSS.objects.filter(trs__in=trs3_list).order_by('trs')
-    return render_to_response('fastrax/datemap.html', {'dates_reg_list': dates_reg_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'dateyear': dateyear, 'datemo': datemo, 'co_list': co_list, 'trs_list': trs_list, 'plss_list': plss_list, 'trs2_list': trs2_list, 'plss2_list': plss2_list, 'plss3_list': plss3_list, })
+    return render(request,'fastrax/datemap.html', {'dates_reg_list': dates_reg_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'dateyear': dateyear, 'datemo': datemo, 'co_list': co_list, 'trs_list': trs_list, 'plss_list': plss_list, 'trs2_list': trs2_list, 'plss2_list': plss2_list, 'plss3_list': plss3_list, })
 
 def yearmap(request, year):
     black_list = SmokeRegister.objects.filter(regdate__year=year).annotate(black=Sum('plan_sn__result_snid__acresburned')).order_by('sn')
@@ -3535,7 +3606,7 @@ def yearmap(request, year):
     [e3.setdefault(str((a.snid.sn.township.upper() + a.snid.sn.range.upper() + u"%s" % (a.snid.sn.section.zfill(2)))),a) for a in dates_result_list]
     trs3_list = e3
     plss3_list = PLSS.objects.filter(trs__in=trs3_list).order_by('trs')
-    return render_to_response('fastrax/datemap.html', {'dates_reg_list': dates_reg_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'dateyear': dateyear, 'co_list': co_list, 'trs_list': trs_list, 'plss_list': plss_list, 'trs2_list': trs2_list, 'plss2_list': plss2_list, 'plss3_list': plss3_list, })
+    return render(request,'fastrax/datemap.html', {'dates_reg_list': dates_reg_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'dateyear': dateyear, 'co_list': co_list, 'trs_list': trs_list, 'plss_list': plss_list, 'trs2_list': trs2_list, 'plss2_list': plss2_list, 'plss3_list': plss3_list, })
 
 def dateam(request, year, mo, da, hr, mi):
     dateyear = year
@@ -3638,7 +3709,7 @@ def dateam(request, year, mo, da, hr, mi):
     trs2_list = e2
     plss2_list = PLSS.objects.filter(trs__in=trs2_list).order_by('trs')
 
-    return render_to_response('fastrax/dateam.html', {'entry_dates': entry_dates, 'maxcount': maxcount, 'maxplan': maxplan, 'dates_reg_list': dates_reg_list, 'dates_regu_list': dates_regu_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'dates_resultu_list': dates_resultu_list, 'starp': starp, 'storp': storp, 'dateyear': dateyear, 'datemo': datemo, 'dateda': dateda, 'datehr': datehr, 'datemi': datemi, 'co_list': co_list, 'trs_list': trs_list, 'plss_list': plss_list, 'trs2_list': trs2_list, 'plss2_list': plss2_list,})
+    return render(request,'fastrax/dateam.html', {'entry_dates': entry_dates, 'maxcount': maxcount, 'maxplan': maxplan, 'dates_reg_list': dates_reg_list, 'dates_regu_list': dates_regu_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'dates_resultu_list': dates_resultu_list, 'starp': starp, 'storp': storp, 'dateyear': dateyear, 'datemo': datemo, 'dateda': dateda, 'datehr': datehr, 'datemi': datemi, 'co_list': co_list, 'trs_list': trs_list, 'plss_list': plss_list, 'trs2_list': trs2_list, 'plss2_list': plss2_list,})
 
 def odfamtxt(request, year, mo, da, hr, mi):
     dateyear = year
@@ -3668,8 +3739,8 @@ def odfamtxt(request, year, mo, da, hr, mi):
     odfyear = year
     odfmo = mo
     odfda = da
-    result = render_to_response('fastrax/odfdate.txt', {'dates_reg_list': dates_reg_list, 'dates_regu_list': dates_regu_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'dates_resultu_list': dates_resultu_list, 'starp': starp, 'storp': storp, 'dateyear': dateyear, 'datemo': datemo, 'dateda': dateda, 'datehr': datehr, 'datemi': datemi, 'odfyear': odfyear, 'odfmo': odfmo, 'odfda': odfda,})
-    return HttpResponse(result, mimetype='text/plain') 
+    result = render(request,'fastrax/odfdate.txt', {'dates_reg_list': dates_reg_list, 'dates_regu_list': dates_regu_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'dates_resultu_list': dates_resultu_list, 'starp': starp, 'storp': storp, 'dateyear': dateyear, 'datemo': datemo, 'dateda': dateda, 'datehr': datehr, 'datemi': datemi, 'odfyear': odfyear, 'odfmo': odfmo, 'odfda': odfda,})
+    return HttpResponse(result, content_type='text/plain') 
 
 def dateammap(request, year, mo, da, hr, mi):
     dateyear = year
@@ -3760,7 +3831,7 @@ def dateammap(request, year, mo, da, hr, mi):
     [e3.setdefault(str((a.snid.sn.township.upper() + a.snid.sn.range.upper() + u"%s" % (a.snid.sn.section.zfill(2)))),a) for a in dates_result_list]
     trs3_list = e3
     plss3_list = PLSS.objects.filter(trs__in=trs3_list).order_by('trs')
-    return render_to_response('fastrax/dateammap.html', {'dates_reg_list': dates_reg_list, 'dates_regu_list': dates_regu_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'dates_resultu_list': dates_resultu_list, 'starp': starp, 'storp': storp, 'dateyear': dateyear, 'datemo': datemo, 'dateda': dateda, 'datehr': datehr, 'datemi': datemi, 'co_list': co_list, 'trs_list': trs_list, 'plss_list': plss_list, 'trs2_list': trs2_list, 'plss2_list': plss2_list, 'plss3_list': plss3_list,})
+    return render(request,'fastrax/dateammap.html', {'dates_reg_list': dates_reg_list, 'dates_regu_list': dates_regu_list, 'dates_plan_list': dates_plan_list, 'dates_result_list': dates_result_list, 'dates_resultu_list': dates_resultu_list, 'starp': starp, 'storp': storp, 'dateyear': dateyear, 'datemo': datemo, 'dateda': dateda, 'datehr': datehr, 'datemi': datemi, 'co_list': co_list, 'trs_list': trs_list, 'plss_list': plss_list, 'trs2_list': trs2_list, 'plss2_list': plss2_list, 'plss3_list': plss3_list,})
 
 @login_required
 @permission_required('fastrax.add_smokeregister')
@@ -3818,7 +3889,7 @@ def transfer(request):
     fdate = str(idate)
     #ftime = str(itime)
     fname = str("REGISTERDATETIME" + fdate + ftime + ".txt")
-    url = str(settings.SITE_URL + "/odf/" + fname)
+    url = str("http:{{ request.site.domain }}odf/" + fname)
     sock = urllib.urlopen(url)
     htmlSource = sock.read()
     sock.close()
@@ -3831,8 +3902,8 @@ def transfer(request):
     #ftp.login('anonymous','anonymous')
     #ftp.cwd('incoming/r6/fire/fastracs')
     if ftime == '0445':
-        #ftp = FTP('159.121.125.11')
-        ftp = FTP('159.121.101.113')
+        #ftp = FTP('REDACTED')
+        ftp = FTP('REDACTED')
         #ftp.login('REDACTED','REDACTED')
         ftp.login('REDACTED','REDACTED')
         ftp.put_Ssl(True)
@@ -3841,8 +3912,8 @@ def transfer(request):
         ftp.storlines(storcmd, open(logcmd, 'ra'))
         ftp.close()
     elif ftime == '1045':
-        #ftp = FTP('159.121.125.11')
-        ftp = FTP('159.121.101.113')
+        #ftp = FTP('REDACTED')
+        ftp = FTP('REDACTED')
         #ftp.login('REDACTED','REDACTED')
         ftp.login('REDACTED','REDACTED')
         ftp.put_Ssl(True)
@@ -3850,7 +3921,7 @@ def transfer(request):
         storcmd = str("STOR " + fname)
         ftp.storlines(storcmd, open(logcmd, 'ra'))
         ftp.close()
-    return render_to_response('fastrax/transfer.html', {'adate': adate, 'muntil': muntil, 'fdate': fdate, 'ftime': ftime, 'fname': fname, 'url': url, 'logcmd': logcmd, 'storcmd': storcmd, 'd0445': d0445, 'd1045': d1045, 'n0445': n0445, 'test1': test1, 'test2': test2, 'test3': test3, }, context_instance=RequestContext(request))
+    return render(request,'fastrax/transfer.html', {'adate': adate, 'muntil': muntil, 'fdate': fdate, 'ftime': ftime, 'fname': fname, 'url': url, 'logcmd': logcmd, 'storcmd': storcmd, 'd0445': d0445, 'd1045': d1045, 'n0445': n0445, 'test1': test1, 'test2': test2, 'test3': test3, },)
 
 @login_required
 @permission_required('fastrax.add_smokeregister')
@@ -4066,9 +4137,9 @@ def tndnregister2(request, tn, dn):
         data_dict = {'district': did, 'fpf': dfpf}
         form = SmokeRegisterFormSN2(initial=data_dict)
 
-    return render_to_response('fastrax/tndnregister2.html', {
+    return render(request,'fastrax/tndnregister2.html', {
         'form': form, 'reg_list': reg_list, 'dreg_list': dreg_list, 'ddistrict': ddistrict, 'dtla': dtla
-    }, context_instance=RequestContext(request))
+    },)
 
 
 def test(request, tn, dn):
@@ -4159,7 +4230,7 @@ def test(request, tn, dn):
             #n4list = n3list[3].firstChild.data
             #obj.gelev = Decimal(n4list) * Decimal('3.2808399')
             obj.gelev = obj.uelev
-    return render_to_response('fastrax/test.html', {
+    return render(request,'fastrax/test.html', {
                 'tn': tn, 'dn': dn, 'reg_list': reg_list,
             })
 

@@ -2,7 +2,7 @@ from django import forms
 from django.forms import ModelForm
 from django.contrib.auth.models import User
 from django.http import *
-from o_fastrax.fastrax.models import *
+from fastrax.models import *
 import datetime
 from django.contrib.admin import widgets
 from guardian.shortcuts import assign
@@ -67,14 +67,14 @@ class SmokeRegisterFormSN(forms.ModelForm):
     revenue = forms.CharField(label='RevNo', min_length=5, max_length=5, required=False, help_text="Revenue number. Last 5 digits of tax notification number; REQUIRED for revenue smoke. Leave blank for natural fuels smoke.", validators=[numeric], widget=forms.TextInput(attrs={'size':'5'}))
     fpf = forms.CharField(label='PDNo', min_length=3, max_length=3, help_text="ODF Protection Disrict number. Required.", widget=forms.TextInput(attrs={'size':'3'}))
     regacres = forms.IntegerField(label='Acres', min_value=1, max_value=9999, help_text="Acres to be treated. For pile burning, enter acres from which material was accumulated. Maximum 9999 per registration.", widget=forms.TextInput(attrs={'size':'4'}))
-    landingtons = forms.IntegerField(label='LTons', min_value=0, max_value=9999, help_text="Total tons in landing or r-o-w piles on the unit. Enter 0 if none.", widget=forms.TextInput(attrs={'size':'4'}))
-    piletons = forms.IntegerField(label='PTons', min_value=0, max_value=9999, help_text="Total tons in unit piles. Exclude landings and right-of-way. Use PNW-GTR-364 or PCOST to estimate. Enter 0 if none.", widget=forms.TextInput(attrs={'size':'4'}))
-    fuelclass1 = forms.IntegerField(label='BU fuels 0-1/4"', min_value=0, max_value=99, help_text="Broadcast/underburn 0-1/4\" fuels in tons/ac. Enter 0 if none.", widget=forms.TextInput(attrs={'size':'2'}))
-    fuelclass2 = forms.IntegerField(label='BU fuels 1/4"-1"', min_value=0, max_value=99, help_text="Broadcast/underburn 1/4\"-1\" fuels in tons/ac. Enter 0 if none.", widget=forms.TextInput(attrs={'size':'2'}))
-    fuelclass3 = forms.IntegerField(label='BU fuels 1"-3"', min_value=0, max_value=99, help_text="Broadcast/underburn 1\"-3\" fuels in tons/ac. Enter 0 if none.", widget=forms.TextInput(attrs={'size':'2'}))
-    fuelclass4 = forms.IntegerField(label='BU fuels 3"-9"', min_value=0, max_value=99, help_text="Broadcast/underburn 3\"-9\" fuels in tons/ac. Enter 0 if none.", widget=forms.TextInput(attrs={'size':'2'}))
-    fuelclass5 = forms.IntegerField(label='BU fuels 9"-20"', min_value=0, max_value=999, help_text="Broadcast/underburn 9\"-20\" fuels in tons/ac. Enter 0 if none.", widget=forms.TextInput(attrs={'size':'3'}))
-    fuelclass6 = forms.IntegerField(label='BU fuels 20+"', min_value=0, max_value=999, help_text="Broadcast/underburn 20+\" fuels. in tons/ac. Enter 0 if none.", widget=forms.TextInput(attrs={'size':'3'}))
+    landingtons = forms.IntegerField(label='LTons', required=True, min_value=0, max_value=9999, help_text="Total tons in landing or r-o-w piles on the unit. Enter 0 if none.", widget=forms.TextInput(attrs={'size':'4'}))
+    piletons = forms.IntegerField(label='PTons', required=True, min_value=0, max_value=9999, help_text="Total tons in unit piles. Exclude landings and right-of-way. Use PNW-GTR-364 or PCOST to estimate. Enter 0 if none.", widget=forms.TextInput(attrs={'size':'4'}))
+    fuelclass1 = forms.IntegerField(label='BU fuels 0-1/4"', required=True, min_value=0, max_value=99, help_text="Broadcast/underburn 0-1/4\" fuels in tons/ac. Enter 0 if none.", widget=forms.TextInput(attrs={'size':'2'}))
+    fuelclass2 = forms.IntegerField(label='BU fuels 1/4"-1"', required=True, min_value=0, max_value=99, help_text="Broadcast/underburn 1/4\"-1\" fuels in tons/ac. Enter 0 if none.", widget=forms.TextInput(attrs={'size':'2'}))
+    fuelclass3 = forms.IntegerField(label='BU fuels 1"-3"', required=True, min_value=0, max_value=99, help_text="Broadcast/underburn 1\"-3\" fuels in tons/ac. Enter 0 if none.", widget=forms.TextInput(attrs={'size':'2'}))
+    fuelclass4 = forms.IntegerField(label='BU fuels 3"-9"', required=True, min_value=0, max_value=99, help_text="Broadcast/underburn 3\"-9\" fuels in tons/ac. Enter 0 if none.", widget=forms.TextInput(attrs={'size':'2'}))
+    fuelclass5 = forms.IntegerField(label='BU fuels 9"-20"', required=True, min_value=0, max_value=999, help_text="Broadcast/underburn 9\"-20\" fuels in tons/ac. Enter 0 if none.", widget=forms.TextInput(attrs={'size':'3'}))
+    fuelclass6 = forms.IntegerField(label='BU fuels 20+"', required=True, min_value=0, max_value=999, help_text="Broadcast/underburn 20+\" fuels. in tons/ac. Enter 0 if none.", widget=forms.TextInput(attrs={'size':'3'}))
     duffdepth = forms.IntegerField(label='Duff depth', min_value=0, max_value=999, help_text="In tenths of inches.", widget=forms.TextInput(attrs={'size':'3'}))
     class Meta:
         model = SmokeRegister
@@ -104,12 +104,27 @@ class SmokeRegisterFormSN(forms.ModelForm):
             self._errors["range"] = self.error_class([msg])
             self._errors["section"] = self.error_class([msg])
         fpf = cleaned_data.get("fpf")
-
         if fpf.endswith('XX'):
             msg = u"Please use the correct ODF Protection District number."
             self._errors["fpf"] = self.error_class([msg])
             #raise forms.ValidationError("Please use the correct ODF Protection District number.")
 
+        piletons = cleaned_data.get("piletons")
+        piletons = int(piletons or 0)
+        landingtons = cleaned_data.get("landingtons")
+        landingtons = int(landingtons or 0)
+        fuelclass1 = cleaned_data.get("fuelclass1")
+        fuelclass2 = cleaned_data.get("fuelclass2")
+        fuelclass3 = cleaned_data.get("fuelclass3")
+        fuelclass4 = cleaned_data.get("fuelclass4")
+        fuelclass5 = cleaned_data.get("fuelclass5")
+        fuelclass6 = cleaned_data.get("fuelclass6")
+        butons = int(fuelclass1 or 0) + int(fuelclass2 or 0) + int(fuelclass3 or 0) + int(fuelclass4 or 0) + int(fuelclass5 or 0) + int(fuelclass6 or 0)
+        if piletons + landingtons + butons <= 0: 
+            msg = u"Please enter pile, landing, or broadcast fuel loading tonnage."
+            self._errors["piletons"] = self.error_class([msg])
+            self._errors["landingtons"] = self.error_class([msg])
+            self._errors["fuelclass1"] = self.error_class([msg])
         return cleaned_data
 
 class SmokeRegisterEditForm(forms.ModelForm):
@@ -225,14 +240,14 @@ class SmokeRegisterLikeForm(forms.ModelForm):
     revenue = forms.CharField(label='RevNo', min_length=5, max_length=5, required=False, help_text="Revenue number. Last 5 digits of tax notification number; REQUIRED for revenue smoke. Leave blank for natural fuels smoke.", validators=[numeric], widget=forms.TextInput(attrs={'size':'5'}))
     fpf = forms.CharField(label='PDNo', min_length=3, max_length=3, required=True, help_text="ODF Protection Disrict number. Required.", widget=forms.TextInput(attrs={'size':'3'}))
     regacres = forms.IntegerField(label='Acres', min_value=1, max_value=9999, help_text="Acres to be treated. For pile burning, enter acres from which material was accumulated. Maximum 9999 per registration.", widget=forms.TextInput(attrs={'size':'4'}))
-    landingtons = forms.IntegerField(label='LTons', min_value=0, max_value=9999, help_text="Total tons in landing or r-o-w piles on the unit. Enter 0 if none.", widget=forms.TextInput(attrs={'size':'4'}))
-    piletons = forms.IntegerField(label='PTons', min_value=0, max_value=9999, help_text="Total tons in unit piles. Exclude landings and right-of-way. Use PNW-GTR-364 or PCOST to estimate. Enter 0 if none.", widget=forms.TextInput(attrs={'size':'4'}))
-    fuelclass1 = forms.IntegerField(label='BU fuels 0-1/4"', min_value=0, max_value=99, help_text="Broadcast/underburn 0-1/4\" fuels in tons/ac. Enter 0 if none.", widget=forms.TextInput(attrs={'size':'2'}))
-    fuelclass2 = forms.IntegerField(label='BU fuels 1/4"-1"', min_value=0, max_value=99, help_text="Broadcast/underburn 1/4\"-1\" fuels in tons/ac. Enter 0 if none.", widget=forms.TextInput(attrs={'size':'2'}))
-    fuelclass3 = forms.IntegerField(label='BU fuels 1"-3"', min_value=0, max_value=99, help_text="Broadcast/underburn 1\"-3\" fuels in tons/ac. Enter 0 if none.", widget=forms.TextInput(attrs={'size':'2'}))
-    fuelclass4 = forms.IntegerField(label='BU fuels 3"-9"', min_value=0, max_value=99, help_text="Broadcast/underburn 3\"-9\" fuels in tons/ac. Enter 0 if none.", widget=forms.TextInput(attrs={'size':'2'}))
-    fuelclass5 = forms.IntegerField(label='BU fuels 9"-20"', min_value=0, max_value=999, help_text="Broadcast/underburn 9\"-20\" fuels in tons/ac. Enter 0 if none.", widget=forms.TextInput(attrs={'size':'3'}))
-    fuelclass6 = forms.IntegerField(label='BU fuels 20+"', min_value=0, max_value=999, help_text="Broadcast/underburn 20+\" fuels. in tons/ac. Enter 0 if none.", widget=forms.TextInput(attrs={'size':'3'}))
+    landingtons = forms.IntegerField(label='LTons', required=True, min_value=0, max_value=9999, help_text="Total tons in landing or r-o-w piles on the unit. Enter 0 if none.", widget=forms.TextInput(attrs={'size':'4'}))
+    piletons = forms.IntegerField(label='PTons', required=True, min_value=0, max_value=9999, help_text="Total tons in unit piles. Exclude landings and right-of-way. Use PNW-GTR-364 or PCOST to estimate. Enter 0 if none.", widget=forms.TextInput(attrs={'size':'4'}))
+    fuelclass1 = forms.IntegerField(label='BU fuels 0-1/4"', required=True, min_value=0, max_value=99, help_text="Broadcast/underburn 0-1/4\" fuels in tons/ac. Enter 0 if none.", widget=forms.TextInput(attrs={'size':'2'}))
+    fuelclass2 = forms.IntegerField(label='BU fuels 1/4"-1"', required=True, min_value=0, max_value=99, help_text="Broadcast/underburn 1/4\"-1\" fuels in tons/ac. Enter 0 if none.", widget=forms.TextInput(attrs={'size':'2'}))
+    fuelclass3 = forms.IntegerField(label='BU fuels 1"-3"', required=True, min_value=0, max_value=99, help_text="Broadcast/underburn 1\"-3\" fuels in tons/ac. Enter 0 if none.", widget=forms.TextInput(attrs={'size':'2'}))
+    fuelclass4 = forms.IntegerField(label='BU fuels 3"-9"', required=True, min_value=0, max_value=99, help_text="Broadcast/underburn 3\"-9\" fuels in tons/ac. Enter 0 if none.", widget=forms.TextInput(attrs={'size':'2'}))
+    fuelclass5 = forms.IntegerField(label='BU fuels 9"-20"', required=True, min_value=0, max_value=999, help_text="Broadcast/underburn 9\"-20\" fuels in tons/ac. Enter 0 if none.", widget=forms.TextInput(attrs={'size':'3'}))
+    fuelclass6 = forms.IntegerField(label='BU fuels 20+"', required=True, min_value=0, max_value=999, help_text="Broadcast/underburn 20+\" fuels. in tons/ac. Enter 0 if none.", widget=forms.TextInput(attrs={'size':'3'}))
     duffdepth = forms.IntegerField(label='Duff depth', min_value=0, max_value=999, help_text="In tenths of inches.", widget=forms.TextInput(attrs={'size':'3'}))
     class Meta:
         model = SmokeRegister
@@ -270,6 +285,22 @@ class SmokeRegisterLikeForm(forms.ModelForm):
         else:
                 msg = u"Please use the correct ODF Protection District number."	
                 self._errors["fpf"] = self.error_class([msg])
+        piletons = cleaned_data.get("piletons")
+        piletons = int(piletons or 0)
+        landingtons = cleaned_data.get("landingtons")
+        landingtons = int(landingtons or 0)
+        fuelclass1 = cleaned_data.get("fuelclass1")
+        fuelclass2 = cleaned_data.get("fuelclass2")
+        fuelclass3 = cleaned_data.get("fuelclass3")
+        fuelclass4 = cleaned_data.get("fuelclass4")
+        fuelclass5 = cleaned_data.get("fuelclass5")
+        fuelclass6 = cleaned_data.get("fuelclass6")
+        butons = int(fuelclass1 or 0) + int(fuelclass2 or 0) + int(fuelclass3 or 0) + int(fuelclass4 or 0) + int(fuelclass5 or 0) + int(fuelclass6 or 0)
+        if piletons + landingtons + butons <= 0: 
+            msg = u"Please enter pile, landing, or broadcast fuel loading tonnage."
+            self._errors["piletons"] = self.error_class([msg])
+            self._errors["landingtons"] = self.error_class([msg])
+            self._errors["fuelclass1"] = self.error_class([msg])
         return cleaned_data
 
 class SmokePlanForm(forms.ModelForm):
@@ -303,6 +334,14 @@ class SmokePlanFormSN2(forms.ModelForm):
             self._errors["acrestoburn"] = self.error_class([msg])
             #raise forms.ValidationError("Please use the correct ODF Protection District number.")
 
+        piletons = cleaned_data.get("piletons")
+        landingtons = cleaned_data.get("landingtons")
+        butons = cleaned_data.get("b_u_tonsperacre")
+        if piletons + landingtons + butons <= 0: 
+            msg = u"Please enter pile, landing, or broadcast fuel loading tonnage."
+            self._errors["piletons"] = self.error_class([msg])
+            self._errors["landingtons"] = self.error_class([msg])
+            self._errors["b_u_tonsperacre"] = self.error_class([msg])
         return cleaned_data
 
 class SmokePlanFormSN3(forms.ModelForm):
@@ -363,6 +402,14 @@ class SmokeResultFormSN2(forms.ModelForm):
             self._errors["acresburned"] = self.error_class([msg])
             #raise forms.ValidationError("Please use the correct ODF Protection District number.")
 
+        piletons = cleaned_data.get("piletonned")
+        landingtons = cleaned_data.get("landingtonned")
+        butons = cleaned_data.get("b_u_tonsperacred")
+        if acresburned >= 1 and piletons + landingtons + butons <= 0: 
+            msg = u"Please enter pile, landing, or broadcast fuel loading tonnage."
+            self._errors["piletons"] = self.error_class([msg])
+            self._errors["landingtons"] = self.error_class([msg])
+            self._errors["b_u_tonsperacre"] = self.error_class([msg])
         return cleaned_data
 
 class SmokeResultFormSN3(forms.ModelForm):
@@ -383,6 +430,26 @@ class SmokeResultFormSN3(forms.ModelForm):
     class Meta:
         model = SmokeResult
         exclude = ['author', 'notaccomplished', 'snid']
+
+    def clean(self):
+        cleaned_data = self.cleaned_data
+        acresburned = cleaned_data.get("acresburned")
+        #regacres = self.regacres
+        #if acresburned > regacres:
+        #    msg = u"Result acres greater than registered acres."
+        #    self._errors["acresburned"] = self.error_class([msg])
+            #raise forms.ValidationError("Please use the correct ODF Protection District number.")
+
+        piletons = cleaned_data.get("piletonned")
+        landingtons = cleaned_data.get("landingtonned")
+        butons = cleaned_data.get("b_u_tonsperacred")
+        if acresburned >= 1 and piletons + landingtons + butons <= 0: 
+            msg = u"Please enter pile, landing, or broadcast fuel loading tonnage."
+            self._errors["piletonned"] = self.error_class([msg])
+            self._errors["landingtonned"] = self.error_class([msg])
+            self._errors["b_u_tonsperacred"] = self.error_class([msg])
+        return cleaned_data
+
 
 class NoResultFormSN2(forms.ModelForm):
     no = forms.ChoiceField(label='Reason', choices=NO_CHOICES, help_text="", widget=forms.Select(attrs={'class':'form-control input-sm', }),)
@@ -427,6 +494,7 @@ class AdvancedForm(forms.ModelForm):
     cutdate = forms.DateField(label='Cut date', help_text="Date when 70% complete.")
     class Meta:
         model = SmokeRegister
+        exclude =[]
 
 from django.utils.timezone import utc
 

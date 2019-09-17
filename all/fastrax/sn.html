@@ -1,20 +1,25 @@
-﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml">
 <head>
-<title>
-{% if reg_list %}{% for smokeregister in reg_list %}{{ smokeregister.regname }}{% endfor %}{% endif %}
-</title>
-	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>fastrax</title>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
 
 	<link rel="stylesheet" href="/static/blueprint/screen.css" type="text/css" media="screen, projection">
 	<link rel="stylesheet" href="/static/blueprint/print.css" type="text/css" media="print">
 	<link rel="stylesheet" href="/static/blueprint/charts.css" type="text/css" media="screen, projection">
   <!--[if IE]><link rel="stylesheet" href="/static/blueprint/ie.css" type="text/css" media="screen, projection"><![endif]-->
 	<link rel="stylesheet" href="/static/blueprint/plugins/fancy-type/screen.css" type="text/css" media="screen, projection">
-	<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+   <link rel="stylesheet" href="/static/leaflet-0.6.4/leaflet.css" />
+       <link rel="stylesheet" href="/static/leaflet-0.6.4/leaflet.ie.css" />
 </head>
-<body>
-	<div class="container" style="margin-left:0">
+
+<body onload="" onunload="">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.3/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-providers/1.1.15/leaflet-providers.min.js"></script>
+<script type="text/javascript" src="{{ request.site.domain }}/static/baselayers.js"></script>
+<script type="text/javascript" src="{{ request.site.domain }}/static/odf-protection-district.json"></script>
+  <div class="container" style="margin-left:0">
 	<div class="prepend-1">  
 		<h3></h3>
 		<h2 class="altb"></h2>
@@ -26,7 +31,7 @@
 				{% if reg_list %}
 					{% for smokeregister in reg_list %}
 						<h3><a href="/district/{{ smokeregister.district.tla|lower }}/">{{ smokeregister.district.tla }}</a> <a href="/district/{{ smokeregister.district.tla|lower }}/{{ smokeregister.district.slug }}/">{{ smokeregister.district.name }}</a><br />
-						Smoke Registration #<a href="/{{ smokeregister.sn }}/">{{ smokeregister.sn }}</a> or <a href="/{{ smokeregister.sn }}/dyn/">{{ smokeregister.regname }}</a>{% if smokeregister.author = request.user and smokeregister.deadline > smokeregister.now or request.user.is_superuser %} <a style="float:right;" href="/{{ smokeregister.sn }}/edit/"><small><quiet>[edit]</quiet></small></a>{% endif %}<br />
+						Smoke Registration #<a>{{ smokeregister.sn }}</a> or <a>{{ smokeregister.regname }}</a>{% if smokeregister.author == request.user and smokeregister.deadline > smokeregister.now %} <a href="/{{ smokeregister.sn }}/edit/"><i class="icon-pencil"></i></a>{% endif %}<br />
 						Registered <a href="/{{ smokeregister.regdate|date:"Y/m/d" }}/">{{ smokeregister.regdate|date:"d M Y" }}</a> by <a href="/user/{{ smokeregister.author }}/">{{ smokeregister.author }}</a></h3>
 
 						<div class="span-7 colborder">
@@ -58,43 +63,42 @@
 						<tr class="even"><td>Live Fuels Height:</td> <td>{{ smokeregister.livefuelsheight }}</td></tr>
 						<tr><td>Live Fuels Tons Per Acre:</td> <td>{{ smokeregister.livefuelstonsperacre }}</td></tr>
 						</table></div>
-
 {% if reg_list %}
   {% if trsr %}
    {% for plss in trsr %}
-    <div class="span-15 last"><a href="/{{ smokeregister.sn }}/dyn/"><img src="http://maps.google.com/maps/api/staticmap?path=color:0xff0000ff|weight:1|{{ plss.miy }},{{ plss.mix }}|{{ plss.miy }},{{ plss.max }}|{{ plss.may }},{{ plss.max }}|{{ plss.may }},{{ plss.mix }}|{{ plss.miy }},{{ plss.mix }}&zoom=11&size=540x380&maptype=terrain&key=ABQIAAAA5T-R0Of6sw7VdjyDmzeTCBSqVWuXpQBiC_MzWlrV_OMT7hpGGhQn-NNsek7fUCSFsd6KA5IeDoQ8EQ&sensor=false" class="top"></a>
-    </div>
+	<div class="span-15 last">
+    <div id="map" style="width: 540px; height: 380px"></div>
+	</div>
    {% endfor %}
    {% else %}
-	<div class="span-15 box last" style="height:380px;width:540px;">
+	<div class="span-13 box last">
     Township, range, section combination ({{ smokeregister.township }} {{ smokeregister.range }} {{ smokeregister.section }}) not in PLSS layer. No map for you.
 	</div>
   {% endif %}
 
-						<div class="span-5">
-					    <br>
-						<table>
-						<tr class="even"><td>Rotten Stumps Diameter:</td> <td>{{ smokeregister.rottenstumpsdiameter }}</td></tr>
-						<tr><td>Rotten Stumps Height:</td> <td>{{ smokeregister.rottenstumpsheight }}</td></tr>
-						<tr class="even"><td>Rotten Stumps Density Per Acre:</td> <td>{{ smokeregister.rottenstumpsdensityperacre }}</td></tr>
-						</table></div>
+		<div class="span-5">
+	    <br>
+		<table>
+		<tr class="even"><td>Rotten Stumps Diameter:</td> <td>{{ smokeregister.rottenstumpsdiameter }}</td></tr>
+		<tr><td>Rotten Stumps Height:</td> <td>{{ smokeregister.rottenstumpsheight }}</td></tr>
+		<tr class="even"><td>Rotten Stumps Density Per Acre:</td> <td>{{ smokeregister.rottenstumpsdensityperacre }}</td></tr>
+		</table></div>
 
-						<div class="span-5">
-					    <br>
-						<table>
-						<tr class="even"><td>Rotten Dead Surface Fuel 3 to 9:</td> <td>{{ smokeregister.rottendeadsurfacefuel3to9 }}</td></tr>
-						<tr><td>Rotten Dead Surface Fuel 9 to 20:</td> <td>{{ smokeregister.rottendeadsurfacefuel9to20 }}</td></tr>
-						<tr class="even"><td>Rotten Dead Surface Fuel 20+:</td> <td>{{ smokeregister.rottendeadsurfacefuel20 }}</td></tr>
-						</table></div>
+		<div class="span-5">
+	    <br>
+		<table>
+		<tr class="even"><td>Rotten Dead Surface Fuel 3 to 9:</td> <td>{{ smokeregister.rottendeadsurfacefuel3to9 }}</td></tr>
+		<tr><td>Rotten Dead Surface Fuel 9 to 20:</td> <td>{{ smokeregister.rottendeadsurfacefuel9to20 }}</td></tr>
+		<tr class="even"><td>Rotten Dead Surface Fuel 20+:</td> <td>{{ smokeregister.rottendeadsurfacefuel20 }}</td></tr>
+		</table></div>
 
-						<div class="span-4">
-					    <br>
-						<table>
-						<tr class="even"><td>Litter Type:</td> <td>{{ smokeregister.littertype }}</td></tr>
-						<tr><td>Litter Coverage Percent:</td> <td>{{ smokeregister.littercoverage }}</td></tr>
-						<tr class="even"><td>Litter Depth:</td> <td>{{ smokeregister.litterdepth }}</td></tr>
-						</table></div>
-
+		<div class="span-4">
+	    <br>
+		<table>
+		<tr class="even"><td>Litter Type:</td> <td>{{ smokeregister.littertype }}</td></tr>
+		<tr><td>Litter Coverage Percent:</td> <td>{{ smokeregister.littercoverage }}</td></tr>
+		<tr class="even"><td>Litter Depth:</td> <td>{{ smokeregister.litterdepth }}</td></tr>
+		</table></div>
 
 {% endif %}
 <hr>
@@ -137,9 +141,9 @@
 						{% if smokeregister.regdate|date:"Y"|add:'2' < 2017 %}
 						<p>This registration is closed. <a href="/{{ smokeregister.sn }}/registerlike/">Create similar</a> registration.</p>
 						{% else %}
-						<p><a href="/{{ smokeregister.sn }}/plan/">Add a plan</a> to this registration. {% if smokeregister.author = request.user and smokeregister.deadline > smokeregister.now %} <a href="/{{ smokeregister.sn }}/edit/">Edit</a> this registration. {% endif %}<a href="/{{ smokeregister.sn }}/registerlike/">Create similar</a> registration.</p>
+						<p><a href="/{{ smokeregister.sn }}/plan/">Add a plan</a> to this registration. {% if smokeregister.author == request.user and smokeregister.deadline > smokeregister.now %} <a href="/{{ smokeregister.sn }}/edit/">Edit</a> this registration. {% endif %}<a href="/{{ smokeregister.sn }}/registerlike/">Create similar</a> registration.</p>
 						{% endif %}
-						</div>
+					</div>
 
 					{% endfor %}				
 					{% else %}
@@ -148,11 +152,75 @@
 				</div>
 		</div>
 	</div>
-	    <div class="prepend-1 small altb quiet">
-		<br />
-		<hr>
-		 &copy 1981-{% now "Y" %}   &para   Feared by some.  &para  Adored by billions.   &para   Served by <a href="//{{ request.site.domain }}/">{{ request.site.name }}</a>.   &para   Weaponized text.
-        </div>
+		{% include "footer.html" %}
 	</div>
+  <script>
+
+    var regs = new L.LayerGroup();
+
+    {% for plss in trsr %}
+      L.polygon([[{{ plss.miy|floatformat:3 }},{{ plss.mix|floatformat:3 }}],[{{ plss.miy|floatformat:3 }},{{ plss.max|floatformat:3 }}],[{{ plss.may|floatformat:3 }},{{ plss.max|floatformat:3 }}],[{{ plss.may|floatformat:3 }},{{ plss.mix|floatformat:3 }}]], {
+            color: 'red',
+            fillColor: 'red',
+            fillOpacity: 0.0
+          }
+      ).addTo(regs),
+    {% endfor %}
+      L.marker([44, -128]);
+
+    var map = L.map('map', {
+      zoom: 11,
+	  center: {% for plss in trsr %}[{{ plss.y|floatformat:3 }},{{ plss.x|floatformat:3 }}]{% endfor %},
+      layers: [regs]
+    });
+
+    function zoomToFeature(e) {
+        var layer = e.target;
+        //map.fitBounds(e.target.getBounds());
+        info.update(layer.feature.properties);
+        //map.setView(e.latlng, 8);
+        map.panTo(e.latlng);
+    }
+
+    function onEachFeature(feature, layer) {
+        layer.on({
+            //mouseover: highlightFeature,
+            //mouseout: resetHighlight,
+            click: zoomToFeature
+        });
+    }
+    function style(feature) {
+        return {
+            weight: 1,
+            //opacity: 1,
+            color: 'blue',
+            dashArray: '3',
+            fillOpacity: 0.2,
+            //fillColor: getColor(feature.properties.density)
+        };
+    }
+
+    ments = L.geoJson(ments, {
+        style: style,
+        pointToLayer: function(feature, latlng) {
+            return new L.marker(latlng, {icon: okIcon});
+        },
+        onEachFeature: onEachFeature
+            });
+    //ments.addTo(map);
+
+
+    var overlays = {
+      {% if plss3_list %}"Results": results,{% endif %}
+      {% if plss2_list %}"Plans": plans,{% endif %}
+      {% if plss_list %}"Registriations": regs,{% endif %}
+      "ODF Protection Districts": ments
+    };
+
+
+var baseLayers = getCommonBaseLayers(map);
+L.control.layers(baseLayers, {}).addTo(map);
+  </script>
+
 </body>
 </html>

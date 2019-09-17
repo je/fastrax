@@ -109,7 +109,7 @@
 						<table class="sortable">
 						<th><code><a href="JavaScript:void(0);">SN</a></code></th><th><code><a href="JavaScript:void(0);">Name</a></code></th><th><code> Co TownRangeSec Elev  %S SSRA SPZ RC Type Acres  Burned LM Ltons Ptons BUt/ac by Size DD Sp Hs Cut</code></th>
 						{% for smokeregister in reg_list %}
-						<tr class="{% if smokeregister.sn|slice:'2:5' = '406' and smokeregister.landingtons|stringformat:'05d' != '00000' %} notice{% else %}{% cycle '' 'even' %}{% endif %}"><td><code><a href="/{{ smokeregister.sn }}/">{{ smokeregister.sn }}</a> </code></td><td><code>{% if smokeregister.regname|length > 20 %}{{ smokeregister.regname|upper|slice:"20"|ljust:"20" }}{% else %}{{ smokeregister.regname|upper|ljust:"20" }}{% endif %}</code></td><td><code> {{ smokeregister.county }} {{ smokeregister.township }} {{ smokeregister.range }} {{ smokeregister.section|ljust:"2" }} {{ smokeregister.elevation|stringformat:"05d" }} {{ smokeregister.slope|stringformat:"02d" }} {{ smokeregister.ssradistance|rjust:"2" }}mi {{ smokeregister.spz }}   {{ smokeregister.reason }}  {{ smokeregister.typeburn }}    <span style="color:{{ smokeregister.color }}">{{ smokeregister.regacres|stringformat:"04d" }}ac</span> {% if smokeregister.black %}<span style="color:{{ smokeregister.color }}">{{ smokeregister.black|stringformat:"04d" }}ac</span>{% else %}      {% endif %} {{ smokeregister.loadmethod|ljust:"2" }} {{ smokeregister.landingtons|stringformat:"05d" }} {{ smokeregister.piletons|stringformat:"05d" }} {{ smokeregister.fuelclass1|stringformat:"02d" }}{{ smokeregister.fuelclass2|stringformat:"02d" }}{{ smokeregister.fuelclass3|stringformat:"02d" }}{{ smokeregister.fuelclass4|stringformat:"02d" }}{{ smokeregister.fuelclass5|stringformat:"03d" }}{{ smokeregister.fuelclass6|stringformat:"03d" }} {{ smokeregister.duffdepth|stringformat:"02d" }} {{ smokeregister.fuelspecies }}  {{ smokeregister.harvestd }}  {{ smokeregister.cutdate|date:"m" }}{{ smokeregister.cutdate|date:"y" }}</code></td></tr>
+						<tr class="{% if smokeregister.sn|slice:'2:5' == '406' and smokeregister.landingtons|stringformat:'05d' != '00000' %} notice{% else %}{% cycle '' 'even' %}{% endif %}"><td><code><a href="/{{ smokeregister.sn }}/">{{ smokeregister.sn }}</a> </code></td><td><code>{% if smokeregister.regname|length > 20 %}{{ smokeregister.regname|upper|slice:"20"|ljust:"20" }}{% else %}{{ smokeregister.regname|upper|ljust:"20" }}{% endif %}</code></td><td><code> {{ smokeregister.county }} {{ smokeregister.township }} {{ smokeregister.range }} {{ smokeregister.section|ljust:"2" }} {{ smokeregister.elevation|stringformat:"05d" }} {{ smokeregister.slope|stringformat:"02d" }} {{ smokeregister.ssradistance|rjust:"2" }}mi {{ smokeregister.spz }}   {{ smokeregister.reason }}  {{ smokeregister.typeburn }}    <span style="color:{{ smokeregister.color }}">{{ smokeregister.regacres|stringformat:"04d" }}ac</span> {% if smokeregister.black %}<span style="color:{{ smokeregister.color }}">{{ smokeregister.black|stringformat:"04d" }}ac</span>{% else %}      {% endif %} {{ smokeregister.loadmethod|ljust:"2" }} {{ smokeregister.landingtons|stringformat:"05d" }} {{ smokeregister.piletons|stringformat:"05d" }} {{ smokeregister.fuelclass1|stringformat:"02d" }}{{ smokeregister.fuelclass2|stringformat:"02d" }}{{ smokeregister.fuelclass3|stringformat:"02d" }}{{ smokeregister.fuelclass4|stringformat:"02d" }}{{ smokeregister.fuelclass5|stringformat:"03d" }}{{ smokeregister.fuelclass6|stringformat:"03d" }} {{ smokeregister.duffdepth|stringformat:"02d" }} {{ smokeregister.fuelspecies }}  {{ smokeregister.harvestd }}  {{ smokeregister.cutdate|date:"m" }}{{ smokeregister.cutdate|date:"y" }}</code></td></tr>
 						{% endfor %}
 						</table>
 						{% else %}
@@ -148,19 +148,7 @@
 			</div>
 	</div>
 	</div>
-	    <div class="prepend-1 small altb quiet">
-		<br />
-		<hr>
-		 &copy 1981-{% now "Y" %}   &para   Feared by some.  &para  Adored by billions.   &para   Served by <a href="//{{ request.site.domain }}/">{{ request.site.name }}</a>.   &para   Weaponized text.
-        </div>
+		{% include "footer.html" %}
 	</div>
-<script type="text/javascript">
-var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
-document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
-</script>
-<script type="text/javascript">
-var pageTracker = _gat._getTracker("UA-824578-1");
-pageTracker._trackPageview();
-</script>
 </body>
 </html>

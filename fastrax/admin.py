@@ -1,11 +1,12 @@
 from django import forms
 from django.contrib import admin
 from django.contrib.gis.admin import OSMGeoAdmin
+from leaflet.admin import LeafletGeoAdmin
 from django.forms.widgets import TextInput
 from django.contrib.gis.db import models
-from olwidget.admin import GeoModelAdmin
+#from olwidget.admin import GeoModelAdmin
 from guardian.admin import GuardedModelAdmin
-from o_fastrax.fastrax.models import *
+from fastrax.models import *
 from django.utils.translation import ugettext_lazy as _
 
 class SmokeRegisterAdmin(admin.ModelAdmin):
@@ -61,7 +62,7 @@ class DistrictAdmin(admin.ModelAdmin):
 
 admin.site.register(District, DistrictAdmin)
 
-class PLSSAdmin(GeoModelAdmin):
+class PLSSAdmin(LeafletGeoAdmin):
     list_display = ('trs','x','y','mix','miy','max','may')
     list_display_links = ('trs',)
     search_fields = ('trs',)
@@ -77,7 +78,7 @@ class PLSSAdmin(GeoModelAdmin):
 
 admin.site.register(PLSS,PLSSAdmin)
 
-class ODFSSRAAdmin(GeoModelAdmin):
+class ODFSSRAAdmin(LeafletGeoAdmin):
     list_display = ('name',)
     list_display_links = ('name',)
     search_fields = ('name',)
@@ -91,7 +92,7 @@ class ODFSSRAAdmin(GeoModelAdmin):
 
 admin.site.register(ODFSSRA,ODFSSRAAdmin)
 
-class ODFSPZAdmin(GeoModelAdmin):
+class ODFSPZAdmin(LeafletGeoAdmin):
     list_display = ('name','slug',)
     list_display_links = ('name',)
     search_fields = ('name',)
@@ -105,7 +106,7 @@ class ODFSPZAdmin(GeoModelAdmin):
 
 admin.site.register(ODFSPZ,ODFSPZAdmin)
 
-class ODFPDAdmin(GeoModelAdmin):
+class ODFPDAdmin(LeafletGeoAdmin):
 #class ODFPDAdmin(admin.ModelAdmin):
     list_display = ('nnn','name','slug',)
     list_display_links = ('name',)
@@ -143,7 +144,7 @@ class PlusFourAdmin(GuardedModelAdmin):
     list_display = ('name', 'district', 'created', 'author')
     ordering = ['-created']
     list_per_page = 50
-    search_fields = ('name')
+    search_fields = ('name',)
     date_hierarchy = 'created'
     list_filter = ('district',)
     list_display_links = ('name',)

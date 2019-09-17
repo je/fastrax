@@ -41,7 +41,7 @@ code .uh {margin:1.5em 0;white-space:normal;}
 						ODF's nominal deadline for editing this registration is {{ reg.deadline|date:"d M Y" }}. Changing between revenue and non-revenue is difficult, so if you make that kind of mistake, send an email. This form does not yet check registered acres against acres burned - no funny business.<br />
  						</div>
 						<div class="span-24">
-						{% if reg.author = request.user and reg.deadline > reg.now or request.user.is_superuser %}
+						{% if reg.author == request.user and reg.deadline > reg.now or request.user.is_superuser %}
 						<form method="POST" action="/{{ reg.sn }}/edit/">
 							<fieldset>
 								<legend>Edit Smoke Registration <a href="/{{ reg }}/">{{ reg }}</a></legend>
@@ -141,11 +141,7 @@ code .uh {margin:1.5em 0;white-space:normal;}
 			</div>
 	</div>
 	</div>
-	    <div class="prepend-1 small altb quiet">
-			<br />
-			<hr>
-			 &copy 1981-{% now "Y" %}   &para   Feared by some.  &para  Adored by billions.   &para   Served by <a href="//{{ request.site.domain }}/">{{ request.site.name }}</a>.   &para   Weaponized text.
-        </div>
+		{% include "footer.html" %}
 	</div>
 </body>
 </html>

@@ -38,7 +38,7 @@
 	<div class="container" style="margin-left:0">
 <script src="/static/leaflet-0.6.4/leaflet.js"></script>
   <script src="/static/leaflet-0.6.4/leaflet-providers.js"></script>
-	<script type="text/javascript" src="//{{ request.site.domain }}/static/odf-protection-district.json"></script>
+	<script type="text/javascript" src="{{ request.site.domain }}/static/odf-protection-district.json"></script>
 		<div class="prepend-1">  
 		<h3></h3>
 		<h2 class="altb"></h2>
@@ -121,11 +121,7 @@
 			</div>
 	</div>
 	</div>
-	    <div class="prepend-1 small altb quiet">
-		<br />
-		<hr class="fix">
-		 &copy 1981-{% now "Y" %}   &para   Feared by some.  &para  Adored by billions.   &para   Served by <a href="//{{ request.site.domain }}/">{{ request.site.name }}</a>.   &para   Weaponized text.
-        </div>
+		{% include "footer.html" %}
 	</div>
   <script>
 

@@ -275,12 +275,6 @@
 			</div>
 		</div>
 	</div>
-		<div class="prepend-1 span-23">
-			<br />
-			<hr>
-			<span class=" small altb quiet">
-			 &copy 1981-{% now "Y" %}   &para   Feared by some.  &para  Adored by billions.   &para   Served by <a href="//{{ request.site.domain }}/">{{ request.site.name }}</a>.   &para   Weaponized text.
-			 </span>
-    	</div>
+		{% include "footer.html" %}
 </body>
 </html>

@@ -1,10 +1,13 @@
 from django.db import models
 from django.contrib.gis.db import models
+from django.db.models import Manager as GeoManager
+from django.contrib.gis.db.models import PolygonField, MultiPolygonField
 from django.contrib.auth.models import User, Group
 from django.utils.translation import ugettext_lazy as _
 from django.core.files.storage import FileSystemStorage
 import datetime
 import uuid
+import settings
 
 OWNERSHIP_CHOICES = (
     ('U', 'USFS'),
@@ -204,52 +207,52 @@ LITTER_CHOICES = (
 class SmokeRegister(models.Model):
     entered = models.DateTimeField('Created', auto_now_add=True)
     modified = models.DateTimeField('Modified', auto_now=True)
-    author = models.ForeignKey(User, to_field="id", related_name="reg_user")
-    district = models.ForeignKey('District', to_field="id", related_name="reg_district")
+    author = models.ForeignKey(User, on_delete=models.PROTECT, to_field="id", related_name="reg_user")
+    district = models.ForeignKey('District', on_delete=models.PROTECT, to_field="id", related_name="reg_district")
     revenue = models.CharField('RevNo', max_length=5, blank=True, help_text="Revenue number. Optional. Last 5 digits of notification number, used in smoke numbers for revenue smoke.")
     sn = models.CharField('SN', max_length=12, unique=True, default='10XXXXXXXXNN', help_text="Smoke number. Natural fuels is YY+406+ODFID+NN, where ODFID is the district's 5-digit ODF id, and NN is a sequence. Revenue (timber sale) is YY+ODF+REVNO+NN, where ODF is the district's 3-digit ODF id, and REVNO is the revenue number. YY is always the current calendar year, and NN is a number from 01 to 99.")
-    sequence = models.IntegerField('Plan Sequence', max_length=2, default='01', help_text = "Unless this is an old registration from FASTRACS, leave this as '01'.")
+    sequence = models.IntegerField('Plan Sequence', default='01', help_text = "Unless this is an old registration from FASTRACS, leave this as '01'.")
     regname = models.CharField('Name', max_length=30, help_text="Name this registration.")
     regdate = models.DateField('Registered', auto_now_add=True)
     township = models.CharField('Township', max_length=4, default='000N', help_text="Third digit is partial section: 1/4=2 1/2=5 3/4=7 Full=0.")
     range = models.CharField('Range', max_length=4, default='000E', help_text="Third digit is partial section: 1/4=2 1/2=5 3/4=7 Full=0.")
     section = models.CharField('Section', max_length=2, default='00')
     county = models.CharField('County', max_length=2, choices=COUNTY_CHOICES)
-    elevation = models.IntegerField('Elev', max_length=5, help_text="Average elevation to nearest 100ft.")
-    slope = models.IntegerField('Slope %', max_length=2, help_text="Average slope as percent.")
+    elevation = models.IntegerField('Elev', help_text="Average elevation to nearest 100ft.")
+    slope = models.IntegerField('Slope %',  help_text="Average slope as percent.")
     ownership = models.CharField('Ownership', max_length=1, choices=OWNERSHIP_CHOICES)
     ssradistance = models.CharField('dSSRA', max_length=2, default='60', help_text="Within SSRA, enter 0. If more than 60 miles, enter 60.")
     spz = models.CharField('SPZ', max_length=1, choices=SPZ_CHOICES, help_text="Special Protection Zone.")
     fpf = models.CharField('PDNo', max_length=3, blank=True, default='   ', help_text="ODF Protection Disrict number. Optional.")
     typeburn = models.CharField('Type', max_length=1, choices=TYPEBURN_CHOICES)
     reason = models.CharField('Reason', max_length=1, choices=REASON_CHOICES)
-    regacres = models.IntegerField('Acres', max_length=4, help_text="Acres to be treated. For pile burning, enter acres from which material was accumulated. Maximum 9999 per registration.")
-    landingtons = models.IntegerField('LTons', max_length=5, help_text="Total tons in landing or r-o-w piles on the unit. Enter 0 if none.")
-    piletons = models.IntegerField('PTons', max_length=5, help_text="Total tons in unit piles. Exclude landings and right-of-way. Use PNW-GTR-364 or PCOST to estimate. Enter 0 if none.")
+    regacres = models.IntegerField('Acres', help_text="Acres to be treated. For pile burning, enter acres from which material was accumulated. Maximum 9999 per registration.")
+    landingtons = models.IntegerField('LTons', help_text="Total tons in landing or r-o-w piles on the unit. Enter 0 if none.")
+    piletons = models.IntegerField('PTons', help_text="Total tons in unit piles. Exclude landings and right-of-way. Use PNW-GTR-364 or PCOST to estimate. Enter 0 if none.")
     loadmethod = models.CharField('LoadMethod', max_length=2, choices=LOADMETHOD_CHOICES, help_text="NONPILE is T,P#,L, or M. PILE is A,R, or O.")
     fuelspecies = models.CharField('Species', max_length=1, choices=FUELSPECIES_CHOICES)
-    fuelclass1 = models.IntegerField('BU fuels 0-1/4"', max_length=2, help_text="Broadcast/underburn 0-1/4\" fuels in tons/ac. Enter 0 if none.")
-    fuelclass2 = models.IntegerField('BU fuels 1/4"-1"', max_length=2, help_text="Broadcast/underburn 1/4\"-1\" fuels in tons/ac. Enter 0 if none.")
-    fuelclass3 = models.IntegerField('BU fuels 1"-3"', max_length=2, help_text="Broadcast/underburn 1\"-3\" fuels in tons/ac. Enter 0 if none.")
-    fuelclass4 = models.IntegerField('BU fuels 3"-9"', max_length=2, help_text="Broadcast/underburn 3\"-9\" fuels in tons/ac. Enter 0 if none.")
-    fuelclass5 = models.IntegerField('BU fuels 9"-20"', max_length=3, help_text="Broadcast/underburn 9\"-20\" fuels in tons/ac. Enter 0 if none.")
-    fuelclass6 = models.IntegerField('BU fuels 20+"', max_length=3, help_text="Broadcast/underburn 20+\" fuels. in tons/ac. Enter 0 if none.")
-    duffdepth = models.IntegerField('Duff depth', max_length=3, help_text="In tenths of inches.")
+    fuelclass1 = models.IntegerField('BU fuels 0-1/4"', help_text="Broadcast/underburn 0-1/4\" fuels in tons/ac. Enter 0 if none.")
+    fuelclass2 = models.IntegerField('BU fuels 1/4"-1"', help_text="Broadcast/underburn 1/4\"-1\" fuels in tons/ac. Enter 0 if none.")
+    fuelclass3 = models.IntegerField('BU fuels 1"-3"',  help_text="Broadcast/underburn 1\"-3\" fuels in tons/ac. Enter 0 if none.")
+    fuelclass4 = models.IntegerField('BU fuels 3"-9"', help_text="Broadcast/underburn 3\"-9\" fuels in tons/ac. Enter 0 if none.")
+    fuelclass5 = models.IntegerField('BU fuels 9"-20"', help_text="Broadcast/underburn 9\"-20\" fuels in tons/ac. Enter 0 if none.")
+    fuelclass6 = models.IntegerField('BU fuels 20+"', help_text="Broadcast/underburn 20+\" fuels. in tons/ac. Enter 0 if none.")
+    duffdepth = models.IntegerField('Duff depth', help_text="In tenths of inches.")
     harvestd = models.CharField('Harvest spec', max_length=1, choices=HARVESTD_CHOICES)
     cutdate = models.DateField('Cut date', default='YYYY-MM-DD', help_text="Date when 70% complete. Enter 1900-01-01 if none.")
     livefuelstype = models.CharField('Live Fuels Type', max_length=1, blank=True, null=True, choices=LIVEFUELSTYPE_CHOICES)
-    livefuelscoveragepercent = models.IntegerField('Live Fuels Coverage Percent', max_length=3, blank=True, null=True, help_text="Live fuels coverage. Enter 0 if none.")
-    livefuelsheight = models.IntegerField('Live Fuels Height', max_length=5, blank=True, null=True, help_text="Live fuels height in 10ths of feet. Enter 0 if none.")
-    livefuelstonsperacre = models.IntegerField('Live Fuels Tons Per Acre', max_length=5, blank=True, null=True, help_text="Live fuels tons/ac. Enter 0 if none.")
-    rottenstumpsdiameter = models.IntegerField('Rotten Stumps Diameter', max_length=5, blank=True, null=True, help_text="Rotten stump diameter in inches.")
-    rottenstumpsheight = models.IntegerField('Rotten Stumps Height', max_length=5, blank=True, null=True, help_text="Rotten stumps height in feet.")
-    rottenstumpsdensityperacre = models.IntegerField('Rotten Stumps Density Per Acre', max_length=5, blank=True, null=True, help_text="Stumps per acre.")
-    rottendeadsurfacefuel3to9 = models.IntegerField('Rotten Dead Surface Fuel 3 to 9', max_length=5, blank=True, null=True, help_text="Tons per acre.")
-    rottendeadsurfacefuel9to20 = models.IntegerField('Rotten Dead Surface Fuel 9 to 20', max_length=5, blank=True, null=True, help_text="Tons per acre.")
-    rottendeadsurfacefuel20 = models.IntegerField('Rotten Dead Surface Fuel 20+', max_length=5, blank=True, null=True, help_text="Tons per acre.")
+    livefuelscoveragepercent = models.IntegerField('Live Fuels Coverage Percent', blank=True, null=True, help_text="Live fuels coverage. Enter 0 if none.")
+    livefuelsheight = models.IntegerField('Live Fuels Height', blank=True, null=True, help_text="Live fuels height in 10ths of feet. Enter 0 if none.")
+    livefuelstonsperacre = models.IntegerField('Live Fuels Tons Per Acre', blank=True, null=True, help_text="Live fuels tons/ac. Enter 0 if none.")
+    rottenstumpsdiameter = models.IntegerField('Rotten Stumps Diameter', blank=True, null=True, help_text="Rotten stump diameter in inches.")
+    rottenstumpsheight = models.IntegerField('Rotten Stumps Height', blank=True, null=True, help_text="Rotten stumps height in feet.")
+    rottenstumpsdensityperacre = models.IntegerField('Rotten Stumps Density Per Acre', blank=True, null=True, help_text="Stumps per acre.")
+    rottendeadsurfacefuel3to9 = models.IntegerField('Rotten Dead Surface Fuel 3 to 9',  blank=True, null=True, help_text="Tons per acre.")
+    rottendeadsurfacefuel9to20 = models.IntegerField('Rotten Dead Surface Fuel 9 to 20', blank=True, null=True, help_text="Tons per acre.")
+    rottendeadsurfacefuel20 = models.IntegerField('Rotten Dead Surface Fuel 20+', blank=True, null=True, help_text="Tons per acre.")
     littertype = models.CharField('Litter Type', max_length=1, blank=True, null=True, choices=LITTER_CHOICES)
-    littercoverage = models.IntegerField('Litter Coverage Percent', max_length=3, blank=True, null=True, help_text="Litter coverage. Enter 0 if none.")
-    litterdepth = models.IntegerField('Litter Depth', max_length=5, blank=True, null=True, help_text="Litter depth in 10ths of inches. Enter 0 if none.")
+    littercoverage = models.IntegerField('Litter Coverage Percent', blank=True, null=True, help_text="Litter coverage. Enter 0 if none.")
+    litterdepth = models.IntegerField('Litter Depth', blank=True, null=True, help_text="Litter depth in 10ths of inches. Enter 0 if none.")
 
     class Meta:
         db_table = 'django_fastrax_reg'
@@ -260,19 +263,22 @@ class SmokeRegister(models.Model):
     def __unicode__(self):
         return u"%s" % (self.sn)
 
+    def __str__(self):
+        return u"%s" % (self.sn)
+
     def get_absolute_url(self):
         return "/%s/" % self.sn
 
 class SmokePlan(models.Model):
-    author = models.ForeignKey(User, to_field="id", related_name="plan_user")
+    author = models.ForeignKey(User, on_delete=models.PROTECT, to_field="id", related_name="plan_user")
     entered = models.DateTimeField('Created', auto_now_add=True)
-    sn = models.ForeignKey('SmokeRegister', to_field="sn", related_name="plan_sn", help_text="Smoke number of registration.")
+    sn = models.ForeignKey('SmokeRegister', on_delete=models.PROTECT, to_field="sn", related_name="plan_sn", help_text="Smoke number of registration.")
     suffix = models.CharField ('##', max_length=2, help_text = "Plan number. First ## on any registration is '01'.")
     snid = models.CharField('SN-##', max_length=15, unique=True, help_text="Smoke number with plan number appended.")
-    acrestoburn = models.IntegerField('Acres', max_length=4, help_text="Acres to burn this plan. May not be total acres in unit.")
-    landingtons = models.IntegerField('LTons', max_length=5, help_text="Landing tons to be burned this plan. Enter 0 if none.")
-    piletons = models.IntegerField('PTons', max_length=5, help_text="Pile tons to be burned this plan. Enter 0 if none.")
-    b_u_tonsperacre = models.IntegerField('BUTons/a', max_length=3, help_text="Broadcast and underburn tons/acre to be burned this plan. Enter 0 if none.")
+    acrestoburn = models.IntegerField('Acres', help_text="Acres to burn this plan. May not be total acres in unit.")
+    landingtons = models.IntegerField('LTons', help_text="Landing tons to be burned this plan. Enter 0 if none.")
+    piletons = models.IntegerField('PTons', help_text="Pile tons to be burned this plan. Enter 0 if none.")
+    b_u_tonsperacre = models.IntegerField('BUTons/a', help_text="Broadcast and underburn tons/acre to be burned this plan. Enter 0 if none.")
     ignitiondate = models.DateField('Date', default='YYYY-MM-DD', help_text="Planned ignition date.")
     ignitiontime = models.TimeField('Time', default='HH:MM', help_text="Planned ignition time.")
     plan_date = models.DateField('Planned', auto_now_add=True)
@@ -284,6 +290,9 @@ class SmokePlan(models.Model):
         ordering = ('plan_date',)
 
     def __unicode__(self):
+        return u"%s-%s" % (self.sn, self.suffix)
+
+    def __str__(self):
         return u"%s-%s" % (self.sn, self.suffix)
 
     def get_absolute_url(self):
@@ -299,37 +308,37 @@ NO_CHOICES = (
 )
 
 class SmokeResult(models.Model):
-    author = models.ForeignKey(User, to_field="id", related_name="result_user")
+    author = models.ForeignKey(User, on_delete=models.PROTECT, to_field="id", related_name="result_user")
     entered = models.DateTimeField('Entered', auto_now_add=True)
     modified = models.DateTimeField('Modified', auto_now=True)
-    snid = models.OneToOneField('SmokePlan', related_name="result_snid")
+    snid = models.OneToOneField('SmokePlan', on_delete=models.PROTECT, related_name="result_snid")
     notaccomplished = models.BooleanField('Not accomplished?', help_text="Still need to zero out required fields for now.")
-    acresburned = models.IntegerField('Acres', max_length=4, help_text="Acres burned (blackened). May be more or less than planned. Enter 0 if none.")
-    landingtonned = models.IntegerField('LTons', max_length=5, help_text="Landing tons burned this plan. Enter 0 if none.")
-    piletonned = models.IntegerField('PTons', max_length=5, help_text="Pile tons burned this plan. Enter 0 if none.")
-    b_u_tonsperacred = models.IntegerField('BUTons/a', max_length=3, help_text="Broadcast and underburn tons per acre burned this plan. Enter 0 if none.")
+    acresburned = models.IntegerField('Acres', help_text="Acres burned (blackened). May be more or less than planned. Enter 0 if none.")
+    landingtonned = models.IntegerField('LTons', help_text="Landing tons burned this plan. Enter 0 if none.")
+    piletonned = models.IntegerField('PTons', help_text="Pile tons burned this plan. Enter 0 if none.")
+    b_u_tonsperacred = models.IntegerField('BUTons/a', help_text="Broadcast and underburn tons per acre burned this plan. Enter 0 if none.")
     ignitiondated = models.DateField('Date', default='YYYY-MM-DD', help_text="Actual ignition date.")
     ignitiontimed = models.TimeField('Time', default='HH:MM', help_text="Actual ignition time.")
     ignitionmethod = models.CharField('Method', max_length=1, choices=IGNITION_CHOICES, help_text="NA for pile burns.")
-    ignitionduration = models.IntegerField('Duration', max_length=3, help_text="Minutes from first ignition to finish. Include breaks in total. Enter 0 for pile burns.")
+    ignitionduration = models.IntegerField('Duration', help_text="Minutes from first ignition to finish. Include breaks in total. Enter 0 for pile burns.")
     rapidignition = models.BooleanField('Rapid ignition?', help_text="")
     smokeintrusion = models.BooleanField('Smoke intrusion?')
     weatherstation = models.CharField('Weather', max_length=4, blank=True, help_text="Enter initial 4-characters of RAWS name, last 4 digits of RAWS number, or UNIT for on-site observation. Not required for pile burns.")
-    airtemperature = models.IntegerField('F', max_length=2, help_text="Air temperature in whole Farenheit degrees. Enter 0 for pile burns.")
-    relativehumidity = models.IntegerField('RH', max_length=2, help_text="Percent relative humidity. Enter 0 for pile burns.")
+    airtemperature = models.IntegerField('F', help_text="Air temperature in whole Farenheit degrees. Enter 0 for pile burns.")
+    relativehumidity = models.IntegerField('RH', help_text="Percent relative humidity. Enter 0 for pile burns.")
     winddirection = models.CharField('Wind dir', max_length=2, choices=WINDDIR_CHOICES, help_text="NA for pile burns.")
-    windspeed = models.IntegerField('Wind mph', max_length=2, help_text="Enter 0 for pile burns.")
-    tenhour = models.IntegerField('10hr', max_length=2, help_text="Ten-hour moisture. Whole number for quarter- to one-inch fuels. Enter 0 for pile burns.")
-    thousandhour = models.IntegerField('1000hr', max_length=2, help_text="Thousand-hour moisture. Whole number for 3- to 9-inch fuels. Enter 0 for pile burns.")
+    windspeed = models.IntegerField('Wind mph', help_text="Enter 0 for pile burns.")
+    tenhour = models.IntegerField('10hr', help_text="Ten-hour moisture. Whole number for quarter- to one-inch fuels. Enter 0 for pile burns.")
+    thousandhour = models.IntegerField('1000hr', help_text="Thousand-hour moisture. Whole number for 3- to 9-inch fuels. Enter 0 for pile burns.")
     thousandhourmethod = models.CharField('1000hrM', max_length=1, choices=THOUSANDHOUR_CHOICES, help_text="Thousand-hour method. NA for pile burns.")
-    dayssincerain = models.IntegerField('Rain', max_length=3, help_text="Western Oregon = days since 0.50-inch rain in 48 hrs; Eastern Oregon = days since 0.25-inch rain in 48 hrs. Not required (enter 0) for pile burns.")
+    dayssincerain = models.IntegerField('Rain', help_text="Western Oregon = days since 0.50-inch rain in 48 hrs; Eastern Oregon = days since 0.25-inch rain in 48 hrs. Not required (enter 0) for pile burns.")
     snowoffmonth = models.CharField('Snow off month', max_length=2, choices=SNOWOFF_CHOICES, help_text="NA for pile burns.")
     result_date = models.DateField('Resulted', auto_now_add=True)
     no = models.CharField('Reason', max_length=1, choices=NO_CHOICES, help_text="Non-accomplishment reason.")
     why = models.TextField('Details', max_length=1024, blank=True, null=True, help_text="Non-accomplishment details.", )
-    b_u_tonsburned = models.IntegerField('BroadcastTonsBurned', max_length=5, blank=True, null=True, help_text="NEW")
-    shrubconsumption = models.IntegerField('ShrubConsumption', max_length=5, blank=True, null=True, help_text="NEW")
-    duffmoisture = models.IntegerField('DuffFuelMoisture', max_length=3, blank=True, null=True, help_text="NEW")
+    b_u_tonsburned = models.IntegerField('BroadcastTonsBurned', blank=True, null=True, help_text="NEW")
+    shrubconsumption = models.IntegerField('ShrubConsumption', blank=True, null=True, help_text="NEW")
+    duffmoisture = models.IntegerField('DuffFuelMoisture', blank=True, null=True, help_text="NEW")
 
     class Meta:
         db_table = 'django_fastrax_result'
@@ -338,6 +347,9 @@ class SmokeResult(models.Model):
         ordering = ('result_date',)
 
     def __unicode__(self):
+        return u"%s" % (self.snid)
+
+    def __str__(self):
         return u"%s" % (self.snid)
 
     def get_absolute_url(self):
@@ -366,6 +378,9 @@ class District(models.Model):
     def __unicode__(self):
         return u"%s %s" % (self.tla, self.name)
 
+    def __str__(self):
+        return u"%s %s" % (self.tla, self.name)
+
     def get_absolute_url(self):
         return "/district/%s/%s/" % (self.tla.lower(), self.slug)
 
@@ -380,10 +395,8 @@ class PLSS(models.Model):
     miy = models.CharField(max_length=20)
     max = models.CharField(max_length=20)
     may = models.CharField(max_length=20)
-    # GeoDjango-specific: a geometry field (MultiPolygonField),
     #geometry = models.MultiPointField('PLSS',srid=4326)
     geometry = models.PolygonField('Geometry',srid=4326)
-    # and overriding the default manager with a GeoManager instance.
     #objects = models.GeoManager()
 
     class Meta:
@@ -395,12 +408,14 @@ class PLSS(models.Model):
     def __unicode__(self):
         return u"%s" % (self.trs)
 
+    def __str__(self):
+        return u"%s" % (self.trs)
+
 class ODFSSRA(models.Model):
     name = models.CharField('SSRA Name', max_length=80, )
     slug = models.CharField('Slug', unique=True, max_length=80, help_text="No spaces.")
     geometry = models.PolygonField('Geometry',srid=4326)
-    # and overriding the default manager with a GeoManager instance.
-    objects = models.GeoManager()
+    objects = GeoManager()
 
     class Meta:
         db_table = 'django_fastrax_odfssra'
@@ -410,12 +425,14 @@ class ODFSSRA(models.Model):
     def __unicode__(self):
         return u"%s" % (self.name)
 
+    def __str__(self):
+        return u"%s" % (self.name)
+
 class ODFSPZ(models.Model):
     name = models.CharField('SPZ Name', max_length=80, )
     slug = models.CharField('Slug', unique=True, max_length=80, help_text="No spaces.")
     geometry = models.PolygonField('Geometry',srid=4326)
-    # and overriding the default manager with a GeoManager instance.
-    objects = models.GeoManager()
+    objects = GeoManager()
 
     class Meta:
         db_table = 'django_fastrax_odfspz'
@@ -425,12 +442,15 @@ class ODFSPZ(models.Model):
     def __unicode__(self):
         return u"%s" % (self.slug)
 
+    def __str__(self):
+        return u"%s" % (self.slug)
+
 class ODFPD(models.Model):
     nnn = models.CharField('ODF id', max_length=3, help_text="ODF id.")
     name = models.CharField('PD Name', max_length=80, help_text="District name.")
     slug = models.CharField('Slug', unique=True, max_length=80, help_text="No spaces.")
     geometry = models.MultiPolygonField('Geometry',srid=4326)
-    objects = models.GeoManager()
+    objects = GeoManager()
 
     class Meta:
         db_table = 'django_fastrax_odfpd'
@@ -441,6 +461,8 @@ class ODFPD(models.Model):
     def __unicode__(self):
         return u"%s" % (self.slug)
 
+    def __str__(self):
+        return u"%s" % (self.slug)
 
 LMH = (
     ('L', 'Low'),
@@ -500,17 +522,17 @@ def get_path(instance, filename):
 class PlusFour(models.Model):
     created = models.DateTimeField('Created', auto_now_add=True)
     modified = models.DateTimeField('Modified', auto_now=True)
-    author = models.ForeignKey(User, related_name="plusfour_author")
-    district = models.ForeignKey('District', to_field="id", related_name="plusfour_district")
+    author = models.ForeignKey(User, on_delete=models.PROTECT, related_name="plusfour_author")
+    district = models.ForeignKey('District', on_delete=models.PROTECT, to_field="id", related_name="plusfour_district")
     name = models.CharField('Project Name', max_length=30, help_text="")
     township = models.CharField('Township', max_length=4, default='000N', help_text="Third digit is partial section: 1/4=2 1/2=5 3/4=7 Full=0.")
     range = models.CharField('Range', max_length=4, default='000E', help_text="Third digit is partial section: 1/4=2 1/2=5 3/4=7 Full=0.")
     section = models.CharField('Section', max_length=2, default='00')
-    acres = models.IntegerField('Acres', max_length=4, help_text="")
+    acres = models.IntegerField('Acres', help_text="")
     objective = models.TextField('Prescribed Burn Objectives and Project Summary', max_length=1024, blank=True, null=True, help_text="Enter Prescribed Burn Plan Objectives and Summary", )
     ignitionstart = models.DateField('Planned Ignition Start Date', default='YYYY-MM-DD', help_text="")
     ignitionend = models.DateField('Planned Ignition Completion Date', default='YYYY-MM-DD', help_text="")
-    mopdays = models.IntegerField('Number of days expected for Mop-up and Patrol', max_length=3, help_text="")
+    mopdays = models.IntegerField('Number of days expected for Mop-up and Patrol', help_text="")
     mopend = models.DateField('Expected Completion Date', default='YYYY-MM-DD', help_text="")
     complexity = models.CharField('Final Complexity Alalysis Rating', max_length=1, choices=LMH, help_text="")
     compsum = models.TextField('Complexity Summary', max_length=1024, blank=True, null=True, help_text="Summary of risks that rated high and cannot be mitigated.", )
@@ -584,7 +606,7 @@ STATUS_CHOICES = (
 
 class Logitem(models.Model):
     created = models.DateTimeField('Created', auto_now_add=True)
-    author = models.ForeignKey(User)
+    author = models.ForeignKey(User, on_delete=models.PROTECT)
     status = models.CharField('Status', max_length=1, choices=STATUS_CHOICES)
     message = models.TextField('Message',)
     obj_model = models.CharField('Model', max_length=80, help_text="Object model.", )
