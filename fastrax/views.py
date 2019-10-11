@@ -2971,7 +2971,7 @@ def control(request):
     return render(request,'fastrax/control.html', { 'district_list': district_list, 'iyear': iyear })
 
 def districts(request):
-    district_list = District.objects.all().order_by('tla')
+    district_list = District.objects.exclude(state__iexact='WA').order_by('tla')
     col1 = round((district_list.count())/2)
     return render(request,'fastrax/districts.html', {'district_list': district_list, 'col1': col1, })
 

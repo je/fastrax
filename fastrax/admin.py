@@ -53,11 +53,12 @@ class SmokeResultAdmin(admin.ModelAdmin):
 admin.site.register(SmokeResult, SmokeResultAdmin)
 
 class DistrictAdmin(admin.ModelAdmin):
-    list_display = ('tla', 'name', 'slug', 'tin', 'fedunit', 'nnn', 'odfid')
+    list_display = ('state', 'tla', 'name', 'slug', 'tin', 'fedunit', 'nnn', 'odfid')
+    list_display_links = ('tla',)
     ordering = ['tla']
     list_per_page = 50
-    list_filter = ('tla',)
-    list_editable = ('name', 'slug', 'tin', 'fedunit', 'nnn', 'odfid')
+    list_filter = ('state','tla',)
+    list_editable = ('state', 'name', 'slug', 'tin', 'fedunit', 'nnn', 'odfid')
     save_as = True
 
 admin.site.register(District, DistrictAdmin)

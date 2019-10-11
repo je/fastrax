@@ -333,6 +333,9 @@ class SmokePlanFormSN2(forms.ModelForm):
             msg = u"Plan acres greater than registered acres."
             self._errors["acrestoburn"] = self.error_class([msg])
             #raise forms.ValidationError("Please use the correct ODF Protection District number.")
+        elif acrestoburn == 0:
+            msg = u"Can't plan 0 acres."
+            self._errors["acrestoburn"] = self.error_class([msg])
 
         piletons = cleaned_data.get("piletons")
         landingtons = cleaned_data.get("landingtons")
@@ -445,6 +448,11 @@ class SmokeResultFormSN3(forms.ModelForm):
         butons = cleaned_data.get("b_u_tonsperacred")
         if acresburned >= 1 and piletons + landingtons + butons <= 0: 
             msg = u"Please enter pile, landing, or broadcast fuel loading tonnage."
+            self._errors["piletonned"] = self.error_class([msg])
+            self._errors["landingtonned"] = self.error_class([msg])
+            self._errors["b_u_tonsperacred"] = self.error_class([msg])
+        elif acresburned == 0 and piletons + landingtons + butons > 0:
+            msg = u"When acres burned is 0, all tonnages should be zero."
             self._errors["piletonned"] = self.error_class([msg])
             self._errors["landingtonned"] = self.error_class([msg])
             self._errors["b_u_tonsperacred"] = self.error_class([msg])

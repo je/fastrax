@@ -606,7 +606,7 @@ STATUS_CHOICES = (
 
 class Logitem(models.Model):
     created = models.DateTimeField('Created', auto_now_add=True)
-    author = models.ForeignKey(User, on_delete=models.PROTECT)
+    author = models.ForeignKey(User, on_delete=models.PROTECT, related_name="logitem_author")
     status = models.CharField('Status', max_length=1, choices=STATUS_CHOICES)
     message = models.TextField('Message',)
     obj_model = models.CharField('Model', max_length=80, help_text="Object model.", )
